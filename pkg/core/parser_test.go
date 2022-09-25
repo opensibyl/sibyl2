@@ -1,6 +1,7 @@
 package core
 
 import (
+	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
 	"github.com/smacker/go-tree-sitter/python"
 	"testing"
@@ -36,6 +37,20 @@ class ABCD:
 	print Foo("hi")
 `
 
+var goCode = `
+type Parser struct {
+	engine *sitter.Parser
+}
+
+func NewParser(lang *sitter.Language) *Parser {
+	engine := sitter.NewParser()
+	engine.SetLanguage(lang)
+	return &Parser{
+		engine,
+	}
+}
+`
+
 func TestParser_Parse_Java(t *testing.T) {
 	parser := NewParser(java.GetLanguage())
 	_, err := parser.Parse([]byte(javaCode))
@@ -47,6 +62,14 @@ func TestParser_Parse_Java(t *testing.T) {
 func TestParser_Parse_Python(t *testing.T) {
 	parser := NewParser(python.GetLanguage())
 	_, err := parser.Parse([]byte(pythonCode))
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestParser_Parse_Golang(t *testing.T) {
+	parser := NewParser(golang.GetLanguage())
+	_, err := parser.Parse([]byte(goCode))
 	if err != nil {
 		panic(err)
 	}

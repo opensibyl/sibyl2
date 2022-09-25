@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"fmt"
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -18,12 +17,16 @@ func NewParser(lang *sitter.Language) *Parser {
 	}
 }
 
-func (p *Parser) Parse(data []byte) ([]Symbol, error) {
-	tree, err := p.engine.ParseCtx(context.TODO(), nil, data)
+func (p *Parser) ParseCtx(data []byte, context context.Context) ([]Symbol, error) {
+	tree, err := p.engine.ParseCtx(context, nil, data)
 	if err != nil {
 		return nil, err
 	}
 	return p.node2Symbols(data, tree.RootNode())
+}
+
+func (p *Parser) Parse(data []byte) ([]Symbol, error) {
+	return p.ParseCtx(data, context.TODO())
 }
 
 func (p *Parser) node2Symbols(data []byte, rootNode *sitter.Node) ([]Symbol, error) {
@@ -32,7 +35,6 @@ func (p *Parser) node2Symbols(data []byte, rootNode *sitter.Node) ([]Symbol, err
 	for i := 0; i < count; i++ {
 		curChild := rootNode.NamedChild(i)
 		curSymbol, err := p.node2Symbol(data, curChild)
-		fmt.Printf("symbol: %v\n\n", curSymbol)
 
 		if err != nil {
 			return nil, err

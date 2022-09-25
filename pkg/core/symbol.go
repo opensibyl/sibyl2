@@ -21,3 +21,9 @@ type Symbol struct {
 	// higher analyser will use this field
 	NodeType string `json:"nodeType"`
 }
+
+type FileSymbol struct {
+	Path     string   `json:"path"`
+	Language string   `json:"language"`
+	Symbols  []Symbol `json:"symbols"`
+}

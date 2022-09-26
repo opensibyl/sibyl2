@@ -2,47 +2,17 @@ package core
 
 import (
 	"context"
-	sitter "github.com/smacker/go-tree-sitter"
-	"github.com/smacker/go-tree-sitter/golang"
-	"github.com/smacker/go-tree-sitter/java"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
-type LangType = string
-
-const (
-	JAVA   LangType = "JAVA"
-	GOLANG LangType = "GOLANG"
-)
-
 type Runner struct {
-}
-
-func (r *Runner) GetLanguage(langType LangType) *sitter.Language {
-	switch langType {
-	case JAVA:
-		return java.GetLanguage()
-	case GOLANG:
-		return golang.GetLanguage()
-	}
-	return nil
-}
-
-func (r *Runner) GetFileSuffix(langType LangType) string {
-	switch langType {
-	case JAVA:
-		return ".java"
-	case GOLANG:
-		return ".go"
-	}
-	return "UNKNOWN"
 }
 
 func (r *Runner) ScanFiles(filePath string, lang LangType) ([]string, error) {
 	var files []string
-	fileSuffix := r.GetFileSuffix(lang)
+	fileSuffix := lang.GetFileSuffix()
 	handleFunc := func(path string, info os.FileInfo, err error) error {
 		if strings.HasSuffix(path, fileSuffix) {
 			files = append(files, path)
@@ -57,7 +27,7 @@ func (r *Runner) ScanFiles(filePath string, lang LangType) ([]string, error) {
 }
 
 func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error) {
-	langSupport := r.GetLanguage(lang)
+	langSupport := lang.GetLanguage()
 	files, err := r.ScanFiles(filePath, lang)
 	if err != nil {
 		return nil, err
@@ -75,6 +45,7 @@ func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error
 	for _, eachFile := range files {
 		r.parseFileAsync(eachFile, parser, ctx, fileSymbolsChan)
 	}
+
 	for range files {
 		eachFileSymbol := <-fileSymbolsChan
 		if eachFileSymbol == nil {

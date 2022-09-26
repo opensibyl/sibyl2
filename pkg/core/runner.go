@@ -64,12 +64,15 @@ func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error
 	}
 
 	parser := NewParser(langSupport)
-	ctx := context.Background()
+
+	// why we use withCancel here:
+	// tree-sitter has a special handler for cancelable
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
 
 	var fileSymbols []FileSymbol
 	fileSymbolsChan := make(chan []Symbol, len(files))
 	for _, eachFile := range files {
-		// todo: signal arrived during cgo execution when using `go`
 		r.parseFileAsync(eachFile, parser, ctx, fileSymbolsChan)
 	}
 	for range files {

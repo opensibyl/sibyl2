@@ -53,12 +53,19 @@ func (p *Parser) node2Symbols(data []byte, rootNode *sitter.Node) ([]Symbol, err
 
 func (p *Parser) node2Symbol(data []byte, node *sitter.Node) (Symbol, error) {
 	ret := Symbol{}
-	ret.NodeType = node.Type()
+	// symbol value
+	ret.Symbol = node.Content(data)
+	// lang specific type
+	ret.Kind = node.Type()
+	// range
 	ret.Span = Span{
 		Start: Point{node.StartPoint().Row, node.StartPoint().Column},
 		End:   Point{node.EndPoint().Row, node.EndPoint().Column},
 	}
-	// symbol content
-	ret.Symbol = node.Content(data)
+
+	// out of languages
+	ret.NodeType = ""
+	ret.SyntaxType = ""
+
 	return ret, nil
 }

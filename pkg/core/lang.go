@@ -13,8 +13,8 @@ const (
 	GOLANG LangType = "GOLANG"
 )
 
-func (langType *LangType) GetLanguage() *sitter.Language {
-	switch *langType {
+func (langType LangType) GetLanguage() *sitter.Language {
+	switch langType {
 	case JAVA:
 		return java.GetLanguage()
 	case GOLANG:
@@ -23,8 +23,8 @@ func (langType *LangType) GetLanguage() *sitter.Language {
 	return nil
 }
 
-func (langType *LangType) GetFileSuffix() string {
-	switch *langType {
+func (langType LangType) GetFileSuffix() string {
+	switch langType {
 	case JAVA:
 		return ".java"
 	case GOLANG:
@@ -33,6 +33,6 @@ func (langType *LangType) GetFileSuffix() string {
 	return ""
 }
 
-func (langType *LangType) GetExtractor() Extractor {
+func (langType LangType) GetExtractor() Extractor {
 	return GetExtractor(langType)
 }

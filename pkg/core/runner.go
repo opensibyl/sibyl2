@@ -10,7 +10,44 @@ import (
 type Runner struct {
 }
 
-func (r *Runner) ScanFiles(filePath string, lang LangType) ([]string, error) {
+func (r *Runner) File2Units(filePath string, lang LangType) ([]FileUnit, error) {
+	langSupport := lang.GetLanguage()
+	files, err := r.scanFiles(filePath, lang)
+	if err != nil {
+		return nil, err
+	}
+
+	parser := NewParser(langSupport)
+
+	// why we use withCancel here:
+	// tree-sitter has a special handler for cancelable
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	var fileUnits []FileUnit
+	fileUnitsChan := make(chan []Unit, len(files))
+	for _, eachFile := range files {
+		r.parseFileAsync(eachFile, parser, ctx, fileUnitsChan)
+	}
+
+	for range files {
+		eachFileUnit := <-fileUnitsChan
+		if eachFileUnit == nil {
+			continue
+		}
+
+		curFileUnit := FileUnit{
+			Path:     filePath,
+			Language: lang,
+			Units:    eachFileUnit,
+		}
+		fileUnits = append(fileUnits, curFileUnit)
+	}
+
+	return fileUnits, nil
+}
+
+func (r *Runner) scanFiles(filePath string, lang LangType) ([]string, error) {
 	var files []string
 	fileSuffix := lang.GetFileSuffix()
 	handleFunc := func(path string, info os.FileInfo, err error) error {
@@ -26,57 +63,17 @@ func (r *Runner) ScanFiles(filePath string, lang LangType) ([]string, error) {
 	return files, nil
 }
 
-func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error) {
-	langSupport := lang.GetLanguage()
-	langExtractor := lang.GetExtractor()
-	files, err := r.ScanFiles(filePath, lang)
-	if err != nil {
-		return nil, err
-	}
-
-	parser := NewParser(langSupport)
-
-	// why we use withCancel here:
-	// tree-sitter has a special handler for cancelable
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	var fileSymbols []FileSymbol
-	fileSymbolsChan := make(chan []Symbol, len(files))
-	for _, eachFile := range files {
-		r.parseFileAsync(eachFile, parser, ctx, fileSymbolsChan)
-	}
-
-	for range files {
-		eachFileSymbol := <-fileSymbolsChan
-		if eachFileSymbol == nil {
-			continue
-		}
-		// filter
-		eachFileSymbol = langExtractor.Extract(eachFileSymbol)
-
-		curFileSymbol := FileSymbol{
-			Path:     filePath,
-			Language: lang,
-			Symbols:  eachFileSymbol,
-		}
-		fileSymbols = append(fileSymbols, curFileSymbol)
-	}
-
-	return fileSymbols, nil
-}
-
-func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan []Symbol) {
-	symbols, err := r.parseFile(filepath, parser, ctx)
+func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan []Unit) {
+	units, err := r.parseFile(filepath, parser, ctx)
 	if err != nil {
 		// ignore?
 		result <- nil
 	} else {
-		result <- symbols
+		result <- units
 	}
 }
 
-func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context) ([]Symbol, error) {
+func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context) ([]Unit, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

@@ -2,28 +2,61 @@ package core
 
 // Extractor kind of filter, actually
 type Extractor interface {
-	Extract([]Symbol) []Symbol
+	IsSymbol(Unit) bool
+	ExtractSymbols([]Unit) []Symbol
 }
 
-func GetExtractor(lang *LangType) Extractor {
-	switch *lang {
+type AbstractExtractor struct {
+}
+
+func (extractor *AbstractExtractor) IsSymbol(unit Unit) bool {
+	panic("ABSTRACT_METHOD")
+}
+
+func (extractor *AbstractExtractor) ExtractSymbols(unit []Unit) []Symbol {
+	var ret []Symbol
+	for _, eachUnit := range unit {
+		if !extractor.IsSymbol(eachUnit) {
+			continue
+		}
+		symbol := Symbol{
+			Symbol:    eachUnit.Content,
+			Kind:      eachUnit.Kind,
+			Span:      eachUnit.Span,
+			FieldName: eachUnit.FieldName,
+			// todo
+			NodeType:   "",
+			SyntaxType: "",
+		}
+		ret = append(ret, symbol)
+	}
+	return ret
+}
+
+func GetExtractor(lang LangType) Extractor {
+	switch lang {
 	case JAVA:
 		return &JavaExtractor{}
+	case GOLANG:
+		return &GolangExtractor{}
 	}
-	return &EmptyExtractor{}
+	return nil
 }
 
 type JavaExtractor struct {
+	*AbstractExtractor
 }
 
-func (extractor *JavaExtractor) Extract(symbols []Symbol) []Symbol {
+func (extractor *JavaExtractor) IsSymbol(unit Unit) bool {
 	// todo
-	return symbols
+	return true
 }
 
-type EmptyExtractor struct {
+type GolangExtractor struct {
+	*AbstractExtractor
 }
 
-func (extractor *EmptyExtractor) Extract(symbols []Symbol) []Symbol {
-	return symbols
+func (extractor *GolangExtractor) IsSymbol(unit Unit) bool {
+	// todo
+	return true
 }

@@ -10,15 +10,22 @@ type Point struct {
 	Column uint32 `json:"column"`
 }
 
+// Unit almost node
+type Unit struct {
+	Content   string `json:"content"`
+	Kind      string `json:"kind"`
+	Span      Span   `json:"span"`
+	FieldName string `json:"fieldName"`
+}
+
 /*
 Symbol
-Symbols are named identifiers driven by the ASTs
-todo: split symbols into symbols and decl ...
+Units are named identifiers driven by the ASTs
 
 https://github.com/github/semantic/blob/main/docs/examples.md#symbols
 https://github.com/github/semantic/blob/main/proto/semantic.proto
 
-	message Symbol {
+	message Unit {
 	  string symbol = 1;
 	  string kind = 2;
 	  Span span = 4;
@@ -54,8 +61,8 @@ type Symbol struct {
 	SyntaxType string `json:"syntaxType"`
 }
 
-type FileSymbol struct {
+type FileUnit struct {
 	Path     string   `json:"path"`
 	Language LangType `json:"language"`
-	Symbols  []Symbol `json:"symbols"`
+	Units    []Unit   `json:"units"`
 }

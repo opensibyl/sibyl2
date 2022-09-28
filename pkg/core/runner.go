@@ -28,6 +28,7 @@ func (r *Runner) ScanFiles(filePath string, lang LangType) ([]string, error) {
 
 func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error) {
 	langSupport := lang.GetLanguage()
+	langExtractor := lang.GetExtractor()
 	files, err := r.ScanFiles(filePath, lang)
 	if err != nil {
 		return nil, err
@@ -51,6 +52,9 @@ func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error
 		if eachFileSymbol == nil {
 			continue
 		}
+		// filter
+		eachFileSymbol = langExtractor.Extract(eachFileSymbol)
+
 		curFileSymbol := FileSymbol{
 			Path:     filePath,
 			Language: lang,
@@ -58,6 +62,7 @@ func (r *Runner) HandleFile(filePath string, lang LangType) ([]FileSymbol, error
 		}
 		fileSymbols = append(fileSymbols, curFileSymbol)
 	}
+
 	return fileSymbols, nil
 }
 

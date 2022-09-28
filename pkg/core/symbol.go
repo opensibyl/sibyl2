@@ -12,6 +12,9 @@ type Point struct {
 
 /*
 Symbol
+Symbols are named identifiers driven by the ASTs
+todo: split symbols into symbols and decl ...
+
 https://github.com/github/semantic/blob/main/docs/examples.md#symbols
 https://github.com/github/semantic/blob/main/proto/semantic.proto
 
@@ -46,6 +49,7 @@ type Symbol struct {
 	Symbol     string `json:"symbol"`
 	Kind       string `json:"kind"`
 	Span       Span   `json:"span"`
+	FieldName  string `json:"fieldName"`
 	NodeType   string `json:"nodeType"`
 	SyntaxType string `json:"syntaxType"`
 }

@@ -32,7 +32,3 @@ func (langType LangType) GetFileSuffix() string {
 	}
 	return ""
 }
-
-func (langType LangType) GetExtractor() Extractor {
-	return GetExtractor(langType)
-}

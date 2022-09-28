@@ -56,7 +56,7 @@ func (p *Parser) node2Units(data []byte, rootNode *sitter.Node) ([]Unit, error) 
 
 func (p *Parser) node2Unit(data []byte, node *sitter.Node, name string) (Unit, error) {
 	ret := Unit{}
-	// symbol value
+
 	ret.Content = node.Content(data)
 	ret.FieldName = name
 

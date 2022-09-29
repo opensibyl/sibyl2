@@ -4,6 +4,7 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
+	"github.com/smacker/go-tree-sitter/python"
 )
 
 type LangType string
@@ -11,6 +12,7 @@ type LangType string
 const (
 	JAVA   LangType = "JAVA"
 	GOLANG LangType = "GOLANG"
+	PYTHON LangType = "PYTHON"
 )
 
 func (langType LangType) GetLanguage() *sitter.Language {
@@ -19,6 +21,8 @@ func (langType LangType) GetLanguage() *sitter.Language {
 		return java.GetLanguage()
 	case GOLANG:
 		return golang.GetLanguage()
+	case PYTHON:
+		return python.GetLanguage()
 	}
 	return nil
 }

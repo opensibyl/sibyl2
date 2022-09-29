@@ -1,9 +1,7 @@
 package core
 
 import (
-	"github.com/smacker/go-tree-sitter/golang"
-	"github.com/smacker/go-tree-sitter/java"
-	"github.com/smacker/go-tree-sitter/python"
+	"encoding/json"
 	"testing"
 )
 
@@ -52,24 +50,36 @@ func NewParser(lang *sitter.Language) *Parser {
 `
 
 func TestParser_Parse_Java(t *testing.T) {
-	parser := NewParser(java.GetLanguage())
-	_, err := parser.Parse([]byte(javaCode))
+	parser := NewParser(JAVA)
+	ret, err := parser.Parse([]byte(javaCode))
+	if err != nil {
+		panic(err)
+	}
+	_, err = json.Marshal(ret)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func TestParser_Parse_Python(t *testing.T) {
-	parser := NewParser(python.GetLanguage())
-	_, err := parser.Parse([]byte(pythonCode))
+	parser := NewParser(PYTHON)
+	ret, err := parser.Parse([]byte(pythonCode))
+	if err != nil {
+		panic(err)
+	}
+	_, err = json.Marshal(ret)
 	if err != nil {
 		panic(err)
 	}
 }
 
 func TestParser_Parse_Golang(t *testing.T) {
-	parser := NewParser(golang.GetLanguage())
-	_, err := parser.Parse([]byte(goCode))
+	parser := NewParser(GOLANG)
+	ret, err := parser.Parse([]byte(goCode))
+	if err != nil {
+		panic(err)
+	}
+	_, err = json.Marshal(ret)
 	if err != nil {
 		panic(err)
 	}

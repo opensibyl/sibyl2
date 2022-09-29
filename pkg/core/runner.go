@@ -11,13 +11,12 @@ type Runner struct {
 }
 
 func (r *Runner) File2Units(filePath string, lang LangType) ([]FileUnit, error) {
-	langSupport := lang.GetLanguage()
 	files, err := r.scanFiles(filePath, lang)
 	if err != nil {
 		return nil, err
 	}
 
-	parser := NewParser(langSupport)
+	parser := NewParser(lang)
 
 	// why we use withCancel here:
 	// tree-sitter has a special handler for cancelable

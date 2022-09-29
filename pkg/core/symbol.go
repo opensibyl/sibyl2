@@ -66,3 +66,15 @@ type FileUnit struct {
 	Language LangType `json:"language"`
 	Units    []Unit   `json:"units"`
 }
+
+type ValueUnit struct {
+	Type string `json:"type"`
+	Name string `json:"name"`
+}
+
+type Function struct {
+	Name       string      `json:"name"`
+	Parameters []ValueUnit `json:"parameters"`
+	Returns    []ValueUnit `json:"returns"`
+	Span       Span        `json:"span"`
+}

@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"fmt"
-	"github.com/smacker/go-tree-sitter/java"
 	"sibyl2/pkg/core"
 	"testing"
 )
@@ -30,14 +29,51 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
 }
 `
 
-func TestJavaExtractor_IsSymbol(t *testing.T) {
-	parser := core.NewParser(java.GetLanguage())
+var goCode = `
+type Parser struct {
+	engine *sitter.Parser
+}
+
+func NewParser(lang *sitter.Language) *Parser {
+	engine := sitter.NewParser()
+	engine.SetLanguage(lang)
+	return &Parser{
+		engine,
+	}
+}
+`
+
+func TestJavaExtractor_ExtractSymbols(t *testing.T) {
+	parser := core.NewParser(core.JAVA)
 	units, err := parser.Parse([]byte(javaCode))
 	if err != nil {
 		panic(err)
 	}
 
 	extractor := GetExtractor(core.JAVA)
-	symbols := extractor.ExtractSymbols(units)
-	fmt.Printf("%+v\n", symbols)
+	_ = extractor.ExtractSymbols(units)
+}
+
+func TestJavaExtractor_ExtractFunctions(t *testing.T) {
+	parser := core.NewParser(core.JAVA)
+	units, err := parser.Parse([]byte(javaCode))
+	if err != nil {
+		panic(err)
+	}
+
+	extractor := GetExtractor(core.JAVA)
+	functions := extractor.ExtractFunctions(units)
+	fmt.Printf("funcs: %v\n", functions)
+}
+
+func TestGolangExtractor_ExtractFunctions(t *testing.T) {
+	parser := core.NewParser(core.GOLANG)
+	units, err := parser.Parse([]byte(goCode))
+	if err != nil {
+		panic(err)
+	}
+
+	extractor := GetExtractor(core.GOLANG)
+	functions := extractor.ExtractFunctions(units)
+	fmt.Printf("funcs: %v\n", functions)
 }

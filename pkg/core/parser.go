@@ -27,8 +27,16 @@ func (p *Parser) ParseCtx(data []byte, context context.Context) ([]Unit, error) 
 	return p.node2Units(data, tree.RootNode())
 }
 
+func (p *Parser) ParseStringCtx(data string, context context.Context) ([]Unit, error) {
+	return p.ParseCtx([]byte(data), context)
+}
+
 func (p *Parser) Parse(data []byte) ([]Unit, error) {
 	return p.ParseCtx(data, context.TODO())
+}
+
+func (p *Parser) ParseString(data string) ([]Unit, error) {
+	return p.ParseCtx([]byte(data), context.TODO())
 }
 
 func (p *Parser) node2Units(data []byte, rootNode *sitter.Node) ([]Unit, error) {
@@ -37,7 +45,7 @@ func (p *Parser) node2Units(data []byte, rootNode *sitter.Node) ([]Unit, error) 
 	for i := 0; i < count; i++ {
 		curChild := rootNode.NamedChild(i)
 		curChildName := rootNode.FieldNameForChild(i)
-		curSymbol, err := p.node2Unit(data, curChild, curChildName)
+		curSymbol, err := p.node2Unit(data, curChild, curChildName, rootNode)
 
 		if err != nil {
 			return nil, err
@@ -54,7 +62,7 @@ func (p *Parser) node2Units(data []byte, rootNode *sitter.Node) ([]Unit, error) 
 	return ret, nil
 }
 
-func (p *Parser) node2Unit(data []byte, node *sitter.Node, name string) (Unit, error) {
+func (p *Parser) node2Unit(data []byte, node *sitter.Node, name string, parentNode *sitter.Node) (Unit, error) {
 	ret := Unit{}
 
 	ret.Content = node.Content(data)
@@ -71,5 +79,7 @@ func (p *Parser) node2Unit(data []byte, node *sitter.Node, name string) (Unit, e
 		End:   Point{node.EndPoint().Row, node.EndPoint().Column},
 	}
 
+	// ptr to its parent
+	ret.parent = parentNode
 	return ret, nil
 }

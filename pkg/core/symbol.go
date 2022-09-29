@@ -1,5 +1,7 @@
 package core
 
+import sitter "github.com/smacker/go-tree-sitter"
+
 type Span struct {
 	Start Point `json:"start"`
 	End   Point `json:"end"`
@@ -16,6 +18,7 @@ type Unit struct {
 	Kind      string `json:"kind"`
 	Span      Span   `json:"span"`
 	FieldName string `json:"fieldName"`
+	parent    *sitter.Node
 }
 
 /*
@@ -53,12 +56,10 @@ https://github.com/github/semantic/blob/main/proto/semantic.proto
 	}
 */
 type Symbol struct {
-	Symbol     string `json:"symbol"`
-	Kind       string `json:"kind"`
-	Span       Span   `json:"span"`
-	FieldName  string `json:"fieldName"`
-	NodeType   string `json:"nodeType"`
-	SyntaxType string `json:"syntaxType"`
+	Symbol    string `json:"symbol"`
+	Kind      string `json:"kind"`
+	Span      Span   `json:"span"`
+	FieldName string `json:"fieldName"`
 }
 
 type FileUnit struct {

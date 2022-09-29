@@ -1,7 +1,6 @@
 package extractor
 
 import (
-	"fmt"
 	"sibyl2/pkg/core"
 	"testing"
 )
@@ -51,7 +50,10 @@ func TestJavaExtractor_ExtractSymbols(t *testing.T) {
 	}
 
 	extractor := GetExtractor(core.JAVA)
-	_ = extractor.ExtractSymbols(units)
+	_, err = extractor.ExtractSymbols(units)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TestJavaExtractor_ExtractFunctions(t *testing.T) {
@@ -62,8 +64,10 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 	}
 
 	extractor := GetExtractor(core.JAVA)
-	functions := extractor.ExtractFunctions(units)
-	fmt.Printf("funcs: %v\n", functions)
+	_, err = extractor.ExtractFunctions(units)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func TestGolangExtractor_ExtractFunctions(t *testing.T) {
@@ -74,6 +78,8 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 	}
 
 	extractor := GetExtractor(core.GOLANG)
-	functions := extractor.ExtractFunctions(units)
-	fmt.Printf("funcs: %v\n", functions)
+	_, err = extractor.ExtractFunctions(units)
+	if err != nil {
+		panic(err)
+	}
 }

@@ -20,7 +20,7 @@ func (extractor *GolangExtractor) IsSymbol(unit core.Unit) bool {
 	return false
 }
 
-func (extractor *GolangExtractor) ExtractSymbols(unit []core.Unit) []core.Symbol {
+func (extractor *GolangExtractor) ExtractSymbols(unit []core.Unit) ([]core.Symbol, error) {
 	var ret []core.Symbol
 	for _, eachUnit := range unit {
 		if !extractor.IsSymbol(eachUnit) {
@@ -31,13 +31,10 @@ func (extractor *GolangExtractor) ExtractSymbols(unit []core.Unit) []core.Symbol
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
 			FieldName: eachUnit.FieldName,
-			// todo
-			NodeType:   "",
-			SyntaxType: "",
 		}
 		ret = append(ret, symbol)
 	}
-	return ret
+	return ret, nil
 }
 
 func (extractor *GolangExtractor) IsFunction(unit core.Unit) bool {
@@ -47,7 +44,7 @@ func (extractor *GolangExtractor) IsFunction(unit core.Unit) bool {
 	return false
 }
 
-func (extractor *GolangExtractor) ExtractFunctions(units []core.Unit) []core.Function {
+func (extractor *GolangExtractor) ExtractFunctions(units []core.Unit) ([]core.Function, error) {
 	var ret []core.Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
@@ -61,5 +58,5 @@ func (extractor *GolangExtractor) ExtractFunctions(units []core.Unit) []core.Fun
 		}
 		ret = append(ret, eachFunc)
 	}
-	return ret
+	return ret, nil
 }

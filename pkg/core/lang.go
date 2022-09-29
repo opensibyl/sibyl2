@@ -15,6 +15,10 @@ const (
 	PYTHON LangType = "PYTHON"
 )
 
+func (langType LangType) GetParser() *Parser {
+	return NewParser(langType)
+}
+
 func (langType LangType) GetLanguage() *sitter.Language {
 	switch langType {
 	case JAVA:
@@ -33,6 +37,8 @@ func (langType LangType) GetFileSuffix() string {
 		return ".java"
 	case GOLANG:
 		return ".go"
+	case PYTHON:
+		return ".py"
 	}
 	return ""
 }

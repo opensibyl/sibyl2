@@ -6,7 +6,12 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
-// Parser get almost all the nodes (units)
+/*
+Parser
+
+- get almost all the nodes
+- convert them to units
+*/
 type Parser struct {
 	engine *sitter.Parser
 }
@@ -24,7 +29,7 @@ func (p *Parser) ParseCtx(data []byte, context context.Context) ([]Unit, error) 
 	if err != nil {
 		return nil, err
 	}
-	return p.node2Units(data, tree.RootNode())
+	return p.node2Units(data, tree.RootNode(), "", nil)
 }
 
 func (p *Parser) ParseStringCtx(data string, context context.Context) ([]Unit, error) {
@@ -39,34 +44,42 @@ func (p *Parser) ParseString(data string) ([]Unit, error) {
 	return p.ParseCtx([]byte(data), context.TODO())
 }
 
-func (p *Parser) node2Units(data []byte, rootNode *sitter.Node) ([]Unit, error) {
+func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName string, parentUnit *Unit) ([]Unit, error) {
 	var ret []Unit
-	count := int(rootNode.NamedChildCount())
+
+	// itself
+	curRootUnit, err := p.node2Unit(data, curRootNode, fieldName, parentUnit)
+	if err != nil {
+		return nil, err
+	}
+	ret = append(ret, curRootUnit)
+
+	count := int(curRootNode.NamedChildCount())
 	for i := 0; i < count; i++ {
-		curChild := rootNode.NamedChild(i)
-		curChildName := rootNode.FieldNameForChild(i)
-		curSymbol, err := p.node2Unit(data, curChild, curChildName, rootNode)
-
+		// each sub nodes
+		curChild := curRootNode.NamedChild(i)
+		curChildName := curRootNode.FieldNameForChild(i)
+		curNode, err := p.node2Unit(data, curChild, curChildName, &curRootUnit)
 		if err != nil {
 			return nil, err
 		}
+		ret = append(ret, curNode)
 
-		ret = append(ret, curSymbol)
-		// handle its sons
-		subSymbols, err := p.node2Units(data, curChild)
+		// sub nodes of each sub nodes
+		subUnits, err := p.node2Units(data, curChild, curChildName, &curRootUnit)
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, subSymbols...)
+		ret = append(ret, subUnits...)
 	}
 	return ret, nil
 }
 
-func (p *Parser) node2Unit(data []byte, node *sitter.Node, name string, parentNode *sitter.Node) (Unit, error) {
+func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, parentUnit *Unit) (Unit, error) {
 	ret := Unit{}
 
+	ret.FieldName = fieldName
 	ret.Content = node.Content(data)
-	ret.FieldName = name
 
 	// kind: type of type
 	// https://cs.stackexchange.com/questions/111430/whats-the-difference-between-a-type-and-a-kind
@@ -78,8 +91,6 @@ func (p *Parser) node2Unit(data []byte, node *sitter.Node, name string, parentNo
 		Start: Point{node.StartPoint().Row, node.StartPoint().Column},
 		End:   Point{node.EndPoint().Row, node.EndPoint().Column},
 	}
-
-	// ptr to its parent
-	ret.parent = parentNode
+	ret.Parent = parentUnit
 	return ret, nil
 }

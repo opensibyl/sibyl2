@@ -1,26 +1,5 @@
 package core
 
-import sitter "github.com/smacker/go-tree-sitter"
-
-type Span struct {
-	Start Point `json:"start"`
-	End   Point `json:"end"`
-}
-
-type Point struct {
-	Row    uint32 `json:"row"`
-	Column uint32 `json:"column"`
-}
-
-// Unit almost node
-type Unit struct {
-	Content   string `json:"content"`
-	Kind      string `json:"kind"`
-	Span      Span   `json:"span"`
-	FieldName string `json:"fieldName"`
-	parent    *sitter.Node
-}
-
 /*
 Symbol
 Units are named identifiers driven by the ASTs
@@ -60,12 +39,6 @@ type Symbol struct {
 	Kind      string `json:"kind"`
 	Span      Span   `json:"span"`
 	FieldName string `json:"fieldName"`
-}
-
-type FileUnit struct {
-	Path     string   `json:"path"`
-	Language LangType `json:"language"`
-	Units    []Unit   `json:"units"`
 }
 
 type ValueUnit struct {

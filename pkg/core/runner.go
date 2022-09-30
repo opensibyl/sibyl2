@@ -24,7 +24,7 @@ func (r *Runner) File2Units(filePath string, lang LangType) ([]FileUnit, error) 
 	defer cancel()
 
 	var fileUnits []FileUnit
-	fileUnitsChan := make(chan []Unit, len(files))
+	fileUnitsChan := make(chan []*Unit, len(files))
 	for _, eachFile := range files {
 		r.parseFileAsync(eachFile, parser, ctx, fileUnitsChan)
 	}
@@ -62,7 +62,7 @@ func (r *Runner) scanFiles(filePath string, lang LangType) ([]string, error) {
 	return files, nil
 }
 
-func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan []Unit) {
+func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan []*Unit) {
 	units, err := r.parseFile(filepath, parser, ctx)
 	if err != nil {
 		// ignore?
@@ -72,7 +72,7 @@ func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Con
 	}
 }
 
-func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context) ([]Unit, error) {
+func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context) ([]*Unit, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

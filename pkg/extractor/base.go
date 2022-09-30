@@ -17,10 +17,10 @@ node-types: Node desc, and static type system.
 */
 type Extractor interface {
 	GetLang() core.LangType
-	IsSymbol(core.Unit) bool
-	ExtractSymbols([]core.Unit) ([]core.Symbol, error)
-	IsFunction(core.Unit) bool
-	ExtractFunctions([]core.Unit) ([]core.Function, error)
+	IsSymbol(*core.Unit) bool
+	ExtractSymbols([]*core.Unit) ([]*core.Symbol, error)
+	IsFunction(*core.Unit) bool
+	ExtractFunctions([]*core.Unit) ([]*core.Function, error)
 }
 
 func GetExtractor(lang core.LangType) Extractor {

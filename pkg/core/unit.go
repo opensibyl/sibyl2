@@ -25,8 +25,18 @@ type Unit struct {
 	Parent *Unit
 }
 
+func (unit *Unit) GetUnitLink() []*Unit {
+	cur := unit
+	var out []*Unit
+	for cur != nil {
+		out = append(out, cur)
+		cur = cur.Parent
+	}
+	return out
+}
+
 type FileUnit struct {
 	Path     string   `json:"path"`
 	Language LangType `json:"language"`
-	Units    []Unit   `json:"units"`
+	Units    []*Unit  `json:"units"`
 }

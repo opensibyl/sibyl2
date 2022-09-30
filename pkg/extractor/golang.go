@@ -12,7 +12,7 @@ func (extractor *GolangExtractor) GetLang() core.LangType {
 	return core.GOLANG
 }
 
-func (extractor *GolangExtractor) IsSymbol(unit core.Unit) bool {
+func (extractor *GolangExtractor) IsSymbol(unit *core.Unit) bool {
 	// todo: use grammar.js instead
 	if strings.HasSuffix(unit.Kind, "identifier") {
 		return true
@@ -20,13 +20,13 @@ func (extractor *GolangExtractor) IsSymbol(unit core.Unit) bool {
 	return false
 }
 
-func (extractor *GolangExtractor) ExtractSymbols(unit []core.Unit) ([]core.Symbol, error) {
-	var ret []core.Symbol
+func (extractor *GolangExtractor) ExtractSymbols(unit []*core.Unit) ([]*core.Symbol, error) {
+	var ret []*core.Symbol
 	for _, eachUnit := range unit {
 		if !extractor.IsSymbol(eachUnit) {
 			continue
 		}
-		symbol := core.Symbol{
+		symbol := &core.Symbol{
 			Symbol:    eachUnit.Content,
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
@@ -37,20 +37,20 @@ func (extractor *GolangExtractor) ExtractSymbols(unit []core.Unit) ([]core.Symbo
 	return ret, nil
 }
 
-func (extractor *GolangExtractor) IsFunction(unit core.Unit) bool {
+func (extractor *GolangExtractor) IsFunction(unit *core.Unit) bool {
 	if unit.Kind == "function_declaration" {
 		return true
 	}
 	return false
 }
 
-func (extractor *GolangExtractor) ExtractFunctions(units []core.Unit) ([]core.Function, error) {
-	var ret []core.Function
+func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Function, error) {
+	var ret []*core.Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
 			continue
 		}
-		eachFunc := core.Function{
+		eachFunc := &core.Function{
 			Name:       eachUnit.Content,
 			Parameters: nil,
 			Returns:    nil,

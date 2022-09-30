@@ -24,7 +24,7 @@ func NewParser(lang LangType) *Parser {
 	}
 }
 
-func (p *Parser) ParseCtx(data []byte, context context.Context) ([]Unit, error) {
+func (p *Parser) ParseCtx(data []byte, context context.Context) ([]*Unit, error) {
 	tree, err := p.engine.ParseCtx(context, nil, data)
 	if err != nil {
 		return nil, err
@@ -32,20 +32,20 @@ func (p *Parser) ParseCtx(data []byte, context context.Context) ([]Unit, error) 
 	return p.node2Units(data, tree.RootNode(), "", nil)
 }
 
-func (p *Parser) ParseStringCtx(data string, context context.Context) ([]Unit, error) {
+func (p *Parser) ParseStringCtx(data string, context context.Context) ([]*Unit, error) {
 	return p.ParseCtx([]byte(data), context)
 }
 
-func (p *Parser) Parse(data []byte) ([]Unit, error) {
+func (p *Parser) Parse(data []byte) ([]*Unit, error) {
 	return p.ParseCtx(data, context.TODO())
 }
 
-func (p *Parser) ParseString(data string) ([]Unit, error) {
+func (p *Parser) ParseString(data string) ([]*Unit, error) {
 	return p.ParseCtx([]byte(data), context.TODO())
 }
 
-func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName string, parentUnit *Unit) ([]Unit, error) {
-	var ret []Unit
+func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName string, parentUnit *Unit) ([]*Unit, error) {
+	var ret []*Unit
 
 	// itself
 	curRootUnit, err := p.node2Unit(data, curRootNode, fieldName, parentUnit)
@@ -59,14 +59,14 @@ func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName str
 		// each sub nodes
 		curChild := curRootNode.NamedChild(i)
 		curChildName := curRootNode.FieldNameForChild(i)
-		curNode, err := p.node2Unit(data, curChild, curChildName, &curRootUnit)
+		curNode, err := p.node2Unit(data, curChild, curChildName, curRootUnit)
 		if err != nil {
 			return nil, err
 		}
 		ret = append(ret, curNode)
 
 		// sub nodes of each sub nodes
-		subUnits, err := p.node2Units(data, curChild, curChildName, &curRootUnit)
+		subUnits, err := p.node2Units(data, curChild, curChildName, curRootUnit)
 		if err != nil {
 			return nil, err
 		}
@@ -75,8 +75,8 @@ func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName str
 	return ret, nil
 }
 
-func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, parentUnit *Unit) (Unit, error) {
-	ret := Unit{}
+func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, parentUnit *Unit) (*Unit, error) {
+	ret := &Unit{}
 
 	ret.FieldName = fieldName
 	ret.Content = node.Content(data)

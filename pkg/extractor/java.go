@@ -1,6 +1,7 @@
 package extractor
 
 import (
+	"errors"
 	"fmt"
 	"sibyl2/pkg/core"
 	"strings"
@@ -11,6 +12,7 @@ const (
 	KindJavaProgramDeclaration core.KindRepr = "package_declaration"
 	KindJavaScopeIdentifier    core.KindRepr = "scoped_identifier"
 	KindJavaIdentifier         core.KindRepr = "identifier"
+	KindJavaClassDeclaration   core.KindRepr = "class_declaration"
 )
 
 type JavaExtractor struct {
@@ -70,34 +72,34 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Fu
 }
 
 func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
-	// todo: its receiver should contain package name and class name
 	funcUnit := &core.Function{}
 	funcUnit.Span = unit.Span
 
-	for _, each := range unit.ReverseLink() {
-		if each.Kind == KindJavaProgram {
-			unitsInProgram := each.Link()
-			for _, eachUnitInProgram := range unitsInProgram {
-				if eachUnitInProgram.Kind == KindJavaProgramDeclaration {
-					unitsInPackageDecl := eachUnitInProgram.Link()
-					for _, eachUnitInPackageDecl := range unitsInPackageDecl {
-						if eachUnitInPackageDecl.Kind == KindJavaScopeIdentifier {
-							funcUnit.Receiver = eachUnitInPackageDecl.Content
-							break
-						}
-					}
-					break
-				}
-			}
-		}
-	}
+	pkgName := ""
+	clazzName := ""
 
-	unitsInFunctions := unit.Link()
-	for _, each := range unitsInFunctions {
-		if each.Kind == KindJavaIdentifier {
-			funcUnit.Name = each.Content
-			break
-		}
+	// trace its package
+	program := core.FindFirstByKindInParent(unit, KindJavaProgram)
+	packageDecl := core.FindFirstByKindInSubsWithDfs(program, KindJavaProgramDeclaration)
+	packageIdentifier := core.FindFirstByKindInSubsWithDfs(packageDecl, KindJavaScopeIdentifier)
+	if packageIdentifier == nil {
+		return nil, errors.New("no package found in " + unit.Content)
 	}
+	pkgName = packageIdentifier.Content
+
+	// trace its class (the closest one
+	clazzDecl := core.FindFirstByKindInParent(unit, KindJavaClassDeclaration)
+	clazzIdentifier := core.FindFirstByKindInSubsWithDfs(clazzDecl, KindJavaIdentifier)
+	if clazzIdentifier == nil {
+		return nil, errors.New("no class found in " + unit.Content)
+	}
+	clazzName = clazzIdentifier.Content
+	funcUnit.Receiver = pkgName + "." + clazzName
+
+	funcIdentifier := core.FindFirstByKindInSubsWithBfs(unit, KindJavaIdentifier)
+	if funcIdentifier == nil {
+		return nil, errors.New("no func id found in identifier" + unit.Content)
+	}
+	funcUnit.Name = funcIdentifier.Content
 	return funcUnit, nil
 }

@@ -64,7 +64,7 @@ func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName str
 		if err != nil {
 			return nil, err
 		}
-		curRootUnit.SubUnits = append(curRootUnit.SubUnits, subUnits[0])
+		curRootUnit.subUnits = append(curRootUnit.subUnits, subUnits[0])
 
 		ret = append(ret, subUnits...)
 	}
@@ -87,6 +87,6 @@ func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, par
 		Start: Point{node.StartPoint().Row, node.StartPoint().Column},
 		End:   Point{node.EndPoint().Row, node.EndPoint().Column},
 	}
-	ret.ParentUnit = parentUnit
+	ret.parentUnit = parentUnit
 	return ret, nil
 }

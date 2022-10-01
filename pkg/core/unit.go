@@ -25,26 +25,59 @@ type Unit struct {
 	Content   string   `json:"content"`
 
 	// double linked
-	ParentUnit *Unit
-	SubUnits   []*Unit
+	parentUnit *Unit
+	subUnits   []*Unit
 }
 
-func (unit *Unit) ReverseLink() []*Unit {
-	// include itself
-	cur := unit
-	var out []*Unit
-	for cur != nil {
-		out = append(out, cur)
-		cur = cur.ParentUnit
+func FindFirstByKindInParent(unit *Unit, kind KindRepr) *Unit {
+	if unit == nil {
+		return nil
 	}
-	return out
+	if unit.Kind == kind {
+		return unit
+	}
+	return FindFirstByKindInParent(unit.parentUnit, kind)
 }
 
-func (unit *Unit) Link() []*Unit {
-	var out []*Unit
-	out = append(out, unit)
-	out = append(out, unit.SubUnits...)
-	return out
+func FindFirstByKindInSubsWithDfs(unit *Unit, kind KindRepr) *Unit {
+	if unit == nil {
+		return nil
+	}
+	if unit.Kind == kind {
+		return unit
+	}
+
+	// dfs
+	for _, each := range unit.subUnits {
+		eachResult := FindFirstByKindInSubsWithDfs(each, kind)
+		if eachResult != nil {
+			return eachResult
+		}
+	}
+	return nil
+}
+
+func FindFirstByKindInSubsWithBfs(unit *Unit, kind KindRepr) *Unit {
+	if unit == nil {
+		return nil
+	}
+	if unit.Kind == kind {
+		return unit
+	}
+
+	// bfs
+	queue := unit.subUnits
+	for len(queue) > 0 {
+		var newQueue []*Unit
+		for _, each := range queue {
+			if each.Kind == kind {
+				return each
+			}
+			newQueue = append(newQueue, each.subUnits...)
+		}
+		queue = newQueue
+	}
+	return nil
 }
 
 type FileUnit struct {

@@ -1,6 +1,7 @@
 package extractor
 
 import (
+	"errors"
 	"fmt"
 	"sibyl2/pkg/core"
 	"strings"
@@ -15,6 +16,7 @@ const (
 	KindGolangIdentifier      core.KindRepr = "identifier"
 	KindGolangFieldIdentifier core.KindRepr = "field_identifier"
 	KindGolangParameterList   core.KindRepr = "parameter_list"
+	KindGolangParameterDecl   core.KindRepr = "parameter_declaration"
 )
 
 type GolangExtractor struct {
@@ -75,42 +77,45 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.
 }
 
 func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
-	unitsInFunctions := unit.Link()
+	switch unit.Kind {
+	case KindGolangFuncDecl:
+		return extractor.funcUnit2Function(unit)
+	case KindGolangMethodDecl:
+		return extractor.methodUnit2Function(unit)
+	default:
+		// should not reach here
+		return nil, errors.New("IMPOSSIBLE")
+	}
+}
+
+func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Function, error) {
 	funcUnit := &core.Function{}
 	funcUnit.Span = unit.Span
-	if unit.Kind == KindGolangFuncDecl {
-		for _, each := range unitsInFunctions {
-			if each.Kind == KindGolangIdentifier {
-				funcUnit.Name = each.Content
-				break
-			}
-		}
-	} else {
-		for _, each := range unitsInFunctions {
-			if each.Kind == KindGolangFieldIdentifier {
-				funcUnit.Name = each.Content
-				break
-			}
-		}
-		// todo : ugly shit ...
-		for _, each := range unitsInFunctions {
-			if each.Kind == KindGolangParameterList {
-				unitsInReceiver := each.Link()
-				for _, eachUnitInReceiver := range unitsInReceiver {
-					if eachUnitInReceiver.Kind == KindGolangParameterList {
-						for _, eachUnitInParam := range eachUnitInReceiver.Link() {
-							if eachUnitInParam.Kind == "parameter_declaration" {
-								parts := strings.Split(eachUnitInParam.Content, " ")
-								funcUnit.Receiver = parts[1]
-							}
-						}
-					}
 
-				}
-				break
-			}
-		}
+	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangFieldIdentifier)
+	if funcIdentifier == nil {
+		return nil, errors.New("no func name found in " + unit.Content)
 	}
-	// todo: parameters and returns
+	funcUnit.Name = funcIdentifier.Content
+
+	parameterList := core.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
+	parameterList = core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterList)
+	receiverDecl := core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterDecl)
+	if receiverDecl == nil {
+		return nil, errors.New("no receiver found in: " + unit.Content)
+	}
+	parts := strings.Split(receiverDecl.Content, " ")
+	funcUnit.Receiver = parts[1]
+	return funcUnit, nil
+}
+
+func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Function, error) {
+	funcUnit := &core.Function{}
+	funcUnit.Span = unit.Span
+	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangIdentifier)
+	if funcIdentifier == nil {
+		return nil, errors.New("no func name found in " + unit.Content)
+	}
+	funcUnit.Name = funcIdentifier.Content
 	return funcUnit, nil
 }

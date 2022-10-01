@@ -30,9 +30,9 @@ type FunctionSupport interface {
 
 func GetExtractor(lang core.LangType) Extractor {
 	switch lang {
-	case core.JAVA:
+	case core.LangJava:
 		return &JavaExtractor{}
-	case core.GOLANG:
+	case core.LangGo:
 		return &GolangExtractor{}
 	}
 	return nil

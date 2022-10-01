@@ -16,7 +16,7 @@ type JavaExtractor struct {
 }
 
 func (extractor *JavaExtractor) GetLang() core.LangType {
-	return core.JAVA
+	return core.LangJava
 }
 
 func (extractor *JavaExtractor) IsSymbol(unit *core.Unit) bool {

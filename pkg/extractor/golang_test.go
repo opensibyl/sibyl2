@@ -28,13 +28,13 @@ func (p *Parser) OldParser(lang *sitter.Language) *Parser {
 `
 
 func TestGolangExtractor_ExtractFunctions(t *testing.T) {
-	parser := core.NewParser(core.GOLANG)
+	parser := core.NewParser(core.LangGo)
 	units, err := parser.Parse([]byte(goCode))
 	if err != nil {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.GOLANG)
+	extractor := GetExtractor(core.LangGo)
 	_, err = extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)

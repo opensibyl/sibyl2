@@ -20,7 +20,7 @@ type GolangExtractor struct {
 }
 
 func (extractor *GolangExtractor) GetLang() core.LangType {
-	return core.GOLANG
+	return core.LangGo
 }
 
 func (extractor *GolangExtractor) IsSymbol(unit *core.Unit) bool {

@@ -10,10 +10,28 @@ import (
 type LangType string
 
 const (
-	JAVA   LangType = "JAVA"
-	GOLANG LangType = "GOLANG"
-	PYTHON LangType = "PYTHON"
+	LangJava    LangType = "JAVA"
+	LangGo      LangType = "GOLANG"
+	LangPython  LangType = "PYTHON"
+	LangUnknown LangType = "UNKNOWN"
 )
+
+func (langType LangType) GetValue() string {
+	return string(langType)
+}
+
+func LangTypeValueOf(raw string) LangType {
+	switch raw {
+	case LangJava.GetValue():
+		return LangJava
+	case LangGo.GetValue():
+		return LangGo
+	case LangPython.GetValue():
+		return LangPython
+	default:
+		return LangUnknown
+	}
+}
 
 func (langType LangType) GetParser() *Parser {
 	return NewParser(langType)
@@ -21,11 +39,11 @@ func (langType LangType) GetParser() *Parser {
 
 func (langType LangType) GetLanguage() *sitter.Language {
 	switch langType {
-	case JAVA:
+	case LangJava:
 		return java.GetLanguage()
-	case GOLANG:
+	case LangGo:
 		return golang.GetLanguage()
-	case PYTHON:
+	case LangPython:
 		return python.GetLanguage()
 	}
 	return nil
@@ -33,11 +51,11 @@ func (langType LangType) GetLanguage() *sitter.Language {
 
 func (langType LangType) GetFileSuffix() string {
 	switch langType {
-	case JAVA:
+	case LangJava:
 		return ".java"
-	case GOLANG:
+	case LangGo:
 		return ".go"
-	case PYTHON:
+	case LangPython:
 		return ".py"
 	}
 	return ""

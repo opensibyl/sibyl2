@@ -50,7 +50,7 @@ func NewParser(lang *sitter.Language) *Parser {
 `
 
 func TestParser_Parse_Java(t *testing.T) {
-	parser := NewParser(JAVA)
+	parser := NewParser(LangJava)
 	ret, err := parser.Parse([]byte(javaCode))
 	if err != nil {
 		panic(err)
@@ -62,7 +62,7 @@ func TestParser_Parse_Java(t *testing.T) {
 }
 
 func TestParser_Parse_Python(t *testing.T) {
-	parser := NewParser(PYTHON)
+	parser := NewParser(LangPython)
 	ret, err := parser.Parse([]byte(pythonCode))
 	if err != nil {
 		panic(err)
@@ -74,7 +74,7 @@ func TestParser_Parse_Python(t *testing.T) {
 }
 
 func TestParser_Parse_Golang(t *testing.T) {
-	parser := NewParser(GOLANG)
+	parser := NewParser(LangGo)
 	ret, err := parser.Parse([]byte(goCode))
 	if err != nil {
 		panic(err)

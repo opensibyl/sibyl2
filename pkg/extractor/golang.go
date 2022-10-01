@@ -17,6 +17,7 @@ const (
 	KindGolangFieldIdentifier core.KindRepr = "field_identifier"
 	KindGolangParameterList   core.KindRepr = "parameter_list"
 	KindGolangParameterDecl   core.KindRepr = "parameter_declaration"
+	FieldGolangType           core.KindRepr = "type"
 )
 
 type GolangExtractor struct {
@@ -101,11 +102,11 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 	parameterList := core.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
 	parameterList = core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterList)
 	receiverDecl := core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterDecl)
-	if receiverDecl == nil {
-		return nil, errors.New("no receiver found in: " + unit.Content)
+	typeDecl := core.FindFirstByFieldInSubsWithDfs(receiverDecl, FieldGolangType)
+	if typeDecl == nil {
+		return nil, errors.New("no receiver found in: " + typeDecl.Content)
 	}
-	parts := strings.Split(receiverDecl.Content, " ")
-	funcUnit.Receiver = parts[1]
+	funcUnit.Receiver = typeDecl.Content
 	return funcUnit, nil
 }
 

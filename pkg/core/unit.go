@@ -25,8 +25,8 @@ type Unit struct {
 	Content   string   `json:"content"`
 
 	// double linked
-	parentUnit *Unit
-	subUnits   []*Unit
+	ParentUnit *Unit
+	SubUnits   []*Unit
 }
 
 func FindFirstByKindInParent(unit *Unit, kind KindRepr) *Unit {
@@ -36,7 +36,7 @@ func FindFirstByKindInParent(unit *Unit, kind KindRepr) *Unit {
 	if unit.Kind == kind {
 		return unit
 	}
-	return FindFirstByKindInParent(unit.parentUnit, kind)
+	return FindFirstByKindInParent(unit.ParentUnit, kind)
 }
 
 func FindFirstByKindInSubsWithDfs(unit *Unit, kind KindRepr) *Unit {
@@ -48,8 +48,26 @@ func FindFirstByKindInSubsWithDfs(unit *Unit, kind KindRepr) *Unit {
 	}
 
 	// dfs
-	for _, each := range unit.subUnits {
+	for _, each := range unit.SubUnits {
 		eachResult := FindFirstByKindInSubsWithDfs(each, kind)
+		if eachResult != nil {
+			return eachResult
+		}
+	}
+	return nil
+}
+
+func FindFirstByFieldInSubsWithDfs(unit *Unit, fieldName string) *Unit {
+	if unit == nil {
+		return nil
+	}
+	if unit.FieldName == fieldName {
+		return unit
+	}
+
+	// dfs
+	for _, each := range unit.SubUnits {
+		eachResult := FindFirstByFieldInSubsWithDfs(each, fieldName)
 		if eachResult != nil {
 			return eachResult
 		}
@@ -66,14 +84,14 @@ func FindFirstByKindInSubsWithBfs(unit *Unit, kind KindRepr) *Unit {
 	}
 
 	// bfs
-	queue := unit.subUnits
+	queue := unit.SubUnits
 	for len(queue) > 0 {
 		var newQueue []*Unit
 		for _, each := range queue {
 			if each.Kind == kind {
 				return each
 			}
-			newQueue = append(newQueue, each.subUnits...)
+			newQueue = append(newQueue, each.SubUnits...)
 		}
 		queue = newQueue
 	}

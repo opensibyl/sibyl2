@@ -10,21 +10,13 @@ type Parser struct {
 	engine *sitter.Parser
 }
 
-func NewParser(lang *sitter.Language) *Parser {
-	engine := sitter.NewParser()
-	engine.SetLanguage(lang)
-	return &Parser{
-		engine,
-	}
+func NormalFunc(lang *sitter.Language) string {
+	return "hello"
 }
 
-func (p *Parser) OldParser(lang *sitter.Language) *Parser {
-	engine := sitter.NewParser()
-	engine.SetLanguage(lang)
-	return &Parser{
-		engine,
-	}
-} 
+func (*Parser) NormalMethod(lang *sitter.Language) string {
+	return "hi"
+}
 `
 
 func TestGolangExtractor_ExtractFunctions(t *testing.T) {

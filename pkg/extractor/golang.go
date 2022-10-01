@@ -1,6 +1,7 @@
 package extractor
 
 import (
+	"fmt"
 	"sibyl2/pkg/core"
 	"strings"
 
@@ -68,16 +69,13 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.
 			return nil, err
 		}
 		ret = append(ret, eachFunc)
+		fmt.Printf("%+v\n", eachFunc)
 	}
 	return ret, nil
 }
 
 func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
-	// todo: should not parse again
-	unitsInFunctions, err := extractor.GetLang().GetParser().ParseString(unit.Content)
-	if err != nil {
-		return nil, err
-	}
+	unitsInFunctions := unit.Link()
 	funcUnit := &core.Function{}
 	funcUnit.Span = unit.Span
 	if unit.Kind == KindGolangFuncDecl {
@@ -94,17 +92,20 @@ func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*core.Function
 				break
 			}
 		}
+		// todo : ugly shit ...
 		for _, each := range unitsInFunctions {
 			if each.Kind == KindGolangParameterList {
-				unitsInReceiver, err := extractor.GetLang().GetParser().ParseString(each.Content)
-				if err != nil {
-					return nil, err
-				}
+				unitsInReceiver := each.Link()
 				for _, eachUnitInReceiver := range unitsInReceiver {
-					if eachUnitInReceiver.FieldName == "operator" {
-						funcUnit.Receiver = eachUnitInReceiver.Content
-						break
+					if eachUnitInReceiver.Kind == KindGolangParameterList {
+						for _, eachUnitInParam := range eachUnitInReceiver.Link() {
+							if eachUnitInParam.Kind == "parameter_declaration" {
+								parts := strings.Split(eachUnitInParam.Content, " ")
+								funcUnit.Receiver = parts[1]
+							}
+						}
 					}
+
 				}
 				break
 			}

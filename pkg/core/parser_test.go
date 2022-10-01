@@ -1,7 +1,6 @@
 package core
 
 import (
-	"encoding/json"
 	"testing"
 )
 
@@ -51,11 +50,7 @@ func NewParser(lang *sitter.Language) *Parser {
 
 func TestParser_Parse_Java(t *testing.T) {
 	parser := NewParser(LangJava)
-	ret, err := parser.Parse([]byte(javaCode))
-	if err != nil {
-		panic(err)
-	}
-	_, err = json.Marshal(ret)
+	_, err := parser.Parse([]byte(javaCode))
 	if err != nil {
 		panic(err)
 	}
@@ -63,11 +58,7 @@ func TestParser_Parse_Java(t *testing.T) {
 
 func TestParser_Parse_Python(t *testing.T) {
 	parser := NewParser(LangPython)
-	ret, err := parser.Parse([]byte(pythonCode))
-	if err != nil {
-		panic(err)
-	}
-	_, err = json.Marshal(ret)
+	_, err := parser.Parse([]byte(pythonCode))
 	if err != nil {
 		panic(err)
 	}
@@ -75,11 +66,7 @@ func TestParser_Parse_Python(t *testing.T) {
 
 func TestParser_Parse_Golang(t *testing.T) {
 	parser := NewParser(LangGo)
-	ret, err := parser.Parse([]byte(goCode))
-	if err != nil {
-		panic(err)
-	}
-	_, err = json.Marshal(ret)
+	_, err := parser.Parse([]byte(goCode))
 	if err != nil {
 		panic(err)
 	}

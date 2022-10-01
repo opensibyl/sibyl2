@@ -10,6 +10,7 @@ const (
 	KindJavaProgram            core.KindRepr = "program"
 	KindJavaProgramDeclaration core.KindRepr = "package_declaration"
 	KindJavaScopeIdentifier    core.KindRepr = "scoped_identifier"
+	KindJavaIdentifier         core.KindRepr = "identifier"
 )
 
 type JavaExtractor struct {
@@ -69,23 +70,16 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Fu
 }
 
 func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
-	// todo: should not parse again
 	// todo: its receiver should contain package name and class name
 	funcUnit := &core.Function{}
 	funcUnit.Span = unit.Span
 
-	for _, each := range unit.GetUnitLink() {
+	for _, each := range unit.ReverseLink() {
 		if each.Kind == KindJavaProgram {
-			unitsInProgram, err := extractor.GetLang().GetParser().ParseString(each.Content)
-			if err != nil {
-				return nil, err
-			}
+			unitsInProgram := each.Link()
 			for _, eachUnitInProgram := range unitsInProgram {
 				if eachUnitInProgram.Kind == KindJavaProgramDeclaration {
-					unitsInPackageDecl, err := extractor.GetLang().GetParser().ParseString(eachUnitInProgram.Content)
-					if err != nil {
-						return nil, err
-					}
+					unitsInPackageDecl := eachUnitInProgram.Link()
 					for _, eachUnitInPackageDecl := range unitsInPackageDecl {
 						if eachUnitInPackageDecl.Kind == KindJavaScopeIdentifier {
 							funcUnit.Receiver = eachUnitInPackageDecl.Content
@@ -97,13 +91,10 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, 
 			}
 		}
 	}
-	unitsInFunctions, err := extractor.GetLang().GetParser().ParseString(unit.Content)
-	if err != nil {
-		return nil, err
-	}
 
+	unitsInFunctions := unit.Link()
 	for _, each := range unitsInFunctions {
-		if each.FieldName == "declarator" {
+		if each.Kind == KindJavaIdentifier {
 			funcUnit.Name = each.Content
 			break
 		}

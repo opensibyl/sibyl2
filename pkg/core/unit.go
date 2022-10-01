@@ -24,16 +24,26 @@ type Unit struct {
 	FieldName string   `json:"fieldName"`
 	Content   string   `json:"content"`
 
-	Parent *Unit
+	// double linked
+	ParentUnit *Unit
+	SubUnits   []*Unit
 }
 
-func (unit *Unit) GetUnitLink() []*Unit {
+func (unit *Unit) ReverseLink() []*Unit {
+	// include itself
 	cur := unit
 	var out []*Unit
 	for cur != nil {
 		out = append(out, cur)
-		cur = cur.Parent
+		cur = cur.ParentUnit
 	}
+	return out
+}
+
+func (unit *Unit) Link() []*Unit {
+	var out []*Unit
+	out = append(out, unit)
+	out = append(out, unit.SubUnits...)
 	return out
 }
 

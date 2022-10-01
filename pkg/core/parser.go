@@ -44,6 +44,7 @@ func (p *Parser) ParseString(data string) ([]*Unit, error) {
 	return p.ParseCtx([]byte(data), context.TODO())
 }
 
+// DFS
 func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName string, parentUnit *Unit) ([]*Unit, error) {
 	var ret []*Unit
 
@@ -56,16 +57,9 @@ func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName str
 
 	count := int(curRootNode.NamedChildCount())
 	for i := 0; i < count; i++ {
-		// each sub nodes
 		curChild := curRootNode.NamedChild(i)
 		curChildName := curRootNode.FieldNameForChild(i)
-		curNode, err := p.node2Unit(data, curChild, curChildName, curRootUnit)
-		if err != nil {
-			return nil, err
-		}
-		ret = append(ret, curNode)
 
-		// sub nodes of each sub nodes
 		subUnits, err := p.node2Units(data, curChild, curChildName, curRootUnit)
 		if err != nil {
 			return nil, err

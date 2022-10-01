@@ -3,6 +3,17 @@ package extractor
 import (
 	"sibyl2/pkg/core"
 	"strings"
+
+	"golang.org/x/exp/slices"
+)
+
+// https://github.com/tree-sitter/tree-sitter-go/blob/master/src/node-types.json
+const (
+	KindGolangMethodDecl      core.KindRepr = "method_declaration"
+	KindGolangFuncDecl        core.KindRepr = "function_declaration"
+	KindGolangIdentifier      core.KindRepr = "identifier"
+	KindGolangFieldIdentifier core.KindRepr = "field_identifier"
+	KindGolangParameterList   core.KindRepr = "parameter_list"
 )
 
 type GolangExtractor struct {
@@ -38,10 +49,11 @@ func (extractor *GolangExtractor) ExtractSymbols(unit []*core.Unit) ([]*core.Sym
 }
 
 func (extractor *GolangExtractor) IsFunction(unit *core.Unit) bool {
-	if unit.Kind == "function_declaration" {
-		return true
+	allowed := []core.KindRepr{
+		KindGolangMethodDecl,
+		KindGolangFuncDecl,
 	}
-	return false
+	return slices.Contains(allowed, unit.Kind)
 }
 
 func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Function, error) {
@@ -50,13 +62,54 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.
 		if !extractor.IsFunction(eachUnit) {
 			continue
 		}
-		eachFunc := &core.Function{
-			Name:       eachUnit.Content,
-			Parameters: nil,
-			Returns:    nil,
-			Span:       eachUnit.Span,
+
+		eachFunc, err := extractor.unit2Function(eachUnit)
+		if err != nil {
+			return nil, err
 		}
 		ret = append(ret, eachFunc)
 	}
 	return ret, nil
+}
+
+func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
+	// todo: should not parse again
+	unitsInFunctions, err := extractor.GetLang().GetParser().ParseString(unit.Content)
+	if err != nil {
+		return nil, err
+	}
+	funcUnit := &core.Function{}
+	funcUnit.Span = unit.Span
+	if unit.Kind == KindGolangFuncDecl {
+		for _, each := range unitsInFunctions {
+			if each.Kind == KindGolangIdentifier {
+				funcUnit.Name = each.Content
+				break
+			}
+		}
+	} else {
+		for _, each := range unitsInFunctions {
+			if each.Kind == KindGolangFieldIdentifier {
+				funcUnit.Name = each.Content
+				break
+			}
+		}
+		for _, each := range unitsInFunctions {
+			if each.Kind == KindGolangParameterList {
+				unitsInReceiver, err := extractor.GetLang().GetParser().ParseString(each.Content)
+				if err != nil {
+					return nil, err
+				}
+				for _, eachUnitInReceiver := range unitsInReceiver {
+					if eachUnitInReceiver.FieldName == "operator" {
+						funcUnit.Receiver = eachUnitInReceiver.Content
+						break
+					}
+				}
+				break
+			}
+		}
+	}
+	// todo: parameters and returns
+	return funcUnit, nil
 }

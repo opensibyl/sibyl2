@@ -10,6 +10,8 @@ type Point struct {
 	Column uint32 `json:"column"`
 }
 
+type KindRepr = string
+
 /*
 Unit
 
@@ -17,10 +19,10 @@ almost a node, but with enough data for analyzer.
 no need to access raw byte data again
 */
 type Unit struct {
-	Kind      string `json:"kind"`
-	Span      Span   `json:"span"`
-	FieldName string `json:"fieldName"`
-	Content   string `json:"content"`
+	Kind      KindRepr `json:"kind"`
+	Span      Span     `json:"span"`
+	FieldName string   `json:"fieldName"`
+	Content   string   `json:"content"`
 
 	Parent *Unit
 }

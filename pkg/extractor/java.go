@@ -1,8 +1,15 @@
 package extractor
 
 import (
+	"fmt"
 	"sibyl2/pkg/core"
 	"strings"
+)
+
+const (
+	KindJavaProgram            core.KindRepr = "program"
+	KindJavaProgramDeclaration core.KindRepr = "package_declaration"
+	KindJavaScopeIdentifier    core.KindRepr = "scoped_identifier"
 )
 
 type JavaExtractor struct {
@@ -38,6 +45,7 @@ func (extractor *JavaExtractor) ExtractSymbols(units []*core.Unit) ([]*core.Symb
 }
 
 func (extractor *JavaExtractor) IsFunction(unit *core.Unit) bool {
+	// no function in java
 	if unit.Kind == "method_declaration" {
 		return true
 	}
@@ -50,14 +58,55 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Fu
 		if !extractor.IsFunction(eachUnit) {
 			continue
 		}
-
-		eachFunc := &core.Function{
-			Name:       eachUnit.Content,
-			Parameters: nil,
-			Returns:    nil,
-			Span:       eachUnit.Span,
+		eachFunc, err := extractor.unit2Function(eachUnit)
+		if err != nil {
+			return nil, err
 		}
+		fmt.Printf("func: %v\n", eachFunc)
 		ret = append(ret, eachFunc)
 	}
 	return ret, nil
+}
+
+func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
+	// todo: should not parse again
+	// todo: its receiver should contain package name and class name
+	funcUnit := &core.Function{}
+	funcUnit.Span = unit.Span
+
+	for _, each := range unit.GetUnitLink() {
+		if each.Kind == KindJavaProgram {
+			unitsInProgram, err := extractor.GetLang().GetParser().ParseString(each.Content)
+			if err != nil {
+				return nil, err
+			}
+			for _, eachUnitInProgram := range unitsInProgram {
+				if eachUnitInProgram.Kind == KindJavaProgramDeclaration {
+					unitsInPackageDecl, err := extractor.GetLang().GetParser().ParseString(eachUnitInProgram.Content)
+					if err != nil {
+						return nil, err
+					}
+					for _, eachUnitInPackageDecl := range unitsInPackageDecl {
+						if eachUnitInPackageDecl.Kind == KindJavaScopeIdentifier {
+							funcUnit.Receiver = eachUnitInPackageDecl.Content
+							break
+						}
+					}
+					break
+				}
+			}
+		}
+	}
+	unitsInFunctions, err := extractor.GetLang().GetParser().ParseString(unit.Content)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, each := range unitsInFunctions {
+		if each.FieldName == "declarator" {
+			funcUnit.Name = each.Content
+			break
+		}
+	}
+	return funcUnit, nil
 }

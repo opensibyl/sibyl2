@@ -28,20 +28,6 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
 }
 `
 
-var goCode = `
-type Parser struct {
-	engine *sitter.Parser
-}
-
-func NewParser(lang *sitter.Language) *Parser {
-	engine := sitter.NewParser()
-	engine.SetLanguage(lang)
-	return &Parser{
-		engine,
-	}
-}
-`
-
 func TestJavaExtractor_ExtractSymbols(t *testing.T) {
 	parser := core.NewParser(core.JAVA)
 	units, err := parser.Parse([]byte(javaCode))
@@ -64,20 +50,6 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 	}
 
 	extractor := GetExtractor(core.JAVA)
-	_, err = extractor.ExtractFunctions(units)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func TestGolangExtractor_ExtractFunctions(t *testing.T) {
-	parser := core.NewParser(core.GOLANG)
-	units, err := parser.Parse([]byte(goCode))
-	if err != nil {
-		panic(err)
-	}
-
-	extractor := GetExtractor(core.GOLANG)
 	_, err = extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)

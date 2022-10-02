@@ -10,7 +10,7 @@ import (
 type Runner struct {
 }
 
-func (r *Runner) File2Units(filePath string, lang LangType) ([]FileUnit, error) {
+func (r *Runner) File2Units(filePath string, lang LangType) ([]*FileUnit, error) {
 	files, err := r.scanFiles(filePath, lang)
 	if err != nil {
 		return nil, err
@@ -23,8 +23,8 @@ func (r *Runner) File2Units(filePath string, lang LangType) ([]FileUnit, error) 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var fileUnits []FileUnit
-	fileUnitsChan := make(chan []*Unit, len(files))
+	var fileUnits []*FileUnit
+	fileUnitsChan := make(chan *FileUnit, len(files))
 	for _, eachFile := range files {
 		r.parseFileAsync(eachFile, parser, ctx, fileUnitsChan)
 	}
@@ -34,13 +34,8 @@ func (r *Runner) File2Units(filePath string, lang LangType) ([]FileUnit, error) 
 		if eachFileUnit == nil {
 			continue
 		}
-
-		curFileUnit := FileUnit{
-			Path:     filePath,
-			Language: lang,
-			Units:    eachFileUnit,
-		}
-		fileUnits = append(fileUnits, curFileUnit)
+		eachFileUnit.Language = lang
+		fileUnits = append(fileUnits, eachFileUnit)
 	}
 
 	return fileUnits, nil
@@ -62,13 +57,18 @@ func (r *Runner) scanFiles(filePath string, lang LangType) ([]string, error) {
 	return files, nil
 }
 
-func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan []*Unit) {
+func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan *FileUnit) {
 	units, err := r.parseFile(filepath, parser, ctx)
 	if err != nil {
 		// ignore?
 		result <- nil
 	} else {
-		result <- units
+		ret := &FileUnit{
+			Path:     filepath,
+			Language: "",
+			Units:    units,
+		}
+		result <- ret
 	}
 }
 

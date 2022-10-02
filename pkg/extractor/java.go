@@ -2,17 +2,18 @@ package extractor
 
 import (
 	"errors"
-	"fmt"
 	"sibyl2/pkg/core"
 	"strings"
 )
 
+// https://github.com/tree-sitter/tree-sitter-java/tree/master/src
 const (
 	KindJavaProgram            core.KindRepr = "program"
 	KindJavaProgramDeclaration core.KindRepr = "package_declaration"
 	KindJavaScopeIdentifier    core.KindRepr = "scoped_identifier"
 	KindJavaIdentifier         core.KindRepr = "identifier"
 	KindJavaClassDeclaration   core.KindRepr = "class_declaration"
+	KindJavaMethodDeclaration  core.KindRepr = "method_declaration"
 )
 
 type JavaExtractor struct {
@@ -49,7 +50,7 @@ func (extractor *JavaExtractor) ExtractSymbols(units []*core.Unit) ([]*core.Symb
 
 func (extractor *JavaExtractor) IsFunction(unit *core.Unit) bool {
 	// no function in java
-	if unit.Kind == "method_declaration" {
+	if unit.Kind == KindJavaMethodDeclaration {
 		return true
 	}
 	return false
@@ -65,7 +66,6 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Fu
 		if err != nil {
 			return nil, err
 		}
-		fmt.Printf("func: %v\n", eachFunc)
 		ret = append(ret, eachFunc)
 	}
 	return ret, nil

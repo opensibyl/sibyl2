@@ -53,3 +53,13 @@ type Function struct {
 	Returns    []ValueUnit `json:"returns"`
 	Span       Span        `json:"span"`
 }
+
+type DataType interface {
+	Dt()
+}
+
+func (*Symbol) Dt() {
+}
+
+func (*Function) Dt() {
+}

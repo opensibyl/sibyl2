@@ -18,6 +18,13 @@ type Extractor interface {
 	FunctionSupport
 }
 
+type ExtractType = string
+
+const (
+	TypeExtractFunction ExtractType = "func"
+	TypeExtractSymbol   ExtractType = "symbol"
+)
+
 type SymbolSupport interface {
 	IsSymbol(*core.Unit) bool
 	ExtractSymbols([]*core.Unit) ([]*core.Symbol, error)

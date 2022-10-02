@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"errors"
-	"fmt"
 	"sibyl2/pkg/core"
 	"strings"
 
@@ -72,7 +71,6 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.
 			return nil, err
 		}
 		ret = append(ret, eachFunc)
-		fmt.Printf("%+v\n", eachFunc)
 	}
 	return ret, nil
 }

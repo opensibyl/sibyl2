@@ -1,5 +1,7 @@
 package core
 
+import "golang.org/x/exp/slices"
+
 type Span struct {
 	Start Point `json:"start"`
 	End   Point `json:"end"`
@@ -37,6 +39,16 @@ func FindFirstByKindInParent(unit *Unit, kind KindRepr) *Unit {
 		return unit
 	}
 	return FindFirstByKindInParent(unit.ParentUnit, kind)
+}
+
+func FindFirstByOneOfKindInParent(unit *Unit, kinds ...KindRepr) *Unit {
+	if unit == nil {
+		return nil
+	}
+	if slices.Contains(kinds, unit.Kind) {
+		return unit
+	}
+	return FindFirstByOneOfKindInParent(unit.ParentUnit, kinds...)
 }
 
 func FindFirstByKindInSubsWithDfs(unit *Unit, kind KindRepr) *Unit {

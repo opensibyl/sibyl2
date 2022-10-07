@@ -8,16 +8,18 @@ import (
 
 // https://github.com/tree-sitter/tree-sitter-java/tree/master/src
 const (
-	KindJavaProgram            core.KindRepr = "program"
-	KindJavaProgramDeclaration core.KindRepr = "package_declaration"
-	KindJavaScopeIdentifier    core.KindRepr = "scoped_identifier"
-	KindJavaIdentifier         core.KindRepr = "identifier"
-	KindJavaClassDeclaration   core.KindRepr = "class_declaration"
-	KindJavaMethodDeclaration  core.KindRepr = "method_declaration"
-	KindJavaFormalParameters   core.KindRepr = "formal_parameters"
-	KindJavaFormalParameter    core.KindRepr = "formal_parameter"
-	FieldJavaType              core.KindRepr = "type"
-	FieldJavaDimensions        core.KindRepr = "dimensions"
+	KindJavaProgram              core.KindRepr = "program"
+	KindJavaProgramDeclaration   core.KindRepr = "package_declaration"
+	KindJavaScopeIdentifier      core.KindRepr = "scoped_identifier"
+	KindJavaIdentifier           core.KindRepr = "identifier"
+	KindJavaClassDeclaration     core.KindRepr = "class_declaration"
+	KindJavaEnumDeclaration      core.KindRepr = "enum_declaration"
+	KindJavaInterfaceDeclaration core.KindRepr = "interface_declaration"
+	KindJavaMethodDeclaration    core.KindRepr = "method_declaration"
+	KindJavaFormalParameters     core.KindRepr = "formal_parameters"
+	KindJavaFormalParameter      core.KindRepr = "formal_parameter"
+	FieldJavaType                core.KindRepr = "type"
+	FieldJavaDimensions          core.KindRepr = "dimensions"
 )
 
 type JavaExtractor struct {
@@ -92,7 +94,7 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, 
 	pkgName = packageIdentifier.Content
 
 	// trace its class (the closest one
-	clazzDecl := core.FindFirstByKindInParent(unit, KindJavaClassDeclaration)
+	clazzDecl := core.FindFirstByOneOfKindInParent(unit, KindJavaClassDeclaration, KindJavaEnumDeclaration, KindJavaInterfaceDeclaration)
 	clazzIdentifier := core.FindFirstByKindInSubsWithDfs(clazzDecl, KindJavaIdentifier)
 	if clazzIdentifier == nil {
 		return nil, errors.New("no class found in " + unit.Content)

@@ -14,6 +14,10 @@ const (
 	KindJavaIdentifier         core.KindRepr = "identifier"
 	KindJavaClassDeclaration   core.KindRepr = "class_declaration"
 	KindJavaMethodDeclaration  core.KindRepr = "method_declaration"
+	KindJavaFormalParameters   core.KindRepr = "formal_parameters"
+	KindJavaFormalParameter    core.KindRepr = "formal_parameter"
+	FieldJavaType              core.KindRepr = "type"
+	FieldJavaDimensions        core.KindRepr = "dimensions"
 )
 
 type JavaExtractor struct {
@@ -103,7 +107,7 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, 
 	funcUnit.Name = funcIdentifier.Content
 
 	// returns
-	retUnit := core.FindFirstByFieldInSubsWithDfs(unit, "dimensions")
+	retUnit := core.FindFirstByFieldInSubsWithDfs(unit, FieldJavaDimensions)
 	valueUnit := &core.ValueUnit{
 		Type: retUnit.Content,
 		Name: "",
@@ -111,11 +115,11 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, 
 	funcUnit.Returns = append(funcUnit.Returns, valueUnit)
 
 	// params
-	parameters := core.FindFirstByKindInSubsWithDfs(unit, "formal_parameters")
+	parameters := core.FindFirstByKindInSubsWithDfs(unit, KindJavaFormalParameters)
 	if parameters != nil {
-		for _, each := range core.FindAllByKindInSubsWithDfs(parameters, "formal_parameter") {
-			typeName := core.FindFirstByFieldInSubsWithDfs(each, "type")
-			paramName := core.FindFirstByFieldInSubsWithDfs(each, "dimensions")
+		for _, each := range core.FindAllByKindInSubsWithDfs(parameters, KindJavaFormalParameter) {
+			typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldJavaType)
+			paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldJavaDimensions)
 			valueUnit = &core.ValueUnit{
 				Type: typeName.Content,
 				Name: paramName.Content,

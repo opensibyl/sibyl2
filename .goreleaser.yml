@@ -1,11 +1,22 @@
 builds:
-  - id: linux-build
+  - id: sibyl-darwin-amd64
+    ldflags: -s -w
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    goos:
+      - darwin
+    goarch:
+      - amd64
+  - id: sibyl-linux-amd64
+    ldflags: -s -w
+    env:
+      - CGO_ENABLED=1
     goos:
       - linux
     goarch:
       - amd64
-    env:
-      - CGO_ENABLED=1
 
 archives:
   - format: binary

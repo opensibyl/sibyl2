@@ -8,7 +8,8 @@ import (
 	"golang.org/x/exp/slices"
 	"os"
 	"sibyl2/pkg/core"
-	extractor2 "sibyl2/pkg/extractor"
+	"sibyl2/pkg/extractor"
+	"sibyl2/pkg/model"
 	"time"
 )
 
@@ -17,7 +18,7 @@ var userLangType string
 var userExtractType string
 var userOutputFile string
 
-var allowExtractType = []string{extractor2.TypeExtractSymbol, extractor2.TypeExtractFunction}
+var allowExtractType = []string{extractor.TypeExtractSymbol, extractor.TypeExtractFunction}
 
 func NewExtractCmd() *cobra.Command {
 	extractCmd := &cobra.Command{
@@ -46,36 +47,36 @@ func NewExtractCmd() *cobra.Command {
 				panic(err)
 			}
 
-			extractor := extractor2.GetExtractor(langType)
-			var results []*core.FileResult
+			langExtractor := extractor.GetExtractor(langType)
+			var results []*model.FileResult
 			for _, eachFileUnit := range fileUnits {
 				switch userExtractType {
-				case extractor2.TypeExtractSymbol:
-					symbols, err := extractor.ExtractSymbols(eachFileUnit.Units)
+				case extractor.TypeExtractSymbol:
+					symbols, err := langExtractor.ExtractSymbols(eachFileUnit.Units)
 					if err != nil {
 						panic(err)
 					}
-					var retUnits []core.DataType
+					var retUnits []model.DataType
 					for _, each := range symbols {
-						retUnits = append(retUnits, core.DataType(each))
+						retUnits = append(retUnits, model.DataType(each))
 					}
-					fileResult := &core.FileResult{
+					fileResult := &model.FileResult{
 						Path:     eachFileUnit.Path,
 						Language: eachFileUnit.Language,
 						Type:     userExtractType,
 						Units:    retUnits,
 					}
 					results = append(results, fileResult)
-				case extractor2.TypeExtractFunction:
-					functions, err := extractor.ExtractFunctions(eachFileUnit.Units)
+				case extractor.TypeExtractFunction:
+					functions, err := langExtractor.ExtractFunctions(eachFileUnit.Units)
 					if err != nil {
 						panic(err)
 					}
-					var retUnits []core.DataType
+					var retUnits []model.DataType
 					for _, each := range functions {
-						retUnits = append(retUnits, core.DataType(each))
+						retUnits = append(retUnits, model.DataType(each))
 					}
-					fileResult := &core.FileResult{
+					fileResult := &model.FileResult{
 						Path:     eachFileUnit.Path,
 						Language: eachFileUnit.Language,
 						Type:     userExtractType,

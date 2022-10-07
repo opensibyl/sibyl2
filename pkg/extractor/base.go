@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"sibyl2/pkg/core"
+	"sibyl2/pkg/model"
 )
 
 /*
@@ -26,13 +27,13 @@ const (
 )
 
 type SymbolSupport interface {
-	IsSymbol(*core.Unit) bool
-	ExtractSymbols([]*core.Unit) ([]*core.Symbol, error)
+	IsSymbol(*model.Unit) bool
+	ExtractSymbols([]*model.Unit) ([]*model.Symbol, error)
 }
 
 type FunctionSupport interface {
-	IsFunction(*core.Unit) bool
-	ExtractFunctions([]*core.Unit) ([]*core.Function, error)
+	IsFunction(*model.Unit) bool
+	ExtractFunctions([]*model.Unit) ([]*model.Function, error)
 }
 
 func GetExtractor(lang core.LangType) Extractor {

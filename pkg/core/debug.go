@@ -1,6 +1,8 @@
 package core
 
-func DebugDfs(unit *Unit, layer int) *Unit {
+import "sibyl2/pkg/model"
+
+func DebugDfs(unit *model.Unit, layer int) *model.Unit {
 	if unit == nil {
 		return nil
 	}

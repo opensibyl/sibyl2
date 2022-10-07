@@ -3,6 +3,7 @@ package extractor
 import (
 	"errors"
 	"sibyl2/pkg/core"
+	"sibyl2/pkg/model"
 	"strings"
 
 	"golang.org/x/exp/slices"
@@ -10,16 +11,16 @@ import (
 
 // https://github.com/tree-sitter/tree-sitter-go/blob/master/src/node-types.json
 const (
-	KindGolangMethodDecl      core.KindRepr = "method_declaration"
-	KindGolangFuncDecl        core.KindRepr = "function_declaration"
-	KindGolangIdentifier      core.KindRepr = "identifier"
-	KindGolangFieldIdentifier core.KindRepr = "field_identifier"
-	KindGolangTypeIdentifier  core.KindRepr = "type_identifier"
-	KindGolangParameterList   core.KindRepr = "parameter_list"
-	KindGolangParameterDecl   core.KindRepr = "parameter_declaration"
-	FieldGolangType           core.KindRepr = "type"
-	FieldGolangName           core.KindRepr = "name"
-	FieldGolangParameters     core.KindRepr = "parameters"
+	KindGolangMethodDecl      model.KindRepr = "method_declaration"
+	KindGolangFuncDecl        model.KindRepr = "function_declaration"
+	KindGolangIdentifier      model.KindRepr = "identifier"
+	KindGolangFieldIdentifier model.KindRepr = "field_identifier"
+	KindGolangTypeIdentifier  model.KindRepr = "type_identifier"
+	KindGolangParameterList   model.KindRepr = "parameter_list"
+	KindGolangParameterDecl   model.KindRepr = "parameter_declaration"
+	FieldGolangType           model.KindRepr = "type"
+	FieldGolangName           model.KindRepr = "name"
+	FieldGolangParameters     model.KindRepr = "parameters"
 )
 
 type GolangExtractor struct {
@@ -29,7 +30,7 @@ func (extractor *GolangExtractor) GetLang() core.LangType {
 	return core.LangGo
 }
 
-func (extractor *GolangExtractor) IsSymbol(unit *core.Unit) bool {
+func (extractor *GolangExtractor) IsSymbol(unit *model.Unit) bool {
 	// todo: use grammar.js instead
 	if strings.HasSuffix(unit.Kind, "identifier") {
 		return true
@@ -37,13 +38,13 @@ func (extractor *GolangExtractor) IsSymbol(unit *core.Unit) bool {
 	return false
 }
 
-func (extractor *GolangExtractor) ExtractSymbols(unit []*core.Unit) ([]*core.Symbol, error) {
-	var ret []*core.Symbol
+func (extractor *GolangExtractor) ExtractSymbols(unit []*model.Unit) ([]*model.Symbol, error) {
+	var ret []*model.Symbol
 	for _, eachUnit := range unit {
 		if !extractor.IsSymbol(eachUnit) {
 			continue
 		}
-		symbol := &core.Symbol{
+		symbol := &model.Symbol{
 			Symbol:    eachUnit.Content,
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
@@ -54,16 +55,16 @@ func (extractor *GolangExtractor) ExtractSymbols(unit []*core.Unit) ([]*core.Sym
 	return ret, nil
 }
 
-func (extractor *GolangExtractor) IsFunction(unit *core.Unit) bool {
-	allowed := []core.KindRepr{
+func (extractor *GolangExtractor) IsFunction(unit *model.Unit) bool {
+	allowed := []model.KindRepr{
 		KindGolangMethodDecl,
 		KindGolangFuncDecl,
 	}
 	return slices.Contains(allowed, unit.Kind)
 }
 
-func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.Function, error) {
-	var ret []*core.Function
+func (extractor *GolangExtractor) ExtractFunctions(units []*model.Unit) ([]*model.Function, error) {
+	var ret []*model.Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
 			continue
@@ -78,7 +79,7 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*core.
 	return ret, nil
 }
 
-func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*core.Function, error) {
+func (extractor *GolangExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {
 	switch unit.Kind {
 	case KindGolangFuncDecl:
 		return extractor.funcUnit2Function(unit)
@@ -90,34 +91,34 @@ func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*core.Function
 	}
 }
 
-func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Function, error) {
-	funcUnit := &core.Function{}
+func (extractor *GolangExtractor) methodUnit2Function(unit *model.Unit) (*model.Function, error) {
+	funcUnit := &model.Function{}
 	funcUnit.Span = unit.Span
 
 	// name
-	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangFieldIdentifier)
+	funcIdentifier := model.FindFirstByKindInSubsWithDfs(unit, KindGolangFieldIdentifier)
 	if funcIdentifier == nil {
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
 
 	// receiver
-	parameterList := core.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
-	parameterList = core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterList)
-	receiverDecl := core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterDecl)
-	typeDecl := core.FindFirstByFieldInSubsWithDfs(receiverDecl, FieldGolangType)
+	parameterList := model.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
+	parameterList = model.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterList)
+	receiverDecl := model.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterDecl)
+	typeDecl := model.FindFirstByFieldInSubsWithDfs(receiverDecl, FieldGolangType)
 	if typeDecl == nil {
 		return nil, errors.New("no receiver found in: " + typeDecl.Content)
 	}
 	funcUnit.Receiver = typeDecl.Content
 
 	// params
-	paramListList := core.FindAllByKindInSubsWithDfs(unit, KindGolangParameterList)
+	paramListList := model.FindAllByKindInSubsWithDfs(unit, KindGolangParameterList)
 	// no param == empty slice, never nil
 	paramList := paramListList[1]
-	for _, each := range core.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
-		typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
-		paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+	for _, each := range model.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
+		typeName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+		paramName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
 		var paramNameContent string
 		if paramName == nil {
 			paramNameContent = ""
@@ -125,7 +126,7 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 			paramNameContent = paramName.Content
 		}
 
-		valueUnit := &core.ValueUnit{
+		valueUnit := &model.ValueUnit{
 			Type: typeName.Content,
 			Name: paramNameContent,
 		}
@@ -134,20 +135,20 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 
 	// returns
 	// never nil
-	retParams := core.FindFirstByFieldInSubsWithDfs(unit, FieldGolangParameters)
+	retParams := model.FindFirstByFieldInSubsWithDfs(unit, FieldGolangParameters)
 	switch retParams.Kind {
 	case KindGolangParameterList:
 		// multi params
-		for _, each := range core.FindAllByKindInSubsWithDfs(retParams, KindGolangParameterDecl) {
-			typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
-			paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+		for _, each := range model.FindAllByKindInSubsWithDfs(retParams, KindGolangParameterDecl) {
+			typeName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+			paramName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
 			var paramNameContent string
 			if paramName == nil {
 				paramNameContent = ""
 			} else {
 				paramNameContent = paramName.Content
 			}
-			valueUnit := &core.ValueUnit{
+			valueUnit := &model.ValueUnit{
 				Type: typeName.Content,
 				Name: paramNameContent,
 			}
@@ -155,7 +156,7 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 		}
 	case KindGolangTypeIdentifier:
 		// only one param, and anonymous
-		valueUnit := &core.ValueUnit{
+		valueUnit := &model.ValueUnit{
 			Type: retParams.Content,
 			Name: "",
 		}
@@ -167,12 +168,12 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 	return funcUnit, nil
 }
 
-func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Function, error) {
-	funcUnit := &core.Function{}
+func (extractor *GolangExtractor) funcUnit2Function(unit *model.Unit) (*model.Function, error) {
+	funcUnit := &model.Function{}
 	funcUnit.Span = unit.Span
 
 	// name
-	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangIdentifier)
+	funcIdentifier := model.FindFirstByKindInSubsWithDfs(unit, KindGolangIdentifier)
 	if funcIdentifier == nil {
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
@@ -180,17 +181,17 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Func
 
 	// params
 	// no param == empty slice, never nil
-	paramList := core.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
-	for _, each := range core.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
-		typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
-		paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+	paramList := model.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
+	for _, each := range model.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
+		typeName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+		paramName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
 		var paramNameContent string
 		if paramName == nil {
 			paramNameContent = ""
 		} else {
 			paramNameContent = paramName.Content
 		}
-		valueUnit := &core.ValueUnit{
+		valueUnit := &model.ValueUnit{
 			Type: typeName.Content,
 			Name: paramNameContent,
 		}
@@ -199,20 +200,20 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Func
 
 	// returns
 	// never nil
-	retParams := core.FindFirstByFieldInSubsWithDfs(unit, FieldGolangParameters)
+	retParams := model.FindFirstByFieldInSubsWithDfs(unit, FieldGolangParameters)
 	switch retParams.Kind {
 	case KindGolangParameterList:
 		// multi params
-		for _, each := range core.FindAllByKindInSubsWithDfs(retParams, KindGolangParameterDecl) {
-			typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
-			paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+		for _, each := range model.FindAllByKindInSubsWithDfs(retParams, KindGolangParameterDecl) {
+			typeName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+			paramName := model.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
 			var paramNameContent string
 			if paramName == nil {
 				paramNameContent = ""
 			} else {
 				paramNameContent = paramName.Content
 			}
-			valueUnit := &core.ValueUnit{
+			valueUnit := &model.ValueUnit{
 				Type: typeName.Content,
 				Name: paramNameContent,
 			}
@@ -220,7 +221,7 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Func
 		}
 	case KindGolangTypeIdentifier:
 		// only one param, and anonymous
-		valueUnit := &core.ValueUnit{
+		valueUnit := &model.ValueUnit{
 			Type: retParams.Content,
 			Name: "",
 		}

@@ -1,7 +1,5 @@
 builds:
-  - id: linux-build
-    goos:
-      - linux
+  - id: binary-build
     goarch:
       - amd64
     env:

@@ -47,11 +47,11 @@ type ValueUnit struct {
 }
 
 type Function struct {
-	Name       string      `json:"name"`
-	Receiver   string      `json:"receiver"`
-	Parameters []ValueUnit `json:"parameters"`
-	Returns    []ValueUnit `json:"returns"`
-	Span       Span        `json:"span"`
+	Name       string       `json:"name"`
+	Receiver   string       `json:"receiver"`
+	Parameters []*ValueUnit `json:"parameters"`
+	Returns    []*ValueUnit `json:"returns"`
+	Span       Span         `json:"span"`
 }
 
 type DataType interface {

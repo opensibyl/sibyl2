@@ -17,6 +17,7 @@ const (
 	KindGolangParameterList   core.KindRepr = "parameter_list"
 	KindGolangParameterDecl   core.KindRepr = "parameter_declaration"
 	FieldGolangType           core.KindRepr = "type"
+	FieldGolangName           core.KindRepr = "name"
 )
 
 type GolangExtractor struct {
@@ -91,12 +92,14 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 	funcUnit := &core.Function{}
 	funcUnit.Span = unit.Span
 
+	// name
 	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangFieldIdentifier)
 	if funcIdentifier == nil {
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
 
+	// receiver
 	parameterList := core.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
 	parameterList = core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterList)
 	receiverDecl := core.FindFirstByKindInSubsWithDfs(parameterList, KindGolangParameterDecl)
@@ -105,16 +108,61 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 		return nil, errors.New("no receiver found in: " + typeDecl.Content)
 	}
 	funcUnit.Receiver = typeDecl.Content
+
+	// params
+	paramListList := core.FindAllByKindInSubsWithDfs(unit, KindGolangParameterList)
+	if len(paramListList) > 1 {
+		// has params
+		paramList := paramListList[1]
+		for _, each := range core.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
+			typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+			paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+			var paramNameContent string
+			if paramName == nil {
+				paramNameContent = ""
+			} else {
+				paramNameContent = paramName.Content
+			}
+
+			valueUnit := &core.ValueUnit{
+				Type: typeName.Content,
+				Name: paramNameContent,
+			}
+			funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
+		}
+	}
+
 	return funcUnit, nil
 }
 
 func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Function, error) {
 	funcUnit := &core.Function{}
 	funcUnit.Span = unit.Span
+
+	// name
 	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangIdentifier)
 	if funcIdentifier == nil {
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
+
+	// params
+	paramList := core.FindFirstByKindInSubsWithDfs(unit, KindGolangParameterList)
+	for _, each := range core.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
+		typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+		paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+		var paramNameContent string
+		if paramName == nil {
+			paramNameContent = ""
+		} else {
+			paramNameContent = paramName.Content
+		}
+		valueUnit := &core.ValueUnit{
+			Type: typeName.Content,
+			Name: paramNameContent,
+		}
+		funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
+	}
+
 	return funcUnit, nil
 }

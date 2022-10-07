@@ -5,9 +5,10 @@ func DebugDfs(unit *Unit, layer int) *Unit {
 		return nil
 	}
 
+	Log.Infof("unit: %v %v %d %v", unit.Kind, unit.FieldName, layer, unit.Content)
+
 	// dfs
 	for _, each := range unit.SubUnits {
-		Log.Infof("unit: %v %v %d %v", each.Kind, each.FieldName, layer, each.Content)
 		DebugDfs(each, layer+1)
 	}
 	return nil

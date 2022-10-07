@@ -1,0 +1,11 @@
+builds:
+  - id: linux-build
+    goos:
+      - linux
+    goarch:
+      - amd64
+    env:
+      - CGO_ENABLED=1
+
+archives:
+  - format: binary

@@ -111,25 +111,23 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*core.Fu
 
 	// params
 	paramListList := core.FindAllByKindInSubsWithDfs(unit, KindGolangParameterList)
-	if len(paramListList) > 1 {
-		// has params
-		paramList := paramListList[1]
-		for _, each := range core.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
-			typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
-			paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
-			var paramNameContent string
-			if paramName == nil {
-				paramNameContent = ""
-			} else {
-				paramNameContent = paramName.Content
-			}
-
-			valueUnit := &core.ValueUnit{
-				Type: typeName.Content,
-				Name: paramNameContent,
-			}
-			funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
+	// no param == empty slice, never nil
+	paramList := paramListList[1]
+	for _, each := range core.FindAllByKindInSubsWithDfs(paramList, KindGolangParameterDecl) {
+		typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+		paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+		var paramNameContent string
+		if paramName == nil {
+			paramNameContent = ""
+		} else {
+			paramNameContent = paramName.Content
 		}
+
+		valueUnit := &core.ValueUnit{
+			Type: typeName.Content,
+			Name: paramNameContent,
+		}
+		funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
 	}
 
 	return funcUnit, nil
@@ -163,6 +161,8 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*core.Func
 		}
 		funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
 	}
+
+	core.DebugDfs(unit, 0)
 
 	return funcUnit, nil
 }

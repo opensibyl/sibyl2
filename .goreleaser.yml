@@ -1,11 +1,34 @@
 builds:
-  - id: linux-build
+  - id: sibyl-darwin-amd64
+    ldflags: -s -w
+    env:
+      - CGO_ENABLED=1
+      - CC=o64-clang
+      - CXX=o64-clang++
+    goos:
+      - darwin
+    goarch:
+      - amd64
+  - id: sibyl-linux-amd64
+    ldflags: -s -w
+    env:
+      - CGO_ENABLED=1
     goos:
       - linux
     goarch:
       - amd64
+  - id: sibyl-windows-amd64
+    ldflags: '-extldflags "-static"'
     env:
       - CGO_ENABLED=1
+      - CC=x86_64-w64-mingw32-gcc
+      - CXX=x86_64-w64-mingw32-g++
+      - CGO_CXXFLAGS=-stdlib=libc++ -lc++ -lc++abi -lstdc++
+      - CGO_LDFLAGS=-stdlib=libc++ -lc++ -lc++abi -lstdc++
+    goos:
+      - windows
+    goarch:
+      - amd64
 
 archives:
   - format: binary

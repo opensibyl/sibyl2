@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"errors"
-	"sibyl2/pkg/core"
 	"sibyl2/pkg/model"
 	"strings"
 )
@@ -26,8 +25,8 @@ const (
 type JavaExtractor struct {
 }
 
-func (extractor *JavaExtractor) GetLang() core.LangType {
-	return core.LangJava
+func (extractor *JavaExtractor) GetLang() model.LangType {
+	return model.LangJava
 }
 
 func (extractor *JavaExtractor) IsSymbol(unit *model.Unit) bool {

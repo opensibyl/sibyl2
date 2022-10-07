@@ -1,7 +1,6 @@
 package extractor
 
 import (
-	"sibyl2/pkg/core"
 	"sibyl2/pkg/model"
 )
 
@@ -14,7 +13,7 @@ https://github.com/tree-sitter/tree-sitter-java/blob/master/grammar.js
 unlike other projects, we will only keep the necessary parts, not the whole grammar rule
 */
 type Extractor interface {
-	GetLang() core.LangType
+	GetLang() model.LangType
 	SymbolSupport
 	FunctionSupport
 }
@@ -36,11 +35,11 @@ type FunctionSupport interface {
 	ExtractFunctions([]*model.Unit) ([]*model.Function, error)
 }
 
-func GetExtractor(lang core.LangType) Extractor {
+func GetExtractor(lang model.LangType) Extractor {
 	switch lang {
-	case core.LangJava:
+	case model.LangJava:
 		return &JavaExtractor{}
-	case core.LangGo:
+	case model.LangGo:
 		return &GolangExtractor{}
 	}
 	return nil

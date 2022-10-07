@@ -27,8 +27,8 @@ func NewExtractCmd() *cobra.Command {
 		Long:   `test`,
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
-			langType := core.LangTypeValueOf(userLangType)
-			if langType == core.LangUnknown {
+			langType := model.LangTypeValueOf(userLangType)
+			if langType == model.LangUnknown {
 				panic(errors.New("unknown lang type: " + userLangType))
 			}
 

@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"errors"
-	"sibyl2/pkg/core"
 	"sibyl2/pkg/model"
 	"strings"
 
@@ -26,8 +25,8 @@ const (
 type GolangExtractor struct {
 }
 
-func (extractor *GolangExtractor) GetLang() core.LangType {
-	return core.LangGo
+func (extractor *GolangExtractor) GetLang() model.LangType {
+	return model.LangGo
 }
 
 func (extractor *GolangExtractor) IsSymbol(unit *model.Unit) bool {

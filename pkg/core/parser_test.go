@@ -1,6 +1,7 @@
 package core
 
 import (
+	"sibyl2/pkg/model"
 	"testing"
 )
 
@@ -49,7 +50,7 @@ func NewParser(lang *sitter.Language) *Parser {
 `
 
 func TestParser_Parse_Java(t *testing.T) {
-	parser := NewParser(LangJava)
+	parser := NewParser(model.LangJava)
 	_, err := parser.Parse([]byte(javaCode))
 	if err != nil {
 		panic(err)
@@ -57,7 +58,7 @@ func TestParser_Parse_Java(t *testing.T) {
 }
 
 func TestParser_Parse_Python(t *testing.T) {
-	parser := NewParser(LangPython)
+	parser := NewParser(model.LangPython)
 	_, err := parser.Parse([]byte(pythonCode))
 	if err != nil {
 		panic(err)
@@ -65,7 +66,7 @@ func TestParser_Parse_Python(t *testing.T) {
 }
 
 func TestParser_Parse_Golang(t *testing.T) {
-	parser := NewParser(LangGo)
+	parser := NewParser(model.LangGo)
 	_, err := parser.Parse([]byte(goCode))
 	if err != nil {
 		panic(err)

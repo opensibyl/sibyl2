@@ -2,7 +2,6 @@ package model
 
 import (
 	"golang.org/x/exp/slices"
-	"sibyl2/pkg/core"
 )
 
 type Span struct {
@@ -128,17 +127,4 @@ func FindFirstByKindInSubsWithBfs(unit *Unit, kind KindRepr) *Unit {
 		queue = newQueue
 	}
 	return nil
-}
-
-type FileUnit struct {
-	Path     string        `json:"path"`
-	Language core.LangType `json:"language"`
-	Units    []*Unit       `json:"units"`
-}
-
-type FileResult struct {
-	Path     string        `json:"path"`
-	Language core.LangType `json:"language"`
-	Type     string        `json:"type"`
-	Units    []DataType    `json:"units"`
 }

@@ -17,7 +17,7 @@ type Parser struct {
 	engine *sitter.Parser
 }
 
-func NewParser(lang LangType) *Parser {
+func NewParser(lang model.LangType) *Parser {
 	engine := sitter.NewParser()
 	engine.SetLanguage(lang.GetLanguage())
 	return &Parser{

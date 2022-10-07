@@ -11,7 +11,7 @@ import (
 type Runner struct {
 }
 
-func (r *Runner) File2Units(filePath string, lang LangType) ([]*model.FileUnit, error) {
+func (r *Runner) File2Units(filePath string, lang model.LangType) ([]*model.FileUnit, error) {
 	files, err := r.scanFiles(filePath, lang)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (r *Runner) File2Units(filePath string, lang LangType) ([]*model.FileUnit, 
 	return fileUnits, nil
 }
 
-func (r *Runner) scanFiles(filePath string, lang LangType) ([]string, error) {
+func (r *Runner) scanFiles(filePath string, lang model.LangType) ([]string, error) {
 	var files []string
 	fileSuffix := lang.GetFileSuffix()
 	handleFunc := func(path string, info os.FileInfo, err error) error {

@@ -1,4 +1,4 @@
-package core
+package model
 
 import (
 	sitter "github.com/smacker/go-tree-sitter"
@@ -31,10 +31,6 @@ func LangTypeValueOf(raw string) LangType {
 	default:
 		return LangUnknown
 	}
-}
-
-func (langType LangType) GetParser() *Parser {
-	return NewParser(langType)
 }
 
 func (langType LangType) GetLanguage() *sitter.Language {

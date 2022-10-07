@@ -12,25 +12,13 @@ jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
-      -
-        name: Checkout
+      - name: Checkout
         uses: actions/checkout@v2
         with:
           fetch-depth: 0
-      -
-        name: Fetch all tags
+      - name: Fetch all tags
         run: git fetch --force --tags
-      -
-        name: Set up Go
-        uses: actions/setup-go@v2
-        with:
-          go-version: 1.19
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v2
-        with:
-          distribution: goreleaser
-          version: latest
-          args: release --rm-dist
+      - name: Run GoReleaser
+        run: docker run -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} --rm --privileged -v $GITHUB_WORKSPACE:/go/src/github.com/williamfzc/sibyl2 -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/williamfzc/sibyl2 neilotoole/xcgo goreleaser --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

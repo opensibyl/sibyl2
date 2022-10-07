@@ -46,7 +46,7 @@ func NewExtractCmd() *cobra.Command {
 				panic(err)
 			}
 
-			extractor := extractor2.GetExtractor(core.LangGo)
+			extractor := extractor2.GetExtractor(langType)
 			var results []*core.FileResult
 			for _, eachFileUnit := range fileUnits {
 				switch userExtractType {

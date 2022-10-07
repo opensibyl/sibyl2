@@ -101,5 +101,28 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*core.Function, 
 		return nil, errors.New("no func id found in identifier" + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
+
+	// returns
+	retUnit := core.FindFirstByFieldInSubsWithDfs(unit, "dimensions")
+	valueUnit := &core.ValueUnit{
+		Type: retUnit.Content,
+		Name: "",
+	}
+	funcUnit.Returns = append(funcUnit.Returns, valueUnit)
+
+	// params
+	parameters := core.FindFirstByKindInSubsWithDfs(unit, "formal_parameters")
+	if parameters != nil {
+		for _, each := range core.FindAllByKindInSubsWithDfs(parameters, "formal_parameter") {
+			typeName := core.FindFirstByFieldInSubsWithDfs(each, "type")
+			paramName := core.FindFirstByFieldInSubsWithDfs(each, "dimensions")
+			valueUnit = &core.ValueUnit{
+				Type: typeName.Content,
+				Name: paramName.Content,
+			}
+			funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
+		}
+	}
+
 	return funcUnit, nil
 }

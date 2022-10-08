@@ -95,7 +95,7 @@ func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function
 
 	// trace its class (the closest one
 	clazzDecl := model.FindFirstByOneOfKindInParent(unit, KindJavaClassDeclaration, KindJavaEnumDeclaration, KindJavaInterfaceDeclaration)
-	clazzIdentifier := model.FindFirstByKindInSubsWithDfs(clazzDecl, KindJavaIdentifier)
+	clazzIdentifier := model.FindFirstByKindInSubsWithBfs(clazzDecl, KindJavaIdentifier)
 	if clazzIdentifier == nil {
 		return nil, errors.New("no class found in " + unit.Content)
 	}
@@ -112,6 +112,7 @@ func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function
 	retUnit := model.FindFirstByFieldInSubsWithDfs(unit, FieldJavaDimensions)
 	valueUnit := &model.ValueUnit{
 		Type: retUnit.Content,
+		// java has no named return value
 		Name: "",
 	}
 	funcUnit.Returns = append(funcUnit.Returns, valueUnit)

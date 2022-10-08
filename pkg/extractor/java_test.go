@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"sibyl2/pkg/core"
+	"sibyl2/pkg/model"
 	"testing"
 )
 
@@ -29,13 +30,13 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
 `
 
 func TestJavaExtractor_ExtractSymbols(t *testing.T) {
-	parser := core.NewParser(core.LangJava)
+	parser := core.NewParser(model.LangJava)
 	units, err := parser.Parse([]byte(javaCode))
 	if err != nil {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangJava)
+	extractor := GetExtractor(model.LangJava)
 	_, err = extractor.ExtractSymbols(units)
 	if err != nil {
 		panic(err)
@@ -43,13 +44,13 @@ func TestJavaExtractor_ExtractSymbols(t *testing.T) {
 }
 
 func TestJavaExtractor_ExtractFunctions(t *testing.T) {
-	parser := core.NewParser(core.LangJava)
+	parser := core.NewParser(model.LangJava)
 	units, err := parser.Parse([]byte(javaCode))
 	if err != nil {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangJava)
+	extractor := GetExtractor(model.LangJava)
 	_, err = extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)

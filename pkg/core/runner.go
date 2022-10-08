@@ -62,6 +62,7 @@ func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Con
 	units, err := r.parseFile(filepath, parser, ctx)
 	if err != nil {
 		// ignore?
+		Log.Errorf("error when parse file %s, err: %v", filepath, err)
 		result <- nil
 	} else {
 		ret := &model.FileUnit{

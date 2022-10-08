@@ -89,6 +89,29 @@ func FindFirstByFieldInSubsWithDfs(unit *Unit, fieldName string) *Unit {
 	return nil
 }
 
+func FindFirstByFieldInSubsWithBfs(unit *Unit, fieldName string) *Unit {
+	if unit == nil {
+		return nil
+	}
+	if unit.FieldName == fieldName {
+		return unit
+	}
+
+	// bfs
+	queue := unit.SubUnits
+	for len(queue) > 0 {
+		var newQueue []*Unit
+		for _, each := range queue {
+			if each.FieldName == fieldName {
+				return each
+			}
+			newQueue = append(newQueue, each.SubUnits...)
+		}
+		queue = newQueue
+	}
+	return nil
+}
+
 func FindAllByKindInSubsWithDfs(unit *Unit, kind KindRepr) []*Unit {
 	var ret []*Unit
 	if unit == nil {

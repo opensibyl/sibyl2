@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"errors"
+	"sibyl2/pkg/core"
 	"sibyl2/pkg/model"
 	"strings"
 )
@@ -121,8 +122,8 @@ func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function
 	parameters := model.FindFirstByKindInSubsWithDfs(unit, KindJavaFormalParameters)
 	if parameters != nil {
 		for _, each := range model.FindAllByKindInSubsWithDfs(parameters, KindJavaFormalParameter) {
-			typeName := model.FindFirstByFieldInSubsWithDfs(each, FieldJavaType)
-			paramName := model.FindFirstByFieldInSubsWithDfs(each, FieldJavaDimensions)
+			typeName := model.FindFirstByFieldInSubsWithBfs(each, FieldJavaType)
+			paramName := model.FindFirstByFieldInSubsWithBfs(each, FieldJavaDimensions)
 			valueUnit = &model.ValueUnit{
 				Type: typeName.Content,
 				Name: paramName.Content,

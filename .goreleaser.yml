@@ -1,6 +1,6 @@
 builds:
   - id: sibyl-darwin-amd64
-    ldflags: '-extldflags "-lstdc++ -static"'
+    ldflags: -s -w
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
@@ -10,7 +10,7 @@ builds:
     goarch:
       - amd64
   - id: sibyl-linux-amd64
-    ldflags: '-extldflags "-lstdc++ -static"'
+    ldflags: -s -w
     env:
       - CGO_ENABLED=1
     goos:

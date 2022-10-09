@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"errors"
+	"sibyl2/pkg/core"
 	"sibyl2/pkg/model"
 	"strings"
 )
@@ -89,9 +90,10 @@ func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function
 	packageDecl := model.FindFirstByKindInSubsWithDfs(program, KindJavaProgramDeclaration)
 	packageIdentifier := model.FindFirstByKindInSubsWithDfs(packageDecl, KindJavaScopeIdentifier)
 	if packageIdentifier == nil {
-		return nil, errors.New("no package found in " + unit.Content)
+		core.Log.Warnf("no package found in %s", unit.Content)
+	} else {
+		pkgName = packageIdentifier.Content
 	}
-	pkgName = packageIdentifier.Content
 
 	// trace its class (the closest one
 	clazzDecl := model.FindFirstByOneOfKindInParent(unit, KindJavaClassDeclaration, KindJavaEnumDeclaration, KindJavaInterfaceDeclaration)

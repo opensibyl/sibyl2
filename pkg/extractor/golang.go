@@ -79,11 +79,11 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*model.Unit) ([]*mode
 }
 
 func (extractor *GolangExtractor) IsCall(unit *model.Unit) bool {
-	panic("TODO")
+	return true
 }
 
 func (extractor *GolangExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
-	panic("TODO")
+	return nil, errors.New("NOT IMPLEMENTED")
 }
 
 func (extractor *GolangExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {

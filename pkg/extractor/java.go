@@ -79,11 +79,11 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*model.Unit) ([]*model.
 }
 
 func (extractor *JavaExtractor) IsCall(unit *model.Unit) bool {
-	panic("TODO")
+	return true
 }
 
 func (extractor *JavaExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
-	panic("TODO")
+	return nil, errors.New("NOT IMPLEMENTED")
 }
 
 func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {

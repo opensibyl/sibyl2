@@ -9,3 +9,6 @@ func (*Symbol) Dt() {
 
 func (*Function) Dt() {
 }
+
+func (*Call) Dt() {
+}

@@ -66,6 +66,22 @@ func (*sibylApi) Extract(userSrc string, langType model.LangType, userExtractTyp
 				Units:    retUnits,
 			}
 			results = append(results, fileResult)
+		case extractor.TypeExtractCall:
+			calls, err := langExtractor.ExtractCalls(eachFileUnit.Units)
+			if err != nil {
+				return nil, err
+			}
+			var retUnits []model.DataType
+			for _, each := range calls {
+				retUnits = append(retUnits, model.DataType(each))
+			}
+			fileResult := &model.FileResult{
+				Path:     eachFileUnit.Path,
+				Language: eachFileUnit.Language,
+				Type:     userExtractType,
+				Units:    retUnits,
+			}
+			results = append(results, fileResult)
 		}
 	}
 	// path

@@ -23,9 +23,9 @@ type ExtractType = string
 
 // these extractors are independent with each other
 const (
-	TypeExtractFunction  ExtractType = "func"
-	TypeExtractSymbol    ExtractType = "symbol"
-	TypeExtractCallChain ExtractType = "call"
+	TypeExtractFunction ExtractType = "func"
+	TypeExtractSymbol   ExtractType = "symbol"
+	TypeExtractCall     ExtractType = "call"
 )
 
 type SymbolSupport interface {

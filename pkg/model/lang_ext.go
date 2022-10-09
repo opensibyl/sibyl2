@@ -4,7 +4,6 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
-	"github.com/smacker/go-tree-sitter/python"
 )
 
 func (langType LangType) GetValue() string {
@@ -17,8 +16,6 @@ func LangTypeValueOf(raw string) LangType {
 		return LangJava
 	case LangGo.GetValue():
 		return LangGo
-	case LangPython.GetValue():
-		return LangPython
 	default:
 		return LangUnknown
 	}
@@ -30,8 +27,6 @@ func (langType LangType) GetLanguage() *sitter.Language {
 		return java.GetLanguage()
 	case LangGo:
 		return golang.GetLanguage()
-	case LangPython:
-		return python.GetLanguage()
 	}
 	return nil
 }
@@ -42,8 +37,6 @@ func (langType LangType) GetFileSuffix() string {
 		return ".java"
 	case LangGo:
 		return ".go"
-	case LangPython:
-		return ".py"
 	}
 	return ""
 }

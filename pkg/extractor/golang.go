@@ -78,6 +78,14 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*model.Unit) ([]*mode
 	return ret, nil
 }
 
+func (extractor *GolangExtractor) IsCall(unit *model.Unit) bool {
+	panic("TODO")
+}
+
+func (extractor *GolangExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
+	panic("TODO")
+}
+
 func (extractor *GolangExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {
 	switch unit.Kind {
 	case KindGolangFuncDecl:

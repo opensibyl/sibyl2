@@ -78,6 +78,14 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*model.Unit) ([]*model.
 	return ret, nil
 }
 
+func (extractor *JavaExtractor) IsCall(unit *model.Unit) bool {
+	panic("TODO")
+}
+
+func (extractor *JavaExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
+	panic("TODO")
+}
+
 func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {
 	funcUnit := &model.Function{}
 	funcUnit.Span = unit.Span

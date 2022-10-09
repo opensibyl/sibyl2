@@ -16,13 +16,16 @@ type Extractor interface {
 	GetLang() model.LangType
 	SymbolSupport
 	FunctionSupport
+	CallSupport
 }
 
 type ExtractType = string
 
+// these extractors are independent with each other
 const (
-	TypeExtractFunction ExtractType = "func"
-	TypeExtractSymbol   ExtractType = "symbol"
+	TypeExtractFunction  ExtractType = "func"
+	TypeExtractSymbol    ExtractType = "symbol"
+	TypeExtractCallChain ExtractType = "call"
 )
 
 type SymbolSupport interface {
@@ -33,6 +36,11 @@ type SymbolSupport interface {
 type FunctionSupport interface {
 	IsFunction(*model.Unit) bool
 	ExtractFunctions([]*model.Unit) ([]*model.Function, error)
+}
+
+type CallSupport interface {
+	IsCall(unit *model.Unit) bool
+	ExtractCalls([]*model.Unit) ([]*model.Call, error)
 }
 
 func GetExtractor(lang model.LangType) Extractor {

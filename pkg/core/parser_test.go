@@ -28,13 +28,6 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
 }
 `
 
-var pythonCode = `
-class ABCD:
-	def Foo(x):
-		return x
-	print Foo("hi")
-`
-
 var goCode = `
 type Parser struct {
 	engine *sitter.Parser
@@ -52,14 +45,6 @@ func NewParser(lang *sitter.Language) *Parser {
 func TestParser_Parse_Java(t *testing.T) {
 	parser := NewParser(model.LangJava)
 	_, err := parser.Parse([]byte(javaCode))
-	if err != nil {
-		panic(err)
-	}
-}
-
-func TestParser_Parse_Python(t *testing.T) {
-	parser := NewParser(model.LangPython)
-	_, err := parser.Parse([]byte(pythonCode))
 	if err != nil {
 		panic(err)
 	}

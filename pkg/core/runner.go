@@ -16,6 +16,7 @@ func (r *Runner) File2Units(filePath string, lang model.LangType) ([]*model.File
 	if err != nil {
 		return nil, err
 	}
+	Log.Infof("valid file count: %d", len(files))
 
 	parser := NewParser(lang)
 
@@ -30,6 +31,7 @@ func (r *Runner) File2Units(filePath string, lang model.LangType) ([]*model.File
 		r.parseFileAsync(eachFile, parser, ctx, fileUnitsChan)
 	}
 
+	// wait for all the tasks finished
 	for range files {
 		eachFileUnit := <-fileUnitsChan
 		if eachFileUnit == nil {

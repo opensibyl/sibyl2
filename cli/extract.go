@@ -4,13 +4,14 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/spf13/cobra"
-	"golang.org/x/exp/slices"
 	"os"
 	"sibyl2/pkg"
 	"sibyl2/pkg/extractor"
 	"sibyl2/pkg/model"
 	"time"
+
+	"github.com/spf13/cobra"
+	"golang.org/x/exp/slices"
 )
 
 var userSrc string
@@ -18,7 +19,11 @@ var userLangType string
 var userExtractType string
 var userOutputFile string
 
-var allowExtractType = []string{extractor.TypeExtractSymbol, extractor.TypeExtractFunction}
+var allowExtractType = []string{
+	extractor.TypeExtractSymbol,
+	extractor.TypeExtractFunction,
+	extractor.TypeExtractCall,
+}
 
 func NewExtractCmd() *cobra.Command {
 	extractCmd := &cobra.Command{
@@ -37,7 +42,7 @@ func NewExtractCmd() *cobra.Command {
 			}
 
 			if userOutputFile == "" {
-				userOutputFile = fmt.Sprintf("sibyl-%s-%d.json", langType, time.Now().Unix())
+				userOutputFile = fmt.Sprintf("sibyl-%s-%s-%d.json", userExtractType, langType, time.Now().Unix())
 			}
 
 			results, err := pkg.SibylApi.Extract(userSrc, langType, userExtractType)

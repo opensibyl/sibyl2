@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"errors"
+	"sibyl2/pkg/core"
 	"sibyl2/pkg/model"
 	"strings"
 
@@ -17,9 +18,12 @@ const (
 	KindGolangTypeIdentifier  model.KindRepr = "type_identifier"
 	KindGolangParameterList   model.KindRepr = "parameter_list"
 	KindGolangParameterDecl   model.KindRepr = "parameter_declaration"
+	KindGolangCallExpression  model.KindRepr = "call_expression"
 	FieldGolangType           model.KindRepr = "type"
 	FieldGolangName           model.KindRepr = "name"
 	FieldGolangParameters     model.KindRepr = "parameters"
+	FieldGolangFunction       model.KindRepr = "function"
+	FieldGolangArguments      model.KindRepr = "arguments"
 )
 
 type GolangExtractor struct {
@@ -79,11 +83,63 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*model.Unit) ([]*mode
 }
 
 func (extractor *GolangExtractor) IsCall(unit *model.Unit) bool {
-	return true
+	if unit.Kind == KindGolangCallExpression {
+		return true
+	}
+	return false
 }
 
 func (extractor *GolangExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
-	return nil, errors.New("NOT IMPLEMENTED")
+	var ret []*model.Call
+	for _, eachUnit := range units {
+		if !extractor.IsCall(eachUnit) {
+			continue
+		}
+
+		eachCall, err := extractor.unit2Call(eachUnit)
+		if err != nil {
+			core.Log.Warnf("err: %v", err)
+			continue
+		}
+		ret = append(ret, eachCall)
+	}
+	return ret, nil
+}
+
+func (extractor *GolangExtractor) unit2Call(unit *model.Unit) (*model.Call, error) {
+	// todo: what about nested call
+	funcUnit := model.FindFirstByOneOfKindInParent(unit, KindGolangFuncDecl, KindGolangMethodDecl)
+	var src *model.Function
+	if funcUnit != nil {
+		srcList, err := extractor.ExtractFunctions([]*model.Unit{funcUnit})
+		if err != nil {
+			return nil, err
+		}
+		src = srcList[0]
+	}
+
+	// headless, give up
+	if src == nil {
+		return nil, errors.New("headless call")
+	}
+
+	funcPart := model.FindFirstByFieldInSubsWithBfs(unit, FieldGolangFunction)
+	argumentPart := model.FindFirstByFieldInSubsWithBfs(unit, FieldGolangArguments)
+
+	// not perfect, eg: anonymous function call?
+	var arguments []string
+	for _, each := range argumentPart.SubUnits {
+		if each.Kind == KindGolangIdentifier {
+			arguments = append(arguments, each.Content)
+		}
+	}
+
+	ret := &model.Call{
+		Src:       src,
+		Caller:    funcPart.Content,
+		Arguments: arguments,
+	}
+	return ret, nil
 }
 
 func (extractor *GolangExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {

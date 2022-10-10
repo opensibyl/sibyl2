@@ -8,6 +8,18 @@ func FindFirstByKindInParent(unit *Unit, kind KindRepr) *Unit {
 	return NewQuery(unit).Bottom2Top().MatchKind(kind).First()
 }
 
+func FindAllByKindInParent(unit *Unit, kind KindRepr) []*Unit {
+	return NewQuery(unit).Bottom2Top().MatchKind(kind).All()
+}
+
+func FindAllByOneOfKindInParent(unit *Unit, kinds ...KindRepr) []*Unit {
+	query := NewQuery(unit).Bottom2Top()
+	for _, each := range kinds {
+		query.MatchKind(each)
+	}
+	return query.All()
+}
+
 func FindFirstByOneOfKindInParent(unit *Unit, kinds ...KindRepr) *Unit {
 	query := NewQuery(unit).Bottom2Top()
 	for _, each := range kinds {
@@ -29,7 +41,11 @@ func FindFirstByFieldInSubsWithBfs(unit *Unit, fieldName string) *Unit {
 }
 
 func FindAllByKindInSubsWithDfs(unit *Unit, kind KindRepr) []*Unit {
-	return NewQuery(unit).Top2Bottom().MatchKind(kind).All()
+	return NewQuery(unit).Top2Bottom().MatchKind(kind).Dfs().All()
+}
+
+func FindAllByKindInSubsWithBfs(unit *Unit, kind KindRepr) []*Unit {
+	return NewQuery(unit).Top2Bottom().MatchKind(kind).Bfs().All()
 }
 
 func FindFirstByKindInSubsWithBfs(unit *Unit, kind KindRepr) *Unit {

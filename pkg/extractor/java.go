@@ -19,8 +19,12 @@ const (
 	KindJavaMethodDeclaration    model.KindRepr = "method_declaration"
 	KindJavaFormalParameters     model.KindRepr = "formal_parameters"
 	KindJavaFormalParameter      model.KindRepr = "formal_parameter"
+	KindJavaMethodInvocation     model.KindRepr = "method_invocation"
 	FieldJavaType                model.KindRepr = "type"
 	FieldJavaDimensions          model.KindRepr = "dimensions"
+	FieldJavaObject              model.KindRepr = "object"
+	FieldJavaName                model.KindRepr = "name"
+	FieldJavaArguments           model.KindRepr = "arguments"
 )
 
 type JavaExtractor struct {
@@ -79,11 +83,65 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*model.Unit) ([]*model.
 }
 
 func (extractor *JavaExtractor) IsCall(unit *model.Unit) bool {
-	return true
+	if unit.Kind == KindJavaMethodInvocation {
+		return true
+	}
+	return false
 }
 
 func (extractor *JavaExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
-	return nil, errors.New("NOT IMPLEMENTED")
+	var ret []*model.Call
+	for _, eachUnit := range units {
+		if !extractor.IsCall(eachUnit) {
+			continue
+		}
+
+		eachCall, err := extractor.unit2Call(eachUnit)
+		if err != nil {
+			core.Log.Warnf("err: %v", err)
+			continue
+		}
+		ret = append(ret, eachCall)
+	}
+	return ret, nil
+}
+
+func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error) {
+	funcUnit := model.FindFirstByOneOfKindInParent(unit, KindJavaMethodDeclaration)
+	var src *model.Function
+	if funcUnit != nil {
+		srcList, err := extractor.ExtractFunctions([]*model.Unit{funcUnit})
+		if err != nil {
+			return nil, err
+		}
+		src = srcList[0]
+	}
+	// headless, give up
+	if src == nil {
+		return nil, errors.New("headless call")
+	}
+
+	funcPart := model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaObject)
+	argumentPart := model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaName)
+	if funcPart == nil {
+		funcPart = model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaName)
+		funcPart = model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaArguments)
+	}
+
+	// not perfect, eg: anonymous function call?
+	var arguments []string
+	for _, each := range argumentPart.SubUnits {
+		if each.Kind == KindJavaIdentifier {
+			arguments = append(arguments, each.Content)
+		}
+	}
+
+	ret := &model.Call{
+		Src:       src,
+		Caller:    funcPart.Content,
+		Arguments: arguments,
+	}
+	return ret, nil
 }
 
 func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {

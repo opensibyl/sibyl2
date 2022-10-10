@@ -33,56 +33,33 @@ func (*sibylApi) Extract(userSrc string, langType model.LangType, userExtractTyp
 	langExtractor := extractor.GetExtractor(langType)
 	var results []*model.FileResult
 	for _, eachFileUnit := range fileUnits {
+		fileResult := &model.FileResult{
+			Path:     eachFileUnit.Path,
+			Language: eachFileUnit.Language,
+			Type:     userExtractType,
+		}
+
 		switch userExtractType {
 		case extractor.TypeExtractSymbol:
 			symbols, err := langExtractor.ExtractSymbols(eachFileUnit.Units)
 			if err != nil {
 				return nil, err
 			}
-			var retUnits []model.DataType
-			for _, each := range symbols {
-				retUnits = append(retUnits, model.DataType(each))
-			}
-			fileResult := &model.FileResult{
-				Path:     eachFileUnit.Path,
-				Language: eachFileUnit.Language,
-				Type:     userExtractType,
-				Units:    retUnits,
-			}
-			results = append(results, fileResult)
+			fileResult.Units = model.DataTypeOf(symbols)
 		case extractor.TypeExtractFunction:
 			functions, err := langExtractor.ExtractFunctions(eachFileUnit.Units)
 			if err != nil {
 				return nil, err
 			}
-			var retUnits []model.DataType
-			for _, each := range functions {
-				retUnits = append(retUnits, model.DataType(each))
-			}
-			fileResult := &model.FileResult{
-				Path:     eachFileUnit.Path,
-				Language: eachFileUnit.Language,
-				Type:     userExtractType,
-				Units:    retUnits,
-			}
-			results = append(results, fileResult)
+			fileResult.Units = model.DataTypeOf(functions)
 		case extractor.TypeExtractCall:
 			calls, err := langExtractor.ExtractCalls(eachFileUnit.Units)
 			if err != nil {
 				return nil, err
 			}
-			var retUnits []model.DataType
-			for _, each := range calls {
-				retUnits = append(retUnits, model.DataType(each))
-			}
-			fileResult := &model.FileResult{
-				Path:     eachFileUnit.Path,
-				Language: eachFileUnit.Language,
-				Type:     userExtractType,
-				Units:    retUnits,
-			}
-			results = append(results, fileResult)
+			fileResult.Units = model.DataTypeOf(calls)
 		}
+		results = append(results, fileResult)
 	}
 	// path
 	err = model.PathStandardize(results, userSrc)

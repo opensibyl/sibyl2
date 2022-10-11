@@ -36,6 +36,7 @@ type SymbolSupport interface {
 type FunctionSupport interface {
 	IsFunction(*model.Unit) bool
 	ExtractFunctions([]*model.Unit) ([]*model.Function, error)
+	ExtractFunction(*model.Unit) (*model.Function, error)
 }
 
 type CallSupport interface {

@@ -82,6 +82,14 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*model.Unit) ([]*model.
 	return ret, nil
 }
 
+func (extractor *JavaExtractor) ExtractFunction(unit *model.Unit) (*model.Function, error) {
+	data, err := extractor.ExtractFunctions([]*model.Unit{unit})
+	if len(data) == 0 {
+		return nil, err
+	}
+	return data[0], nil
+}
+
 func (extractor *JavaExtractor) IsCall(unit *model.Unit) bool {
 	if unit.Kind == KindJavaMethodInvocation {
 		return true
@@ -108,37 +116,53 @@ func (extractor *JavaExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call
 
 func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error) {
 	funcUnit := model.FindFirstByOneOfKindInParent(unit, KindJavaMethodDeclaration)
-	var src *model.Function
+	var srcFunc *model.Function
+	var err error
 	if funcUnit != nil {
-		srcList, err := extractor.ExtractFunctions([]*model.Unit{funcUnit})
+		srcFunc, err = extractor.ExtractFunction(funcUnit)
 		if err != nil {
-			return nil, err
+			return nil, errors.New("convert func failed: " + funcUnit.Content)
 		}
-		src = srcList[0]
 	}
-	// headless, give up
-	if src == nil {
+
+	// headless, give up (temp
+	if srcFunc == nil {
 		return nil, errors.New("headless call")
 	}
 
-	funcPart := model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaObject)
-	argumentPart := model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaName)
-	if funcPart == nil {
-		funcPart = model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaName)
-		funcPart = model.FindFirstByFieldInSubsWithBfs(unit, FieldJavaArguments)
+	var argumentPart *model.Unit
+	var arguments []string
+	var caller string
+
+	callerPart := model.FindFirstByFieldInSubs(unit, FieldJavaObject)
+	if callerPart == nil {
+		// b()
+		callerPart = model.FindFirstByFieldInSubs(unit, FieldJavaName)
+		argumentPart = model.FindFirstByFieldInSubs(unit, FieldJavaArguments)
+		caller = callerPart.Content
+	} else {
+		// a.b()
+		identifiers := model.FindAllByKindInSubs(unit, KindJavaIdentifier)
+		argumentPart = model.FindFirstByFieldInSubs(unit, FieldJavaName)
+
+		if len(identifiers) == 0 {
+			core.DebugDfs(unit, 0)
+			return nil, errors.New("no id: " + unit.Content)
+		}
+
+		caller = callerPart.Content + "." + identifiers[len(identifiers)-1].Content
 	}
 
 	// not perfect, eg: anonymous function call?
-	var arguments []string
-	for _, each := range argumentPart.SubUnits {
-		if each.Kind == KindJavaIdentifier {
+	if argumentPart != nil {
+		for _, each := range model.FindAllByKindInSubs(argumentPart, KindJavaIdentifier) {
 			arguments = append(arguments, each.Content)
 		}
 	}
 
 	ret := &model.Call{
-		Src:       src,
-		Caller:    funcPart.Content,
+		Src:       srcFunc.GetSignature(),
+		Caller:    caller,
 		Arguments: arguments,
 	}
 	return ret, nil

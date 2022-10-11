@@ -82,6 +82,14 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*model.Unit) ([]*mode
 	return ret, nil
 }
 
+func (extractor *GolangExtractor) ExtractFunction(unit *model.Unit) (*model.Function, error) {
+	data, err := extractor.ExtractFunctions([]*model.Unit{unit})
+	if len(data) == 0 {
+		return nil, err
+	}
+	return data[0], nil
+}
+
 func (extractor *GolangExtractor) IsCall(unit *model.Unit) bool {
 	if unit.Kind == KindGolangCallExpression {
 		return true
@@ -109,17 +117,17 @@ func (extractor *GolangExtractor) ExtractCalls(units []*model.Unit) ([]*model.Ca
 func (extractor *GolangExtractor) unit2Call(unit *model.Unit) (*model.Call, error) {
 	// todo: what about nested call
 	funcUnit := model.FindFirstByOneOfKindInParent(unit, KindGolangFuncDecl, KindGolangMethodDecl)
-	var src *model.Function
+	var srcFunc *model.Function
+	var err error
 	if funcUnit != nil {
-		srcList, err := extractor.ExtractFunctions([]*model.Unit{funcUnit})
+		srcFunc, err = extractor.ExtractFunction(funcUnit)
 		if err != nil {
-			return nil, err
+			return nil, errors.New("convert func failed: " + funcUnit.Content)
 		}
-		src = srcList[0]
 	}
 
-	// headless, give up
-	if src == nil {
+	// headless, give up (temp
+	if srcFunc == nil {
 		return nil, errors.New("headless call")
 	}
 
@@ -135,7 +143,7 @@ func (extractor *GolangExtractor) unit2Call(unit *model.Unit) (*model.Call, erro
 	}
 
 	ret := &model.Call{
-		Src:       src,
+		Src:       srcFunc.GetSignature(),
 		Caller:    funcPart.Content,
 		Arguments: arguments,
 	}

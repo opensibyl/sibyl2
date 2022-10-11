@@ -52,6 +52,33 @@ func FindFirstByKindInSubsWithBfs(unit *Unit, kind KindRepr) *Unit {
 	return NewQuery(unit).Bfs().Top2Bottom().MatchKind(kind).First()
 }
 
+func FindFirstByFieldInSubs(unit *Unit, fieldName string) *Unit {
+	if unit == nil {
+		return nil
+	}
+
+	for _, each := range unit.SubUnits {
+		if each.FieldName == fieldName {
+			return each
+		}
+	}
+	return nil
+}
+
+func FindAllByKindInSubs(unit *Unit, kind string) []*Unit {
+	var ret []*Unit
+	if unit == nil {
+		return ret
+	}
+
+	for _, each := range unit.SubUnits {
+		if each.Kind == kind {
+			ret = append(ret, each)
+		}
+	}
+	return ret
+}
+
 type Query struct {
 	target       *Unit
 	IsDfs        bool

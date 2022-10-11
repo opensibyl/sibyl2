@@ -12,7 +12,7 @@ Call NON-PRECISE
 	[c, d] == parameters
 */
 type Call struct {
-	Src       *Function `json:"src"`
-	Caller    string    `json:"caller"`
-	Arguments []string  `json:"arguments"`
+	Src       string   `json:"src"`
+	Caller    string   `json:"caller"`
+	Arguments []string `json:"arguments"`
 }

@@ -146,6 +146,7 @@ func (extractor *GolangExtractor) unit2Call(unit *model.Unit) (*model.Call, erro
 		Src:       srcFunc.GetSignature(),
 		Caller:    funcPart.Content,
 		Arguments: arguments,
+		Span:      unit.Span,
 	}
 	return ret, nil
 }

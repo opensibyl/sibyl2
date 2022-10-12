@@ -9,10 +9,11 @@ Call NON-PRECISE
 
 	aFunc  == Src
 	a.b    == caller
-	[c, d] == parameters
+	[c, d] == arguments
 */
 type Call struct {
 	Src       string   `json:"src"`
 	Caller    string   `json:"caller"`
 	Arguments []string `json:"arguments"`
+	Span      Span     `json:"span"`
 }

@@ -164,6 +164,7 @@ func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error)
 		Src:       srcFunc.GetSignature(),
 		Caller:    caller,
 		Arguments: arguments,
+		Span:      unit.Span,
 	}
 	return ret, nil
 }

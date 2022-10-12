@@ -70,8 +70,10 @@ TODO
 
 | Language | Function | Call |
 |:---------|:--------:|:----:|
-| Go       |    ✅     |  🚧  |
-| Java     |    ✅     |  🚧  |
+| Go       |    ✅     |  ✅   |
+| Java     |    ✅     |  ✅   |
+
+> call 与 symbol 的支持并不完全准确，复杂度相当高（可见 [github-code-navi](https://docs.github.com/en/repositories/working-with-files/using-files/navigating-code-on-github#precise-and-search-based-navigation)）。但暂时不是我们的重点。
 
 ## FAQ
 
@@ -79,7 +81,7 @@ TODO
 
 详见《[sibyl 1 的不足](https://github.com/williamfzc/sibyl#2022-09-24)》，针对这两点：
 
-- 性能：更换底层后性能有100倍以上的提升，除了IDE级别的高实时场景外完全满足需求；
+- 性能：更换底层后性能有较大幅度的提升，除了IDE级别的高实时场景外，完全满足CI、本地运行等需求；
 - 数据结构：底层设计深度参考 semantic ，上层最小化；
 
 ### 源码分析 vs 制品分析

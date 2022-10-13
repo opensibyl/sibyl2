@@ -8,7 +8,11 @@ import (
 )
 
 func TestExtract(t *testing.T) {
-	fileResult, err := SibylApi.Extract(".", model.LangGo, extractor.TypeExtractFunction)
+
+	fileResult, err := SibylApi.Extract(".", &ExtractConfig{
+		LangType:    model.LangGo,
+		ExtractType: extractor.TypeExtractFunction,
+	})
 	if err != nil {
 		panic(err)
 	}

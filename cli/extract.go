@@ -45,7 +45,11 @@ func NewExtractCmd() *cobra.Command {
 				userOutputFile = fmt.Sprintf("sibyl-%s-%s-%d.json", userExtractType, langType, time.Now().Unix())
 			}
 
-			results, err := pkg.SibylApi.Extract(userSrc, langType, userExtractType)
+			config := &pkg.ExtractConfig{
+				LangType:    langType,
+				ExtractType: userExtractType,
+			}
+			results, err := pkg.SibylApi.Extract(userSrc, config)
 			if err != nil {
 				panic(err)
 			}

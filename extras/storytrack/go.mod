@@ -2,7 +2,12 @@ module github.com/williamfzc/sibyl2/extras/storytrack
 
 go 1.19
 
-require github.com/go-git/go-git/v5 v5.4.2
+require (
+	github.com/go-git/go-git/v5 v5.4.2
+	github.com/williamfzc/sibyl2 v0.0.0-00010101000000-000000000000
+)
+
+replace github.com/williamfzc/sibyl2 => ../..
 
 require (
 	github.com/Microsoft/go-winio v0.4.16 // indirect
@@ -16,9 +21,14 @@ require (
 	github.com/kevinburke/ssh_config v0.0.0-20201106050909-4977a11b4351 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/sergi/go-diff v1.1.0 // indirect
+	github.com/smacker/go-tree-sitter v0.0.0-20220829074436-0a7a807924f2 // indirect
 	github.com/xanzy/ssh-agent v0.3.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/multierr v1.8.0 // indirect
+	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/crypto v0.0.0-20210421170649-83a5a9bb288b // indirect
+	golang.org/x/exp v0.0.0-20220929160808-de9c53c655b9 // indirect
 	golang.org/x/net v0.0.0-20210326060303-6b1517762897 // indirect
-	golang.org/x/sys v0.0.0-20210502180810-71e4cd670f79 // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 )

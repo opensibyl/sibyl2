@@ -2,7 +2,7 @@ package core
 
 import (
 	"context"
-	"sibyl2/pkg/model"
+	"github.com/williamfzc/sibyl2/pkg/model"
 
 	sitter "github.com/smacker/go-tree-sitter"
 )

@@ -2,10 +2,10 @@ package pkg
 
 import (
 	"errors"
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
-	"sibyl2/pkg/core"
-	"sibyl2/pkg/extractor"
-	"sibyl2/pkg/model"
 	"time"
 )
 

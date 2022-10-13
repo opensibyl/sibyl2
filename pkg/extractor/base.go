@@ -1,7 +1,7 @@
 package extractor
 
 import (
-	"sibyl2/pkg/model"
+	"github.com/williamfzc/sibyl2/pkg/model"
 )
 
 /*

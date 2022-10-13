@@ -1,8 +1,8 @@
 package extractor
 
 import (
-	"sibyl2/pkg/core"
-	"sibyl2/pkg/model"
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/model"
 	"testing"
 )
 

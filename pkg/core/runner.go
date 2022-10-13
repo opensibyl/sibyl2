@@ -2,9 +2,9 @@ package core
 
 import (
 	"context"
+	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
 	"path/filepath"
-	"sibyl2/pkg/model"
 	"strings"
 )
 

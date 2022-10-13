@@ -4,10 +4,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/williamfzc/sibyl2/pkg"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
-	"sibyl2/pkg"
-	"sibyl2/pkg/extractor"
-	"sibyl2/pkg/model"
 	"time"
 
 	"github.com/spf13/cobra"

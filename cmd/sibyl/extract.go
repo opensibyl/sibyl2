@@ -1,10 +1,10 @@
-package cli
+package main
 
 import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/williamfzc/sibyl2/pkg"
+	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
@@ -45,11 +45,11 @@ func NewExtractCmd() *cobra.Command {
 				userOutputFile = fmt.Sprintf("sibyl-%s-%s-%d.json", userExtractType, langType, time.Now().Unix())
 			}
 
-			config := &pkg.ExtractConfig{
+			config := &sibyl2.ExtractConfig{
 				LangType:    langType,
 				ExtractType: userExtractType,
 			}
-			results, err := pkg.SibylApi.Extract(userSrc, config)
+			results, err := sibyl2.Extract(userSrc, config)
 			if err != nil {
 				panic(err)
 			}

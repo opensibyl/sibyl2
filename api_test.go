@@ -1,4 +1,4 @@
-package pkg
+package sibyl2
 
 import (
 	"github.com/williamfzc/sibyl2/pkg/core"
@@ -9,7 +9,7 @@ import (
 
 func TestExtract(t *testing.T) {
 
-	fileResult, err := SibylApi.Extract(".", &ExtractConfig{
+	fileResult, err := Extract(".", &ExtractConfig{
 		LangType:    model.LangGo,
 		ExtractType: extractor.TypeExtractFunction,
 	})

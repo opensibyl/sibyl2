@@ -1,4 +1,4 @@
-package pkg
+package sibyl2
 
 import (
 	"errors"
@@ -9,17 +9,12 @@ import (
 	"time"
 )
 
-var SibylApi = &sibylApi{}
-
-type sibylApi struct {
-}
-
 type ExtractConfig struct {
 	LangType    model.LangType
 	ExtractType extractor.ExtractType
 }
 
-func (*sibylApi) Extract(targetDir string, config *ExtractConfig) ([]*model.FileResult, error) {
+func Extract(targetDir string, config *ExtractConfig) ([]*model.FileResult, error) {
 	startTime := time.Now()
 	defer func() {
 		core.Log.Infof("cost: %d ms", time.Since(startTime).Milliseconds())

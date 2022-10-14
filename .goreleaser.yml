@@ -1,6 +1,7 @@
 builds:
   - id: sibyl-darwin-amd64
     ldflags: -s -w
+    main: ./cmd/sibyl
     env:
       - CGO_ENABLED=1
       - CC=o64-clang
@@ -11,6 +12,7 @@ builds:
       - amd64
   - id: sibyl-linux-amd64
     ldflags: -s -w
+    main: ./cmd/sibyl
     env:
       - CGO_ENABLED=1
     goos:
@@ -19,6 +21,7 @@ builds:
       - amd64
   - id: sibyl-windows-amd64
     ldflags: '-extldflags "-lstdc++ -static"'
+    main: ./cmd/sibyl
     env:
       - CGO_ENABLED=1
       - CC=x86_64-w64-mingw32-gcc

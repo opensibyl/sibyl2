@@ -4,7 +4,7 @@ import (
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/williamfzc/sibyl2/pkg"
+	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/model"
@@ -48,7 +48,7 @@ func (st *storyTrack) Track(gitDir string, targetRev string, ruleJudge Rule) (*T
 			core.Log.Infof("checking file: %s", absFile)
 
 			// todo: incorrect path
-			fileResults, err := pkg.SibylApi.Extract(absFile, &pkg.ExtractConfig{
+			fileResults, err := sibyl2.Extract(absFile, &sibyl2.ExtractConfig{
 				LangType:    model.LangGo,
 				ExtractType: extractor.TypeExtractFunction,
 			})

@@ -1,4 +1,4 @@
-package model
+package core
 
 import (
 	"golang.org/x/exp/slices"

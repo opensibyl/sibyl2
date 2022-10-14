@@ -1,4 +1,4 @@
-package model
+package core
 
 type Span struct {
 	Start Point `json:"start"`
@@ -27,4 +27,10 @@ type Unit struct {
 	// double linked
 	ParentUnit *Unit
 	SubUnits   []*Unit
+}
+
+type FileUnit struct {
+	Path     string   `json:"path"`
+	Language LangType `json:"language"`
+	Units    []*Unit  `json:"units"`
 }

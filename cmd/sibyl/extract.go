@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
 	"time"
 
@@ -32,8 +32,8 @@ func NewExtractCmd() *cobra.Command {
 		Long:   `test`,
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
-			langType := model.LangTypeValueOf(userLangType)
-			if langType == model.LangUnknown {
+			langType := core.LangTypeValueOf(userLangType)
+			if langType == core.LangUnknown {
 				panic(errors.New("unknown lang type: " + userLangType))
 			}
 

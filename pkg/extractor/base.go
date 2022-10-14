@@ -1,7 +1,7 @@
 package extractor
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/model"
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 /*
@@ -13,7 +13,7 @@ https://github.com/tree-sitter/tree-sitter-java/blob/master/grammar.js
 unlike other projects, we will only keep the necessary parts, not the whole grammar rule
 */
 type Extractor interface {
-	GetLang() model.LangType
+	GetLang() core.LangType
 	SymbolSupport
 	FunctionSupport
 	CallSupport
@@ -29,26 +29,26 @@ const (
 )
 
 type SymbolSupport interface {
-	IsSymbol(*model.Unit) bool
-	ExtractSymbols([]*model.Unit) ([]*model.Symbol, error)
+	IsSymbol(*core.Unit) bool
+	ExtractSymbols([]*core.Unit) ([]*Symbol, error)
 }
 
 type FunctionSupport interface {
-	IsFunction(*model.Unit) bool
-	ExtractFunctions([]*model.Unit) ([]*model.Function, error)
-	ExtractFunction(*model.Unit) (*model.Function, error)
+	IsFunction(*core.Unit) bool
+	ExtractFunctions([]*core.Unit) ([]*Function, error)
+	ExtractFunction(*core.Unit) (*Function, error)
 }
 
 type CallSupport interface {
-	IsCall(unit *model.Unit) bool
-	ExtractCalls([]*model.Unit) ([]*model.Call, error)
+	IsCall(unit *core.Unit) bool
+	ExtractCalls([]*core.Unit) ([]*Call, error)
 }
 
-func GetExtractor(lang model.LangType) Extractor {
+func GetExtractor(lang core.LangType) Extractor {
 	switch lang {
-	case model.LangJava:
+	case core.LangJava:
 		return &JavaExtractor{}
-	case model.LangGo:
+	case core.LangGo:
 		return &GolangExtractor{}
 	}
 	return nil

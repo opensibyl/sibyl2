@@ -2,8 +2,6 @@ package core
 
 import (
 	"context"
-	"github.com/williamfzc/sibyl2/pkg/model"
-
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -17,7 +15,7 @@ type Parser struct {
 	engine *sitter.Parser
 }
 
-func NewParser(lang model.LangType) *Parser {
+func NewParser(lang LangType) *Parser {
 	engine := sitter.NewParser()
 	engine.SetLanguage(lang.GetLanguage())
 	return &Parser{
@@ -25,7 +23,7 @@ func NewParser(lang model.LangType) *Parser {
 	}
 }
 
-func (p *Parser) ParseCtx(data []byte, context context.Context) ([]*model.Unit, error) {
+func (p *Parser) ParseCtx(data []byte, context context.Context) ([]*Unit, error) {
 	tree, err := p.engine.ParseCtx(context, nil, data)
 	if err != nil {
 		return nil, err
@@ -33,21 +31,21 @@ func (p *Parser) ParseCtx(data []byte, context context.Context) ([]*model.Unit, 
 	return p.node2Units(data, tree.RootNode(), "", nil)
 }
 
-func (p *Parser) ParseStringCtx(data string, context context.Context) ([]*model.Unit, error) {
+func (p *Parser) ParseStringCtx(data string, context context.Context) ([]*Unit, error) {
 	return p.ParseCtx([]byte(data), context)
 }
 
-func (p *Parser) Parse(data []byte) ([]*model.Unit, error) {
+func (p *Parser) Parse(data []byte) ([]*Unit, error) {
 	return p.ParseCtx(data, context.TODO())
 }
 
-func (p *Parser) ParseString(data string) ([]*model.Unit, error) {
+func (p *Parser) ParseString(data string) ([]*Unit, error) {
 	return p.ParseCtx([]byte(data), context.TODO())
 }
 
 // DFS
-func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName string, parentUnit *model.Unit) ([]*model.Unit, error) {
-	var ret []*model.Unit
+func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName string, parentUnit *Unit) ([]*Unit, error) {
+	var ret []*Unit
 
 	// itself
 	curRootUnit, err := p.node2Unit(data, curRootNode, fieldName, parentUnit)
@@ -72,8 +70,8 @@ func (p *Parser) node2Units(data []byte, curRootNode *sitter.Node, fieldName str
 	return ret, nil
 }
 
-func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, parentUnit *model.Unit) (*model.Unit, error) {
-	ret := &model.Unit{}
+func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, parentUnit *Unit) (*Unit, error) {
+	ret := &Unit{}
 
 	ret.FieldName = fieldName
 	ret.Content = node.Content(data)
@@ -84,9 +82,9 @@ func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, par
 	ret.Kind = node.Type()
 
 	// range
-	ret.Span = model.Span{
-		Start: model.Point{Row: node.StartPoint().Row, Column: node.StartPoint().Column},
-		End:   model.Point{Row: node.EndPoint().Row, Column: node.EndPoint().Column},
+	ret.Span = Span{
+		Start: Point{Row: node.StartPoint().Row, Column: node.StartPoint().Column},
+		End:   Point{Row: node.EndPoint().Row, Column: node.EndPoint().Column},
 	}
 	ret.ParentUnit = parentUnit
 	return ret, nil

@@ -1,4 +1,4 @@
-package model
+package extractor
 
 type DataType interface {
 	Dt()

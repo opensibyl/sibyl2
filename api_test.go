@@ -3,14 +3,13 @@ package sibyl2
 import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"testing"
 )
 
 func TestExtract(t *testing.T) {
 
 	fileResult, err := Extract(".", &ExtractConfig{
-		LangType:    model.LangGo,
+		LangType:    core.LangGo,
 		ExtractType: extractor.TypeExtractFunction,
 	})
 	if err != nil {

@@ -1,4 +1,6 @@
-package model
+package extractor
+
+import "github.com/williamfzc/sibyl2/pkg/core"
 
 /*
 Symbol
@@ -35,8 +37,8 @@ https://github.com/github/semantic/blob/main/proto/semantic.proto
 	}
 */
 type Symbol struct {
-	Symbol    string `json:"symbol"`
-	Kind      string `json:"kind"`
-	Span      Span   `json:"span"`
-	FieldName string `json:"fieldName"`
+	Symbol    string    `json:"symbol"`
+	Kind      string    `json:"kind"`
+	Span      core.Span `json:"span"`
+	FieldName string    `json:"fieldName"`
 }

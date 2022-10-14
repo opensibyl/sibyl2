@@ -2,7 +2,6 @@ package extractor
 
 import (
 	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"testing"
 )
 
@@ -21,13 +20,13 @@ func (*Parser) NormalMethod(lang *sitter.Language) string {
 `
 
 func TestGolangExtractor_ExtractFunctions(t *testing.T) {
-	parser := core.NewParser(model.LangGo)
+	parser := core.NewParser(core.LangGo)
 	units, err := parser.Parse([]byte(goCode))
 	if err != nil {
 		panic(err)
 	}
 
-	extractor := GetExtractor(model.LangGo)
+	extractor := GetExtractor(core.LangGo)
 	_, err = extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)

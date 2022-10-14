@@ -4,17 +4,16 @@ import (
 	"errors"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
 	"time"
 )
 
 type ExtractConfig struct {
-	LangType    model.LangType
+	LangType    core.LangType
 	ExtractType extractor.ExtractType
 }
 
-func Extract(targetDir string, config *ExtractConfig) ([]*model.FileResult, error) {
+func Extract(targetDir string, config *ExtractConfig) ([]*extractor.FileResult, error) {
 	startTime := time.Now()
 	defer func() {
 		core.Log.Infof("cost: %d ms", time.Since(startTime).Milliseconds())
@@ -31,9 +30,9 @@ func Extract(targetDir string, config *ExtractConfig) ([]*model.FileResult, erro
 	}
 
 	langExtractor := extractor.GetExtractor(config.LangType)
-	var results []*model.FileResult
+	var results []*extractor.FileResult
 	for _, eachFileUnit := range fileUnits {
-		fileResult := &model.FileResult{
+		fileResult := &extractor.FileResult{
 			Path:     eachFileUnit.Path,
 			Language: eachFileUnit.Language,
 			Type:     config.ExtractType,
@@ -45,24 +44,24 @@ func Extract(targetDir string, config *ExtractConfig) ([]*model.FileResult, erro
 			if err != nil {
 				return nil, err
 			}
-			fileResult.Units = model.DataTypeOf(symbols)
+			fileResult.Units = extractor.DataTypeOf(symbols)
 		case extractor.TypeExtractFunction:
 			functions, err := langExtractor.ExtractFunctions(eachFileUnit.Units)
 			if err != nil {
 				return nil, err
 			}
-			fileResult.Units = model.DataTypeOf(functions)
+			fileResult.Units = extractor.DataTypeOf(functions)
 		case extractor.TypeExtractCall:
 			calls, err := langExtractor.ExtractCalls(eachFileUnit.Units)
 			if err != nil {
 				return nil, err
 			}
-			fileResult.Units = model.DataTypeOf(calls)
+			fileResult.Units = extractor.DataTypeOf(calls)
 		}
 		results = append(results, fileResult)
 	}
 	// path
-	err = model.PathStandardize(results, targetDir)
+	err = extractor.PathStandardize(results, targetDir)
 	if err != nil {
 		return nil, err
 	}

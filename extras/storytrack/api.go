@@ -7,7 +7,6 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"path/filepath"
 )
 
@@ -17,7 +16,7 @@ type storyTrack struct {
 }
 
 type TrackResult struct {
-	Functions []*model.FileResult
+	Functions []*extractor.FileResult
 }
 
 type Rule = func(commit *object.Commit) bool
@@ -37,7 +36,7 @@ func (st *storyTrack) Track(gitDir string, targetRev string, ruleJudge Rule) (*T
 		return nil
 	})
 
-	var results []*model.FileResult
+	var results []*extractor.FileResult
 	for _, each := range targetCommits {
 		fIter, err := each.Files()
 		if err != nil {
@@ -49,7 +48,7 @@ func (st *storyTrack) Track(gitDir string, targetRev string, ruleJudge Rule) (*T
 
 			// todo: incorrect path
 			fileResults, err := sibyl2.Extract(absFile, &sibyl2.ExtractConfig{
-				LangType:    model.LangGo,
+				LangType:    core.LangGo,
 				ExtractType: extractor.TypeExtractFunction,
 			})
 			if err != nil {

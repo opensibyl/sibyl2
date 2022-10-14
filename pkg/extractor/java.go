@@ -3,38 +3,37 @@ package extractor
 import (
 	"errors"
 	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"strings"
 )
 
 // https://github.com/tree-sitter/tree-sitter-java/tree/master/src
 const (
-	KindJavaProgram              model.KindRepr = "program"
-	KindJavaProgramDeclaration   model.KindRepr = "package_declaration"
-	KindJavaScopeIdentifier      model.KindRepr = "scoped_identifier"
-	KindJavaIdentifier           model.KindRepr = "identifier"
-	KindJavaClassDeclaration     model.KindRepr = "class_declaration"
-	KindJavaEnumDeclaration      model.KindRepr = "enum_declaration"
-	KindJavaInterfaceDeclaration model.KindRepr = "interface_declaration"
-	KindJavaMethodDeclaration    model.KindRepr = "method_declaration"
-	KindJavaFormalParameters     model.KindRepr = "formal_parameters"
-	KindJavaFormalParameter      model.KindRepr = "formal_parameter"
-	KindJavaMethodInvocation     model.KindRepr = "method_invocation"
-	FieldJavaType                model.KindRepr = "type"
-	FieldJavaDimensions          model.KindRepr = "dimensions"
-	FieldJavaObject              model.KindRepr = "object"
-	FieldJavaName                model.KindRepr = "name"
-	FieldJavaArguments           model.KindRepr = "arguments"
+	KindJavaProgram              core.KindRepr = "program"
+	KindJavaProgramDeclaration   core.KindRepr = "package_declaration"
+	KindJavaScopeIdentifier      core.KindRepr = "scoped_identifier"
+	KindJavaIdentifier           core.KindRepr = "identifier"
+	KindJavaClassDeclaration     core.KindRepr = "class_declaration"
+	KindJavaEnumDeclaration      core.KindRepr = "enum_declaration"
+	KindJavaInterfaceDeclaration core.KindRepr = "interface_declaration"
+	KindJavaMethodDeclaration    core.KindRepr = "method_declaration"
+	KindJavaFormalParameters     core.KindRepr = "formal_parameters"
+	KindJavaFormalParameter      core.KindRepr = "formal_parameter"
+	KindJavaMethodInvocation     core.KindRepr = "method_invocation"
+	FieldJavaType                core.KindRepr = "type"
+	FieldJavaDimensions          core.KindRepr = "dimensions"
+	FieldJavaObject              core.KindRepr = "object"
+	FieldJavaName                core.KindRepr = "name"
+	FieldJavaArguments           core.KindRepr = "arguments"
 )
 
 type JavaExtractor struct {
 }
 
-func (extractor *JavaExtractor) GetLang() model.LangType {
-	return model.LangJava
+func (extractor *JavaExtractor) GetLang() core.LangType {
+	return core.LangJava
 }
 
-func (extractor *JavaExtractor) IsSymbol(unit *model.Unit) bool {
+func (extractor *JavaExtractor) IsSymbol(unit *core.Unit) bool {
 	// todo: use grammar.js instead
 	if strings.HasSuffix(unit.Kind, "identifier") {
 		return true
@@ -42,13 +41,13 @@ func (extractor *JavaExtractor) IsSymbol(unit *model.Unit) bool {
 	return false
 }
 
-func (extractor *JavaExtractor) ExtractSymbols(units []*model.Unit) ([]*model.Symbol, error) {
-	var ret []*model.Symbol
+func (extractor *JavaExtractor) ExtractSymbols(units []*core.Unit) ([]*Symbol, error) {
+	var ret []*Symbol
 	for _, eachUnit := range units {
 		if !extractor.IsSymbol(eachUnit) {
 			continue
 		}
-		symbol := &model.Symbol{
+		symbol := &Symbol{
 			Symbol:    eachUnit.Content,
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
@@ -59,7 +58,7 @@ func (extractor *JavaExtractor) ExtractSymbols(units []*model.Unit) ([]*model.Sy
 	return ret, nil
 }
 
-func (extractor *JavaExtractor) IsFunction(unit *model.Unit) bool {
+func (extractor *JavaExtractor) IsFunction(unit *core.Unit) bool {
 	// no function in java
 	if unit.Kind == KindJavaMethodDeclaration {
 		return true
@@ -67,8 +66,8 @@ func (extractor *JavaExtractor) IsFunction(unit *model.Unit) bool {
 	return false
 }
 
-func (extractor *JavaExtractor) ExtractFunctions(units []*model.Unit) ([]*model.Function, error) {
-	var ret []*model.Function
+func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*Function, error) {
+	var ret []*Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
 			continue
@@ -82,23 +81,23 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*model.Unit) ([]*model.
 	return ret, nil
 }
 
-func (extractor *JavaExtractor) ExtractFunction(unit *model.Unit) (*model.Function, error) {
-	data, err := extractor.ExtractFunctions([]*model.Unit{unit})
+func (extractor *JavaExtractor) ExtractFunction(unit *core.Unit) (*Function, error) {
+	data, err := extractor.ExtractFunctions([]*core.Unit{unit})
 	if len(data) == 0 {
 		return nil, err
 	}
 	return data[0], nil
 }
 
-func (extractor *JavaExtractor) IsCall(unit *model.Unit) bool {
+func (extractor *JavaExtractor) IsCall(unit *core.Unit) bool {
 	if unit.Kind == KindJavaMethodInvocation {
 		return true
 	}
 	return false
 }
 
-func (extractor *JavaExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call, error) {
-	var ret []*model.Call
+func (extractor *JavaExtractor) ExtractCalls(units []*core.Unit) ([]*Call, error) {
+	var ret []*Call
 	for _, eachUnit := range units {
 		if !extractor.IsCall(eachUnit) {
 			continue
@@ -114,9 +113,9 @@ func (extractor *JavaExtractor) ExtractCalls(units []*model.Unit) ([]*model.Call
 	return ret, nil
 }
 
-func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error) {
-	funcUnit := model.FindFirstByOneOfKindInParent(unit, KindJavaMethodDeclaration)
-	var srcFunc *model.Function
+func (extractor *JavaExtractor) unit2Call(unit *core.Unit) (*Call, error) {
+	funcUnit := core.FindFirstByOneOfKindInParent(unit, KindJavaMethodDeclaration)
+	var srcFunc *Function
 	var err error
 	if funcUnit != nil {
 		srcFunc, err = extractor.ExtractFunction(funcUnit)
@@ -130,20 +129,20 @@ func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error)
 		return nil, errors.New("headless call")
 	}
 
-	var argumentPart *model.Unit
+	var argumentPart *core.Unit
 	var arguments []string
 	var caller string
 
-	callerPart := model.FindFirstByFieldInSubs(unit, FieldJavaObject)
+	callerPart := core.FindFirstByFieldInSubs(unit, FieldJavaObject)
 	if callerPart == nil {
 		// b()
-		callerPart = model.FindFirstByFieldInSubs(unit, FieldJavaName)
-		argumentPart = model.FindFirstByFieldInSubs(unit, FieldJavaArguments)
+		callerPart = core.FindFirstByFieldInSubs(unit, FieldJavaName)
+		argumentPart = core.FindFirstByFieldInSubs(unit, FieldJavaArguments)
 		caller = callerPart.Content
 	} else {
 		// a.b()
-		identifiers := model.FindAllByKindInSubs(unit, KindJavaIdentifier)
-		argumentPart = model.FindFirstByFieldInSubs(unit, FieldJavaName)
+		identifiers := core.FindAllByKindInSubs(unit, KindJavaIdentifier)
+		argumentPart = core.FindFirstByFieldInSubs(unit, FieldJavaName)
 
 		if len(identifiers) == 0 {
 			core.DebugDfs(unit, 0)
@@ -155,12 +154,12 @@ func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error)
 
 	// not perfect, eg: anonymous function call?
 	if argumentPart != nil {
-		for _, each := range model.FindAllByKindInSubs(argumentPart, KindJavaIdentifier) {
+		for _, each := range core.FindAllByKindInSubs(argumentPart, KindJavaIdentifier) {
 			arguments = append(arguments, each.Content)
 		}
 	}
 
-	ret := &model.Call{
+	ret := &Call{
 		Src:       srcFunc.GetSignature(),
 		Caller:    caller,
 		Arguments: arguments,
@@ -169,17 +168,17 @@ func (extractor *JavaExtractor) unit2Call(unit *model.Unit) (*model.Call, error)
 	return ret, nil
 }
 
-func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function, error) {
-	funcUnit := &model.Function{}
+func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error) {
+	funcUnit := &Function{}
 	funcUnit.Span = unit.Span
 
 	pkgName := ""
 	clazzName := ""
 
 	// trace its package
-	program := model.FindFirstByKindInParent(unit, KindJavaProgram)
-	packageDecl := model.FindFirstByKindInSubsWithDfs(program, KindJavaProgramDeclaration)
-	packageIdentifier := model.FindFirstByKindInSubsWithDfs(packageDecl, KindJavaScopeIdentifier)
+	program := core.FindFirstByKindInParent(unit, KindJavaProgram)
+	packageDecl := core.FindFirstByKindInSubsWithDfs(program, KindJavaProgramDeclaration)
+	packageIdentifier := core.FindFirstByKindInSubsWithDfs(packageDecl, KindJavaScopeIdentifier)
 	if packageIdentifier == nil {
 		core.Log.Warnf("no package found in %s", unit.Content)
 	} else {
@@ -187,23 +186,23 @@ func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function
 	}
 
 	// trace its class (the closest one
-	clazzDecl := model.FindFirstByOneOfKindInParent(unit, KindJavaClassDeclaration, KindJavaEnumDeclaration, KindJavaInterfaceDeclaration)
-	clazzIdentifier := model.FindFirstByKindInSubsWithBfs(clazzDecl, KindJavaIdentifier)
+	clazzDecl := core.FindFirstByOneOfKindInParent(unit, KindJavaClassDeclaration, KindJavaEnumDeclaration, KindJavaInterfaceDeclaration)
+	clazzIdentifier := core.FindFirstByKindInSubsWithBfs(clazzDecl, KindJavaIdentifier)
 	if clazzIdentifier == nil {
 		return nil, errors.New("no class found in " + unit.Content)
 	}
 	clazzName = clazzIdentifier.Content
 	funcUnit.Receiver = pkgName + "." + clazzName
 
-	funcIdentifier := model.FindFirstByKindInSubsWithBfs(unit, KindJavaIdentifier)
+	funcIdentifier := core.FindFirstByKindInSubsWithBfs(unit, KindJavaIdentifier)
 	if funcIdentifier == nil {
 		return nil, errors.New("no func id found in identifier" + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
 
 	// returns
-	retUnit := model.FindFirstByFieldInSubsWithDfs(unit, FieldJavaDimensions)
-	valueUnit := &model.ValueUnit{
+	retUnit := core.FindFirstByFieldInSubsWithDfs(unit, FieldJavaDimensions)
+	valueUnit := &ValueUnit{
 		Type: retUnit.Content,
 		// java has no named return value
 		Name: "",
@@ -211,12 +210,12 @@ func (extractor *JavaExtractor) unit2Function(unit *model.Unit) (*model.Function
 	funcUnit.Returns = append(funcUnit.Returns, valueUnit)
 
 	// params
-	parameters := model.FindFirstByKindInSubsWithDfs(unit, KindJavaFormalParameters)
+	parameters := core.FindFirstByKindInSubsWithDfs(unit, KindJavaFormalParameters)
 	if parameters != nil {
-		for _, each := range model.FindAllByKindInSubsWithDfs(parameters, KindJavaFormalParameter) {
-			typeName := model.FindFirstByFieldInSubsWithBfs(each, FieldJavaType)
-			paramName := model.FindFirstByFieldInSubsWithBfs(each, FieldJavaDimensions)
-			valueUnit = &model.ValueUnit{
+		for _, each := range core.FindAllByKindInSubsWithDfs(parameters, KindJavaFormalParameter) {
+			typeName := core.FindFirstByFieldInSubsWithBfs(each, FieldJavaType)
+			paramName := core.FindFirstByFieldInSubsWithBfs(each, FieldJavaDimensions)
+			valueUnit = &ValueUnit{
 				Type: typeName.Content,
 				Name: paramName.Content,
 			}

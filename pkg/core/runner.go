@@ -2,7 +2,6 @@ package core
 
 import (
 	"context"
-	"github.com/williamfzc/sibyl2/pkg/model"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,7 +10,7 @@ import (
 type Runner struct {
 }
 
-func (r *Runner) File2Units(filePath string, lang model.LangType) ([]*model.FileUnit, error) {
+func (r *Runner) File2Units(filePath string, lang LangType) ([]*FileUnit, error) {
 	files, err := r.scanFiles(filePath, lang)
 	if err != nil {
 		return nil, err
@@ -25,8 +24,8 @@ func (r *Runner) File2Units(filePath string, lang model.LangType) ([]*model.File
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	var fileUnits []*model.FileUnit
-	fileUnitsChan := make(chan *model.FileUnit, len(files))
+	var fileUnits []*FileUnit
+	fileUnitsChan := make(chan *FileUnit, len(files))
 	for _, eachFile := range files {
 		r.parseFileAsync(eachFile, parser, ctx, fileUnitsChan)
 	}
@@ -44,7 +43,7 @@ func (r *Runner) File2Units(filePath string, lang model.LangType) ([]*model.File
 	return fileUnits, nil
 }
 
-func (r *Runner) scanFiles(filePath string, lang model.LangType) ([]string, error) {
+func (r *Runner) scanFiles(filePath string, lang LangType) ([]string, error) {
 	var files []string
 	fileSuffix := lang.GetFileSuffix()
 	handleFunc := func(path string, info os.FileInfo, err error) error {
@@ -60,14 +59,14 @@ func (r *Runner) scanFiles(filePath string, lang model.LangType) ([]string, erro
 	return files, nil
 }
 
-func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan *model.FileUnit) {
+func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Context, result chan *FileUnit) {
 	units, err := r.parseFile(filepath, parser, ctx)
 	if err != nil {
 		// ignore?
 		Log.Errorf("error when parse file %s, err: %v", filepath, err)
 		result <- nil
 	} else {
-		ret := &model.FileUnit{
+		ret := &FileUnit{
 			Path:     filepath,
 			Language: "",
 			Units:    units,
@@ -76,7 +75,7 @@ func (r *Runner) parseFileAsync(filepath string, parser *Parser, ctx context.Con
 	}
 }
 
-func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context) ([]*model.Unit, error) {
+func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context) ([]*Unit, error) {
 	content, err := os.ReadFile(filePath)
 	if err != nil {
 		return nil, err

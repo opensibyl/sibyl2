@@ -1,9 +1,17 @@
-package model
+package core
 
 import (
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
+)
+
+type LangType string
+
+const (
+	LangJava    LangType = "JAVA"
+	LangGo      LangType = "GOLANG"
+	LangUnknown LangType = "UNKNOWN"
 )
 
 func (langType LangType) GetValue() string {

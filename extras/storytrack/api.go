@@ -15,6 +15,7 @@ import (
 
 type TrackResult struct {
 	Commits   []string                `json:"commits"`
+	Files     []string                `json:"files"`
 	Functions []*extractor.FileResult `json:"functions"`
 }
 
@@ -61,6 +62,10 @@ func Track(gitDir string, targetRev string, ruleJudge Rule, langType core.LangTy
 		}
 		return nil
 	})
+	var targetHashes []string
+	for _, each := range targetCommits {
+		targetHashes = append(targetHashes, each.Hash.String())
+	}
 
 	var relatedFiles []string
 	for _, each := range targetCommits {
@@ -89,14 +94,50 @@ func Track(gitDir string, targetRev string, ruleJudge Rule, langType core.LangTy
 		FileFilter:  filter,
 	})
 
-	final := &TrackResult{}
-	var targetHashes []string
-	for _, each := range targetCommits {
-		targetHashes = append(targetHashes, each.Hash.String())
+	// git blame
+	var lineRange = make(map[string][]int)
+	targetCommit, err := repo.CommitObject(from)
+	if err != nil {
+		return nil, err
+	}
+	for _, eachFile := range relatedFiles {
+		// this file may be not existed in current version
+		blame, err := git.Blame(targetCommit, eachFile)
+		if err != nil {
+			return nil, err
+		}
+		var eachFileLines []int
+		for index, eachLine := range blame.Lines {
+			// line num
+			lineNum := index + 1
+			if slices.Contains(targetHashes, eachLine.Hash.String()) {
+				eachFileLines = append(eachFileLines, lineNum)
+			}
+		}
+		lineRange[eachFile] = eachFileLines
+	}
+	for _, each := range fileResults {
+		var newDt []extractor.DataType
+		if lines, ok := lineRange[each.Path]; ok {
+			for _, eachDt := range each.Units {
+				if eachDt.GetSpan().ContainAnyLine(lines) {
+					newDt = append(newDt, eachDt)
+				}
+			}
+		}
+		each.Units = newDt
+	}
+	var newFileResults []*extractor.FileResult
+	for _, each := range fileResults {
+		if len(each.Units) > 0 {
+			newFileResults = append(newFileResults, each)
+		}
 	}
 
+	final := &TrackResult{}
 	final.Commits = targetHashes
-	final.Functions = fileResults
+	final.Files = relatedFiles
+	final.Functions = newFileResults
 	return final, nil
 }
 

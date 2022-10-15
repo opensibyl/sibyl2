@@ -1,7 +1,10 @@
 package extractor
 
+import "github.com/williamfzc/sibyl2/pkg/core"
+
 type DataType interface {
 	Dt()
+	GetSpan() *core.Span
 }
 
 func (*Symbol) Dt() {

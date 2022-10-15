@@ -38,3 +38,7 @@ func (f *Function) GetSignature() FuncSignature {
 
 	return fmt.Sprintf("%s|%s|%s", prefix, paramPart, retPart)
 }
+
+func (f *Function) GetSpan() *core.Span {
+	return &f.Span
+}

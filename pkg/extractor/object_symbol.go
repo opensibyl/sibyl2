@@ -42,3 +42,7 @@ type Symbol struct {
 	Span      core.Span `json:"span"`
 	FieldName string    `json:"fieldName"`
 }
+
+func (s *Symbol) GetSpan() *core.Span {
+	return &s.Span
+}

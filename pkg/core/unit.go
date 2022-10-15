@@ -10,6 +10,20 @@ type Point struct {
 	Column uint32 `json:"column"`
 }
 
+func (s *Span) ContainLine(lineNum int) bool {
+	uint32Line := uint32(lineNum)
+	return s.Start.Row <= uint32Line && uint32Line <= s.End.Row
+}
+
+func (s *Span) ContainAnyLine(lineNums []int) bool {
+	for _, each := range lineNums {
+		if s.ContainLine(each) {
+			return true
+		}
+	}
+	return false
+}
+
 type KindRepr = string
 
 /*

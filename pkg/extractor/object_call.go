@@ -19,3 +19,7 @@ type Call struct {
 	Arguments []string  `json:"arguments"`
 	Span      core.Span `json:"span"`
 }
+
+func (c *Call) GetSpan() *core.Span {
+	return &c.Span
+}

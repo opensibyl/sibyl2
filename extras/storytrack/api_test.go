@@ -1,8 +1,9 @@
-package main
+package storytrack
 
 import (
 	"encoding/json"
 	"github.com/go-git/go-git/v5/plumbing/object"
+	"github.com/williamfzc/sibyl2/pkg/core"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,7 +17,7 @@ func TestApi(t *testing.T) {
 			return true
 		}
 		return false
-	})
+	}, core.LangGo)
 	if err != nil {
 		return
 	}

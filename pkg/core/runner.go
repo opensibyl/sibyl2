@@ -10,8 +10,8 @@ import (
 type Runner struct {
 }
 
-func (r *Runner) File2Units(filePath string, lang LangType) ([]*FileUnit, error) {
-	files, err := r.scanFiles(filePath, lang)
+func (r *Runner) File2Units(path string, lang LangType, fileFilter func(string) bool) ([]*FileUnit, error) {
+	files, err := r.scanFiles(path, lang, fileFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -43,13 +43,24 @@ func (r *Runner) File2Units(filePath string, lang LangType) ([]*FileUnit, error)
 	return fileUnits, nil
 }
 
-func (r *Runner) scanFiles(filePath string, lang LangType) ([]string, error) {
+func (r *Runner) scanFiles(filePath string, lang LangType, fileFilter func(string) bool) ([]string, error) {
 	var files []string
 	fileSuffix := lang.GetFileSuffix()
+
+	suffixCheck := func(path string) bool {
+		return strings.HasSuffix(path, fileSuffix)
+	}
+
 	handleFunc := func(path string, info os.FileInfo, err error) error {
-		if strings.HasSuffix(path, fileSuffix) {
-			files = append(files, path)
+		if !suffixCheck(path) {
+			return nil
 		}
+		if fileFilter != nil {
+			if !fileFilter(path) {
+				return nil
+			}
+		}
+		files = append(files, path)
 		return nil
 	}
 	err := filepath.Walk(filePath, handleFunc)

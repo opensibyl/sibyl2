@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"github.com/go-git/go-git/v5/plumbing/object"
 	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 )
 
 func TestApi(t *testing.T) {
-	trackResult, err := StoryTrack.Track("../..", "c11370ebaefee9347c528effc2ab6f0a5f1648c2", func(commit *object.Commit) bool {
+	abs, _ := filepath.Abs("../..")
+	trackResult, err := Track(abs, "c11370ebaefee9347c528effc2ab6f0a5f1648c2", func(commit *object.Commit) bool {
 		if strings.Contains(commit.Message, "refactor") {
 			return true
 		}

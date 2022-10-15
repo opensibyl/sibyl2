@@ -5,12 +5,14 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"os"
+	"path/filepath"
 	"time"
 )
 
 type ExtractConfig struct {
 	LangType    core.LangType
 	ExtractType extractor.ExtractType
+	FileFilter  func(path string) bool
 }
 
 func Extract(targetDir string, config *ExtractConfig) ([]*extractor.FileResult, error) {
@@ -23,8 +25,14 @@ func Extract(targetDir string, config *ExtractConfig) ([]*extractor.FileResult, 
 		return nil, errors.New("file not existed: " + targetDir)
 	}
 
+	// always use abs path and convert it back at the end
+	targetDir, err := filepath.Abs(targetDir)
+	if err != nil {
+		return nil, err
+	}
+
 	runner := &core.Runner{}
-	fileUnits, err := runner.File2Units(targetDir, config.LangType)
+	fileUnits, err := runner.File2Units(targetDir, config.LangType, config.FileFilter)
 	if err != nil {
 		return nil, err
 	}

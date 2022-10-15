@@ -7,13 +7,9 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"golang.org/x/exp/slices"
 	"path/filepath"
 )
-
-var StoryTrack = &storyTrack{}
-
-type storyTrack struct {
-}
 
 type TrackResult struct {
 	Functions []*extractor.FileResult
@@ -21,8 +17,8 @@ type TrackResult struct {
 
 type Rule = func(commit *object.Commit) bool
 
-func (st *storyTrack) Track(gitDir string, targetRev string, ruleJudge Rule) (*TrackResult, error) {
-	repo, err := st.loadRepo(gitDir)
+func Track(gitDir string, targetRev string, ruleJudge Rule) (*TrackResult, error) {
+	repo, err := loadRepo(gitDir)
 	if err != nil {
 		return nil, err
 	}
@@ -36,35 +32,38 @@ func (st *storyTrack) Track(gitDir string, targetRev string, ruleJudge Rule) (*T
 		return nil
 	})
 
-	var results []*extractor.FileResult
+	var relatedFiles []string
 	for _, each := range targetCommits {
 		fIter, err := each.Files()
 		if err != nil {
 			return nil, err
 		}
 		fIter.ForEach(func(file *object.File) error {
-			absFile := filepath.Join(gitDir, file.Name)
-			core.Log.Infof("checking file: %s", absFile)
-
-			// todo: incorrect path
-			fileResults, err := sibyl2.Extract(absFile, &sibyl2.ExtractConfig{
-				LangType:    core.LangGo,
-				ExtractType: extractor.TypeExtractFunction,
-			})
-			if err != nil {
-				return err
-			}
-			results = append(results, fileResults...)
+			relatedFiles = append(relatedFiles, file.Name)
 			return nil
 		})
 	}
 
+	filter := func(path string) bool {
+		relpath, err := filepath.Rel(gitDir, path)
+		if err != nil {
+			return false
+		}
+		return slices.Contains(relatedFiles, relpath)
+	}
+
+	fileResults, err := sibyl2.Extract(gitDir, &sibyl2.ExtractConfig{
+		LangType:    core.LangGo,
+		ExtractType: extractor.TypeExtractFunction,
+		FileFilter:  filter,
+	})
+
 	final := &TrackResult{}
-	final.Functions = results
+	final.Functions = fileResults
 	return final, nil
 }
 
-func (st *storyTrack) loadRepo(gitDir string) (*git.Repository, error) {
+func loadRepo(gitDir string) (*git.Repository, error) {
 	repo, err := git.PlainOpen(gitDir)
 	if err != nil {
 		return nil, err

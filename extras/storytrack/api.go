@@ -87,7 +87,6 @@ func Track(gitDir string, targetRev string, ruleJudge Rule, langType core.LangTy
 		return slices.Contains(relatedFiles, relpath)
 	}
 
-	// todo: use git blame as filter
 	fileResults, err := sibyl2.Extract(gitDir, &sibyl2.ExtractConfig{
 		LangType:    langType,
 		ExtractType: extractor.TypeExtractFunction,

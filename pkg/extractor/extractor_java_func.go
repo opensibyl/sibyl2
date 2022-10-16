@@ -39,6 +39,7 @@ func (extractor *JavaExtractor) ExtractFunction(unit *core.Unit) (*Function, err
 func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error) {
 	funcUnit := &Function{}
 	funcUnit.Span = unit.Span
+	funcUnit.unit = unit
 
 	pkgName := ""
 	clazzName := ""

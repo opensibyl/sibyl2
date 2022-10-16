@@ -53,6 +53,7 @@ func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*Function, err
 func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Function, error) {
 	funcUnit := &Function{}
 	funcUnit.Span = unit.Span
+	funcUnit.unit = unit
 
 	// name
 	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangFieldIdentifier)
@@ -130,6 +131,7 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function, error) {
 	funcUnit := &Function{}
 	funcUnit.Span = unit.Span
+	funcUnit.unit = unit
 
 	// name
 	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangIdentifier)

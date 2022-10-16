@@ -17,6 +17,9 @@ type Function struct {
 	Parameters []*ValueUnit `json:"parameters"`
 	Returns    []*ValueUnit `json:"returns"`
 	Span       core.Span    `json:"span"`
+
+	// ptr to origin unit
+	unit *core.Unit
 }
 
 type FuncSignature = string
@@ -41,4 +44,8 @@ func (f *Function) GetSignature() FuncSignature {
 
 func (f *Function) GetSpan() *core.Span {
 	return &f.Span
+}
+
+func (f *Function) GetUnit() *core.Unit {
+	return f.unit
 }

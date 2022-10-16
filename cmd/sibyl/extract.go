@@ -33,10 +33,6 @@ func NewExtractCmd() *cobra.Command {
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
 			langType := core.LangTypeValueOf(userLangType)
-			if langType == core.LangUnknown {
-				panic(errors.New("unknown lang type: " + userLangType))
-			}
-
 			if !slices.Contains(allowExtractType, userExtractType) {
 				panic(errors.New("non-allow extract type: " + userExtractType))
 			}
@@ -65,24 +61,9 @@ func NewExtractCmd() *cobra.Command {
 	}
 
 	extractCmd.PersistentFlags().StringVar(&userSrc, "src", ".", "src dir path")
-
 	extractCmd.PersistentFlags().StringVar(&userLangType, "lang", "", "lang type of your source code")
-	err := extractCmd.MarkPersistentFlagRequired("lang")
-	if err != nil {
-		panic(err)
-	}
-
 	extractCmd.PersistentFlags().StringVar(&userExtractType, "type", "", "what kind of data you want")
-	err = extractCmd.MarkPersistentFlagRequired("type")
-	if err != nil {
-		panic(err)
-	}
-
 	extractCmd.PersistentFlags().StringVar(&userOutputFile, "output", "", "output file")
-	if err != nil {
-		panic(err)
-	}
-
 	return extractCmd
 }
 

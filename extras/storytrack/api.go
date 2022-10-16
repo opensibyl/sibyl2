@@ -15,7 +15,7 @@ import (
 
 type TrackResult struct {
 	Commits   []string                `json:"commits"`
-	Files     []string                `json:"files"`
+	Files     map[string][]int        `json:"files"`
 	Functions []*extractor.FileResult `json:"functions"`
 }
 
@@ -136,7 +136,7 @@ func Track(gitDir string, targetRev string, ruleJudge Rule, langType core.LangTy
 
 	final := &TrackResult{}
 	final.Commits = targetHashes
-	final.Files = relatedFiles
+	final.Files = lineRange
 	final.Functions = newFileResults
 	return final, nil
 }

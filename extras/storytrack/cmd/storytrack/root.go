@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/williamfzc/sibyl2/extras/storytrack"
@@ -22,10 +21,7 @@ var rootCmd = &cobra.Command{
 	Long:  `storytrack cmd`,
 	Run: func(cmd *cobra.Command, args []string) {
 		langType := core.LangTypeValueOf(userLangType)
-		if langType == core.LangUnknown {
-			panic(errors.New("unknown lang type: " + userLangType))
-		}
-		result, err := storytrack.TrackWithSharpId(userSrc, "", userIds, core.LangGo)
+		result, err := storytrack.TrackWithSharpId(userSrc, "", userIds, langType)
 		if err != nil {
 			panic(err)
 		}
@@ -52,7 +48,6 @@ func init() {
 	}
 
 	rootCmd.PersistentFlags().StringVar(&userLangType, "lang", "", "lang type of your source code")
-	err = rootCmd.MarkPersistentFlagRequired("lang")
 	if err != nil {
 		panic(err)
 	}

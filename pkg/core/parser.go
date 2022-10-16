@@ -74,6 +74,7 @@ func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, par
 	ret := &Unit{}
 
 	ret.FieldName = fieldName
+	// SHOULD WE ALWAYS KEEP THIS DATA?
 	ret.Content = node.Content(data)
 
 	// kind: type of type

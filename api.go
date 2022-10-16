@@ -2,6 +2,7 @@ package sibyl2
 
 import (
 	"errors"
+	"fmt"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"os"
@@ -15,24 +16,38 @@ type ExtractConfig struct {
 	FileFilter  func(path string) bool
 }
 
-func Extract(targetDir string, config *ExtractConfig) ([]*extractor.FileResult, error) {
+func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult, error) {
 	startTime := time.Now()
 	defer func() {
 		core.Log.Infof("cost: %d ms", time.Since(startTime).Milliseconds())
 	}()
 
-	if _, err := os.Stat(targetDir); os.IsNotExist(err) {
-		return nil, errors.New("file not existed: " + targetDir)
+	if _, err := os.Stat(targetFile); os.IsNotExist(err) {
+		return nil, errors.New("file not existed: " + targetFile)
 	}
 
 	// always use abs path and convert it back at the end
-	targetDir, err := filepath.Abs(targetDir)
+	targetFile, err := filepath.Abs(targetFile)
 	if err != nil {
 		return nil, err
 	}
 
 	runner := &core.Runner{}
-	fileUnits, err := runner.File2Units(targetDir, config.LangType, config.FileFilter)
+	if !config.LangType.IsSupported() {
+		// do the guess
+		core.Log.Infof("no specific lang found, do the guess")
+		config.LangType, err = runner.GuessLangFromDir(targetFile, config.FileFilter)
+		if err != nil {
+			return nil, err
+		}
+		core.Log.Infof("I think it is: %s", config.LangType)
+	}
+	// still failed, give up
+	if !config.LangType.IsSupported() {
+		return nil, errors.New(fmt.Sprintf("unknown languages, supported: %v", core.SupportedLangs))
+	}
+
+	fileUnits, err := runner.File2Units(targetFile, config.LangType, config.FileFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +84,7 @@ func Extract(targetDir string, config *ExtractConfig) ([]*extractor.FileResult, 
 		results = append(results, fileResult)
 	}
 	// path
-	err = extractor.PathStandardize(results, targetDir)
+	err = extractor.PathStandardize(results, targetFile)
 	if err != nil {
 		return nil, err
 	}

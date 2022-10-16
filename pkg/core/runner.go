@@ -4,7 +4,6 @@ import (
 	"context"
 	"os"
 	"path/filepath"
-	"strings"
 )
 
 type Runner struct {
@@ -45,14 +44,9 @@ func (r *Runner) File2Units(path string, lang LangType, fileFilter func(string) 
 
 func (r *Runner) scanFiles(filePath string, lang LangType, fileFilter func(string) bool) ([]string, error) {
 	var files []string
-	fileSuffix := lang.GetFileSuffix()
-
-	suffixCheck := func(path string) bool {
-		return strings.HasSuffix(path, fileSuffix)
-	}
 
 	handleFunc := func(path string, info os.FileInfo, err error) error {
-		if !suffixCheck(path) {
+		if !lang.MatchName(path) {
 			return nil
 		}
 		if fileFilter != nil {
@@ -96,4 +90,38 @@ func (r *Runner) parseFile(filePath string, parser *Parser, ctx context.Context)
 		return nil, err
 	}
 	return parsed, nil
+}
+
+func (r *Runner) GuessLangFromDir(dir string, fileFilter func(string) bool) (LangType, error) {
+	countMap := make(map[LangType]int, len(SupportedLangs))
+	for _, each := range SupportedLangs {
+		countMap[each] = 0
+	}
+
+	handleFunc := func(path string, info os.FileInfo, err error) error {
+		if fileFilter != nil {
+			if !fileFilter(path) {
+				return nil
+			}
+		}
+		for k := range countMap {
+			if k.MatchName(path) {
+				countMap[k]++
+			}
+		}
+		return nil
+	}
+	err := filepath.Walk(dir, handleFunc)
+	if err != nil {
+		return "", err
+	}
+
+	ret := LangUnknown
+	max := 0
+	for k := range countMap {
+		if countMap[k] > max {
+			ret = k
+		}
+	}
+	return ret, nil
 }

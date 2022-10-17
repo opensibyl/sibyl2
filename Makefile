@@ -5,15 +5,8 @@ WORKDIR = $(PWD)
 GOCMD = go
 GOTEST = $(GOCMD) test
 
-build-all:
+build:
 	${GOCMD} build ./cmd/sibyl
-
-	cd ./extras/casedoctor && ${GOCMD} build ./cmd/casedoctor && cd ../..
-	cd ./extras/storytrack && ${GOCMD} build ./cmd/storytrack && cd ../..
 
 test:
 	$(GOTEST) ./...
-
-	cd ./extras/casedoctor && ${GOCMD} test ./... && cd ../..
-	cd ./extras/storytrack && ${GOCMD} test ./... && cd ../..
-

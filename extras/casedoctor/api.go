@@ -1,51 +1,84 @@
 package casedoctor
 
 import (
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"path/filepath"
 	"strings"
+
+	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
-type FunctionWithContent struct {
+type FunctionWithConclusion struct {
 	*extractor.Function
-	Content string `json:"content"`
+	Path        string `json:"path"`
+	Content     string `json:"content"`
+	AssertCount int    `json:"assertCount"`
+}
+
+func (fwc *FunctionWithConclusion) HasAssertion() bool {
+	return fwc.AssertCount > 0
+}
+
+type CheckStat struct {
+	Files       int `json:"files"`
+	Cases       int `json:"cases"`
+	AssertCases int `json:"assertCases"`
 }
 
 type CheckResult struct {
-	// todo: need some stats
-	Functions []*FunctionWithContent `json:"functions"`
+	Stat      *CheckStat                `json:"stat"`
+	Functions []*FunctionWithConclusion `json:"functions"`
+}
+
+func (cr *CheckResult) SyncStat() {
+	fileSet := make(map[string]interface{})
+	cases := 0
+	assertCases := 0
+	for _, each := range cr.Functions {
+		fileSet[each.Path] = nil
+		cases++
+		if each.HasAssertion() {
+			assertCases++
+		}
+	}
+	cr.Stat = &CheckStat{
+		Files:       len(fileSet),
+		Cases:       cases,
+		AssertCases: assertCases,
+	}
 }
 
 func CheckCases(targetDir string) (*CheckResult, error) {
 	filter := func(p string) bool {
-		name := strings.TrimSuffix(p, filepath.Ext(p))
+		name := strings.TrimSuffix(filepath.Base(p), filepath.Ext(p))
 		endsWithTest := strings.HasSuffix(name, "Test")
 		endsWithTests := strings.HasSuffix(name, "Tests")
 		endsWithTestSnack := strings.HasSuffix(name, "_test")
 		startsWithTest := strings.HasPrefix(name, "Test")
 		return endsWithTest || endsWithTests || endsWithTestSnack || startsWithTest
 	}
-	fileResults, err := sibyl2.Extract(targetDir, &sibyl2.ExtractConfig{
-		ExtractType: extractor.TypeExtractFunction,
-		FileFilter:  filter,
+	fileResults, err := sibyl2.ExtractFunction(targetDir, &sibyl2.ExtractConfig{
+		FileFilter: filter,
 	})
 	if err != nil {
 		return nil, err
 	}
-	var funcs []*FunctionWithContent
+	var functions []*FunctionWithConclusion
 	for _, each := range fileResults {
-		for _, eachUnit := range each.Units {
-			function, _ := eachUnit.(*extractor.Function)
-			content := function.GetUnit().Content
-			fwc := &FunctionWithContent{
-				Function: function,
+		for _, eachFunction := range each.Units {
+			content := eachFunction.GetUnit().Content
+			fwc := &FunctionWithConclusion{
+				Path:     each.Path,
+				Function: eachFunction,
 				Content:  content,
+				// todo: not good?
+				AssertCount: strings.Count(content, "assert"),
 			}
-			funcs = append(funcs, fwc)
+			functions = append(functions, fwc)
 		}
 	}
 	result := &CheckResult{}
-	result.Functions = funcs
+	result.Functions = functions
+	result.SyncStat()
 	return result, nil
 }

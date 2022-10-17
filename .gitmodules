@@ -1,0 +1,3 @@
+[submodule "repoctor"]
+	path = extras/repoctor
+	url = https://github.com/williamfzc/repoctor

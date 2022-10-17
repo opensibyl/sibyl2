@@ -2,6 +2,9 @@ package storytrack
 
 import (
 	"fmt"
+	"path/filepath"
+	"strings"
+
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing"
 	"github.com/go-git/go-git/v5/plumbing/object"
@@ -9,8 +12,6 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"golang.org/x/exp/slices"
-	"path/filepath"
-	"strings"
 )
 
 type TrackResult struct {
@@ -69,22 +70,32 @@ func Track(gitDir string, targetRev string, ruleJudge Rule, langType core.LangTy
 
 	var relatedFiles []string
 	for _, each := range targetCommits {
-		fIter, err := each.Files()
+		parent, err := each.Parent(0)
 		if err != nil {
 			return nil, err
 		}
-		fIter.ForEach(func(file *object.File) error {
-			relatedFiles = append(relatedFiles, file.Name)
-			return nil
-		})
+		core.Log.Infof("parent: %s, cur: %s", parent.Hash, each.Hash)
+		patch, err := parent.Patch(each)
+		if err != nil {
+			return nil, err
+		}
+		for _, eachFile := range patch.FilePatches() {
+			// existed in current ver
+			if _, to := eachFile.Files(); to != nil {
+				relatedFiles = append(relatedFiles, to.Path())
+			}
+		}
 	}
+	core.Log.Infof("related files: %v", relatedFiles)
 
 	filter := func(path string) bool {
 		relpath, err := filepath.Rel(gitDir, path)
 		if err != nil {
 			return false
 		}
-		return slices.Contains(relatedFiles, relpath)
+		relpath = filepath.ToSlash(relpath)
+		core.Log.Infof("rel path: %s", relpath)
+		return slices.Contains(relatedFiles, filepath.ToSlash(relpath))
 	}
 
 	fileResults, err := sibyl2.Extract(gitDir, &sibyl2.ExtractConfig{
@@ -92,6 +103,9 @@ func Track(gitDir string, targetRev string, ruleJudge Rule, langType core.LangTy
 		ExtractType: extractor.TypeExtractFunction,
 		FileFilter:  filter,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// git blame
 	var lineRange = make(map[string][]int)

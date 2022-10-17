@@ -1,16 +1,22 @@
 package extractor
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"path/filepath"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
-type FileResult struct {
+type BaseFileResult[T DataType] struct {
 	Path     string        `json:"path"`
 	Language core.LangType `json:"language"`
 	Type     string        `json:"type"`
-	Units    []DataType    `json:"units"`
+	Units    []T           `json:"units"`
 }
+
+type FileResult = BaseFileResult[DataType]
+type SymbolFileResult = BaseFileResult[*Symbol]
+type FunctionFileResult = BaseFileResult[*Function]
+type CallFileResult = BaseFileResult[*Call]
 
 func PathStandardize(results []*FileResult, basedir string) error {
 	for _, each := range results {

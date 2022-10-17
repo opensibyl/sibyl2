@@ -37,6 +37,7 @@ func (r *Runner) File2Units(path string, lang LangType, fileFilter func(string) 
 		}
 		eachFileUnit.Language = lang
 		fileUnits = append(fileUnits, eachFileUnit)
+		Log.Debugf("collect units: %d from file: %s", len(eachFileUnit.Units), eachFileUnit.Path)
 	}
 
 	return fileUnits, nil

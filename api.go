@@ -3,11 +3,12 @@ package sibyl2
 import (
 	"errors"
 	"fmt"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
 type ExtractConfig struct {
@@ -16,6 +17,37 @@ type ExtractConfig struct {
 	FileFilter  func(path string) bool
 }
 
+func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.FunctionFileResult, error) {
+	config.ExtractType = extractor.TypeExtractFunction
+	results, err := Extract(targetFile, config)
+	if err != nil {
+		return nil, err
+	}
+
+	var final []*extractor.FunctionFileResult
+	for _, each := range results {
+		var newUnits = make([]*extractor.Function, len(each.Units))
+		for i, v := range each.Units {
+			// should not error
+			if f, ok := v.(*extractor.Function); ok {
+				newUnits[i] = f
+			} else {
+				return nil, errors.New(fmt.Sprintf("failed to cast %v to function", v))
+			}
+		}
+
+		newEach := &extractor.FunctionFileResult{
+			Path:     each.Path,
+			Language: each.Language,
+			Type:     each.Type,
+			Units:    newUnits,
+		}
+		final = append(final, newEach)
+	}
+	return final, nil
+}
+
+// Extract todo: should not use ptr in config
 func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult, error) {
 	startTime := time.Now()
 	defer func() {

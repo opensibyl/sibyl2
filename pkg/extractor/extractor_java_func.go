@@ -30,8 +30,11 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*Functio
 
 func (extractor *JavaExtractor) ExtractFunction(unit *core.Unit) (*Function, error) {
 	data, err := extractor.ExtractFunctions([]*core.Unit{unit})
-	if len(data) == 0 {
+	if err != nil {
 		return nil, err
+	}
+	if len(data) == 0 {
+		return nil, errors.New("unit not a func: " + unit.Content)
 	}
 	return data[0], nil
 }

@@ -18,8 +18,15 @@ type Function struct {
 	Returns    []*ValueUnit `json:"returns"`
 	Span       core.Span    `json:"span"`
 
+	// which contains language-specific contents
+	Extras interface{} `json:"extras"`
+
 	// ptr to origin unit
 	unit *core.Unit
+}
+
+func NewFunction() *Function {
+	return &Function{}
 }
 
 type FuncSignature = string

@@ -50,6 +50,8 @@ func GetExtractor(lang core.LangType) Extractor {
 		return &JavaExtractor{}
 	case core.LangGo:
 		return &GolangExtractor{}
+	case core.LangPython:
+		return &PythonExtractor{}
 	}
 	return nil
 }

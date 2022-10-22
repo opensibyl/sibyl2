@@ -28,3 +28,11 @@ func Test_ExecuteCommand_Call_Java(t *testing.T) {
 	cmd.SetArgs([]string{"--lang", "JAVA", "--type", "call"})
 	cmd.Execute()
 }
+
+func Test_ExecuteCommand_Call_Python(t *testing.T) {
+	cmd := NewExtractCmd()
+	b := bytes.NewBufferString("")
+	cmd.SetOut(b)
+	cmd.SetArgs([]string{"--lang", "PYTHON", "--type", "func"})
+	cmd.Execute()
+}

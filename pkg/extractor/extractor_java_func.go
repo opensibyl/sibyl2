@@ -2,8 +2,13 @@ package extractor
 
 import (
 	"errors"
+
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
+
+type JavaFunctionExtras struct {
+	Annotations []string `json:"annotations"`
+}
 
 func (extractor *JavaExtractor) IsFunction(unit *core.Unit) bool {
 	// no function in java
@@ -40,7 +45,7 @@ func (extractor *JavaExtractor) ExtractFunction(unit *core.Unit) (*Function, err
 }
 
 func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error) {
-	funcUnit := &Function{}
+	funcUnit := NewFunction()
 	funcUnit.Span = unit.Span
 	funcUnit.unit = unit
 
@@ -94,6 +99,19 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 			funcUnit.Parameters = append(funcUnit.Parameters, valueUnit)
 		}
 	}
+
+	// extras
+	extras := &JavaFunctionExtras{}
+	modifiers := core.FindFirstByKindInSubsWithBfs(unit, KindJavaModifiers)
+	if modifiers != nil {
+		annotations := core.FindAllByKindsInSubs(modifiers, KindJavaMarkerAnnotation, KindJavaAnnotation)
+		if len(annotations) != 0 {
+			for _, each := range annotations {
+				extras.Annotations = append(extras.Annotations, each.Content)
+			}
+		}
+	}
+	funcUnit.Extras = extras
 
 	return funcUnit, nil
 }

@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"errors"
+
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
@@ -61,7 +62,6 @@ func (extractor *JavaExtractor) unit2Call(unit *core.Unit) (*Call, error) {
 		argumentPart = core.FindFirstByFieldInSubs(unit, FieldJavaName)
 
 		if len(identifiers) == 0 {
-			core.DebugDfs(unit, 0)
 			return nil, errors.New("no id: " + unit.Content)
 		}
 

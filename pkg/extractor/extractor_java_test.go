@@ -1,8 +1,9 @@
 package extractor
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"testing"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 var javaCode = `
@@ -14,6 +15,8 @@ import com.williamfzc.sibyl.core.model.method.Method;
 
 public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
     @Override
+	@abcde
+	@adeflkjbg(abc = "dfff")
     public void enterMethodDeclarationWithoutMethodBody(
             Java8Parser.MethodDeclarationWithoutMethodBodyContext ctx) {
         super.enterMethodDeclarationWithoutMethodBody(ctx);
@@ -50,8 +53,11 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 	}
 
 	extractor := GetExtractor(core.LangJava)
-	_, err = extractor.ExtractFunctions(units)
+	data, err := extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)
+	}
+	for _, each := range data {
+		core.Log.Debugf("each: %s %s", each.Name, each.Extras)
 	}
 }

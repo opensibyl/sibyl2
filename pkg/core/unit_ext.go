@@ -79,6 +79,20 @@ func FindAllByKindInSubs(unit *Unit, kind string) []*Unit {
 	return ret
 }
 
+func FindAllByKindsInSubs(unit *Unit, kinds ...string) []*Unit {
+	var ret []*Unit
+	if unit == nil {
+		return ret
+	}
+
+	for _, each := range unit.SubUnits {
+		if slices.Contains(kinds, each.Kind) {
+			ret = append(ret, each)
+		}
+	}
+	return ret
+}
+
 type Query struct {
 	target       *Unit
 	IsDfs        bool

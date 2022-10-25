@@ -69,6 +69,7 @@ func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, err
 	}
 	funcUnit.Name = funcName.Content
 
+	extras := &PythonFunctionExtras{}
 	if unit.ParentUnit.Kind == KindPythonDecoratedDefinition {
 		decoratedUnit := unit.ParentUnit
 		decorators := core.FindAllByKindInSubs(decoratedUnit, KindPythonDecorator)
@@ -80,11 +81,9 @@ func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, err
 		for _, each := range decorators {
 			decoContents = append(decoContents, each.Content)
 		}
-
-		funcUnit.Extras = &PythonFunctionExtras{
-			Decorators: decoContents,
-		}
+		extras.Decorators = decoContents
 	}
+	funcUnit.Extras = extras
 
 	// todo: returns and params?
 	return funcUnit, nil

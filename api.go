@@ -123,3 +123,14 @@ func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult,
 
 	return results, nil
 }
+
+func QueryAffectedUnitsByLine[T extractor.DataType](result *extractor.BaseFileResult[T], lines ...int) []T {
+	var ret []T
+	for _, eachUnit := range result.Units {
+		eachSpan := eachUnit.GetSpan()
+		if eachSpan.ContainAnyLine(lines...) {
+			ret = append(ret, eachUnit)
+		}
+	}
+	return ret
+}

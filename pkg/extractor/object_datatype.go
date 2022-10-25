@@ -1,19 +1,26 @@
 package extractor
 
-import "github.com/williamfzc/sibyl2/pkg/core"
+import (
+	"fmt"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
+)
 
 type DataType interface {
-	Dt()
+	GetDesc() string
 	GetSpan() *core.Span
 }
 
-func (*Symbol) Dt() {
+func (symbol *Symbol) GetDesc() string {
+	return fmt.Sprintf("<symbol %s %s>", symbol.Kind, symbol.Symbol)
 }
 
-func (*Function) Dt() {
+func (function *Function) GetDesc() string {
+	return fmt.Sprintf("<function %s %v>", function.GetSignature(), function.GetSpan())
 }
 
-func (*Call) Dt() {
+func (call *Call) GetDesc() string {
+	return fmt.Sprintf("<call %s(%v) in %s>", call.Caller, call.Arguments, call.Src)
 }
 
 func DataTypeOf[T DataType](dataList []T) []DataType {

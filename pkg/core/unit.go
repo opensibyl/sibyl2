@@ -6,16 +6,18 @@ type Span struct {
 }
 
 type Point struct {
+	// NOTICE: INDEX, NOT REAL LINE NUMBER
 	Row    uint32 `json:"row"`
 	Column uint32 `json:"column"`
 }
 
 func (s *Span) ContainLine(lineNum int) bool {
-	uint32Line := uint32(lineNum)
+	// real line number
+	uint32Line := uint32(lineNum) + 1
 	return s.Start.Row <= uint32Line && uint32Line <= s.End.Row
 }
 
-func (s *Span) ContainAnyLine(lineNums []int) bool {
+func (s *Span) ContainAnyLine(lineNums ...int) bool {
 	for _, each := range lineNums {
 		if s.ContainLine(each) {
 			return true

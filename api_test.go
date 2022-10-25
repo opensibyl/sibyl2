@@ -1,9 +1,10 @@
 package sibyl2
 
 import (
+	"testing"
+
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"testing"
 )
 
 func TestExtract(t *testing.T) {
@@ -52,6 +53,16 @@ func TestExtractFileWithGuess(t *testing.T) {
 		panic(err)
 	}
 	for _, each := range fileResult {
-		core.Log.Infof("path: %v, %v", each.Path, each.Units)
+		for _, eachUnit := range each.Units {
+			core.Log.Infof("unit: %v", eachUnit.GetDesc())
+		}
+	}
+
+	// query api
+	for _, eachFile := range fileResult {
+		affectedUnits := QueryAffectedUnitsByLine(eachFile, 54, 55)
+		for _, each := range affectedUnits {
+			core.Log.Infof("affected units: %s", each.GetDesc())
+		}
 	}
 }

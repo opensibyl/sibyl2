@@ -67,7 +67,7 @@ func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult,
 	runner := &core.Runner{}
 	if !config.LangType.IsSupported() {
 		// do the guess
-		core.Log.Infof("no specific lang found, do the guess")
+		core.Log.Infof("no specific lang found, do the guess in: %s", targetFile)
 		config.LangType, err = runner.GuessLangFromDir(targetFile, config.FileFilter)
 		if err != nil {
 			return nil, err

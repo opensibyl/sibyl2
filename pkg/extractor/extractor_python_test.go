@@ -1,9 +1,9 @@
 package extractor
 
 import (
-	"fmt"
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"testing"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 var pythonCode = `
@@ -13,6 +13,8 @@ def a():
 	b("abcde")
 
 @DDDDeco
+@DDABC2
+@CCC(abcde='acde')
 def b(s):
 	print("defabc")
 
@@ -33,6 +35,7 @@ func TestPythonExtractor_ExtractFunctions(t *testing.T) {
 		panic(err)
 	}
 	for _, each := range functions {
-		fmt.Printf("%+v", each.Extras)
+		core.Log.Debugf("%s", each.Name)
+		core.Log.Debugf("%+v", each.Extras)
 	}
 }

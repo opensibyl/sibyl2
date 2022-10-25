@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"errors"
+
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
@@ -16,7 +17,7 @@ type PythonExtractor struct {
 }
 
 type PythonFunctionExtras struct {
-	Decorated string `json:"decorated"`
+	Decorators []string `json:"decorators"`
 }
 
 func (extractor *PythonExtractor) GetLang() core.LangType {
@@ -70,13 +71,18 @@ func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, err
 
 	if unit.ParentUnit.Kind == KindPythonDecoratedDefinition {
 		decoratedUnit := unit.ParentUnit
-		decorator := core.FindFirstByKindInSubsWithBfs(decoratedUnit, KindPythonDecorator)
-		if decorator == nil {
+		decorators := core.FindAllByKindInSubs(decoratedUnit, KindPythonDecorator)
+		if len(decorators) == 0 {
 			return nil, errors.New("no deco found in " + decoratedUnit.Content)
 		}
 
+		var decoContents []string
+		for _, each := range decorators {
+			decoContents = append(decoContents, each.Content)
+		}
+
 		funcUnit.Extras = &PythonFunctionExtras{
-			Decorated: decorator.Content,
+			Decorators: decoContents,
 		}
 	}
 

@@ -1,6 +1,6 @@
 builds:
   - id: sibyl-darwin-amd64
-    ldflags: '-extldflags "-lstdc++ -static"'
+    ldflags: '-extldflags "-lstdc++"'
     main: ./cmd/sibyl
     env:
       - CGO_ENABLED=1

@@ -4,17 +4,16 @@
 
 跨语言、快速、简单地从你的源码中提取可序列化的元信息。
 
-## 使用
+## 这是什么
 
-### 命令行
+这个项目定位是底层基础组件，将源码逻辑化。
+简单来说就是，诸如哪个文件的哪个代码片段，对应到什么函数、类，实际意义是什么。
 
-可以在 [release页面](https://github.com/williamfzc/sibyl2/releases) 下载对应平台的版本。
+基于这一点，大多数上层工具都可以基于它而：
 
-```bash
-./sibyl2_0.2.0_darwin_amd64 extract --src ~/YOUR_SOURCE_CODE_DIR --lang GOLANG --type func
-```
-
-即可提取出整个仓库里所有的函数信息。
+- 不再需要兼容多语言
+- 不再需要苦恼如何从源码中提取扫描想要的信息
+- 不依赖编译流程
 
 before：
 
@@ -28,60 +27,11 @@ after：
 
 ![your-UML-diagram-name](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/williamfzc/sibyl2/master/docs/sample.iuml)
 
-```json
-{
-  "path": "extract.go",
-  "language": "GOLANG",
-  "type": "func",
-  "units": [
-    {
-      "name": "ExtractFunction",
-      "receiver": "",
-      "parameters": [
-        {
-          "type": "string",
-          "name": "targetFile"
-        },
-        {
-          "type": "*ExtractConfig",
-          "name": "config"
-        }
-      ],
-      "returns": [
-        {
-          "type": "[]*extractor.FunctionFileResult",
-          "name": ""
-        },
-        {
-          "type": "error",
-          "name": ""
-        }
-      ],
-      "span": {
-        "start": {
-          "row": 18,
-          "column": 0
-        },
-        "end": {
-          "row": 46,
-          "column": 1
-        }
-      },
-      "extras": null
-    }
-  ]
-}
-```
-
-它是跨语言的。当前已支持的语言详见下方文档。
-
-### API
-
-请参考[命令行的实现](./cmd/sibyl/extract.go)
+更多请见文档。
 
 ## 文档
 
-https://github.com/williamfzc/sibyl2/wiki/FAQ
+https://github.com/williamfzc/sibyl2/wiki/0.-%E5%85%B3%E4%BA%8E
 
 ## refs
 

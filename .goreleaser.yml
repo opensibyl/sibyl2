@@ -1,6 +1,6 @@
 builds:
   - id: sibyl-darwin-amd64
-    ldflags: -s -w
+    ldflags: '-extldflags "-lstdc++ -static"'
     main: ./cmd/sibyl
     env:
       - CGO_ENABLED=1
@@ -11,7 +11,7 @@ builds:
     goarch:
       - amd64
   - id: sibyl-linux-amd64
-    ldflags: -s -w
+    ldflags: '-extldflags "-lstdc++ -static"'
     main: ./cmd/sibyl
     env:
       - CGO_ENABLED=1

@@ -26,6 +26,8 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 
 after：
 
+![your-UML-diagram-name](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/williamfzc/sibyl2/master/docs/sample.iuml)
+
 ```json
 {
   "path": "extract.go",

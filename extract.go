@@ -3,12 +3,11 @@ package sibyl2
 import (
 	"errors"
 	"fmt"
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"os"
 	"path/filepath"
 	"time"
-
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
 type ExtractConfig struct {
@@ -122,15 +121,4 @@ func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult,
 	}
 
 	return results, nil
-}
-
-func QueryAffectedUnitsByLine[T extractor.DataType](result *extractor.BaseFileResult[T], lines ...int) []T {
-	var ret []T
-	for _, eachUnit := range result.Units {
-		eachSpan := eachUnit.GetSpan()
-		if eachSpan.ContainAnyLine(lines...) {
-			ret = append(ret, eachUnit)
-		}
-	}
-	return ret
 }

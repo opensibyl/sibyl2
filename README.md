@@ -25,7 +25,54 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 
 after：
 
-![your-UML-diagram-name](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/williamfzc/sibyl2/master/docs/sample.iuml)
+![](./docs/sample.svg)
+
+或其他格式：
+
+```json
+{
+  "path": "extract.go",
+  "language": "GOLANG",
+  "type": "func",
+  "units": [
+    {
+      "name": "ExtractFunction",
+      "receiver": "",
+      "parameters": [
+        {
+          "type": "string",
+          "name": "targetFile"
+        },
+        {
+          "type": "*ExtractConfig",
+          "name": "config"
+        }
+      ],
+      "returns": [
+        {
+          "type": "[]*extractor.FunctionFileResult",
+          "name": ""
+        },
+        {
+          "type": "error",
+          "name": ""
+        }
+      ],
+      "span": {
+        "start": {
+          "row": 18,
+          "column": 0
+        },
+        "end": {
+          "row": 46,
+          "column": 1
+        }
+      },
+      "extras": null
+    }
+  ]
+}
+```
 
 更多请见文档。
 

@@ -6,6 +6,11 @@ import (
 	"path/filepath"
 )
 
+/*
+Runner
+
+binding to file system
+*/
 type Runner struct {
 }
 

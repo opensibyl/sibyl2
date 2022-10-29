@@ -54,25 +54,3 @@ func TestExtractFile(t *testing.T) {
 		core.Log.Debugf("path: %v, %v", each.Path, each.Units)
 	}
 }
-
-func TestExtractFileWithGuess(t *testing.T) {
-	fileResult, err := Extract("./extract.go", &ExtractConfig{
-		ExtractType: extractor.TypeExtractFunction,
-	})
-	if err != nil {
-		panic(err)
-	}
-	for _, each := range fileResult {
-		for _, eachUnit := range each.Units {
-			core.Log.Debugf("unit: %v", eachUnit.GetDesc())
-		}
-	}
-
-	// query api
-	for _, eachFile := range fileResult {
-		affectedUnits := QueryAffectedUnitsByLine(eachFile, 54, 55)
-		for _, each := range affectedUnits {
-			core.Log.Debugf("affected units: %s", each.GetDesc())
-		}
-	}
-}

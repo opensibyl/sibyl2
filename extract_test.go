@@ -42,6 +42,16 @@ func TestExtractFunctionWithGuess(t *testing.T) {
 	}
 }
 
+func TestExtractSymbol(t *testing.T) {
+	fileResult, err := ExtractSymbol(".", &ExtractConfig{})
+	if err != nil {
+		panic(err)
+	}
+	for _, each := range fileResult {
+		core.Log.Debugf("path: %s, %v", each.Path, each.Units)
+	}
+}
+
 func TestExtractFile(t *testing.T) {
 	fileResult, err := Extract("./extract.go", &ExtractConfig{
 		LangType:    core.LangGo,

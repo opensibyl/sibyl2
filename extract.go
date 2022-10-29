@@ -16,6 +16,36 @@ type ExtractConfig struct {
 	FileFilter  func(path string) bool
 }
 
+func ExtractSymbol(targetFile string, config *ExtractConfig) ([]*extractor.SymbolFileResult, error) {
+	config.ExtractType = extractor.TypeExtractSymbol
+	results, err := Extract(targetFile, config)
+	if err != nil {
+		return nil, err
+	}
+
+	var final []*extractor.SymbolFileResult
+	for _, each := range results {
+		var newUnits = make([]*extractor.Symbol, len(each.Units))
+		for i, v := range each.Units {
+			// should not error
+			if s, ok := v.(*extractor.Symbol); ok {
+				newUnits[i] = s
+			} else {
+				return nil, errors.New(fmt.Sprintf("failed to cast %v to symbol", v))
+			}
+		}
+
+		newEach := &extractor.SymbolFileResult{
+			Path:     each.Path,
+			Language: each.Language,
+			Type:     each.Type,
+			Units:    newUnits,
+		}
+		final = append(final, newEach)
+	}
+	return final, nil
+}
+
 func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.FunctionFileResult, error) {
 	config.ExtractType = extractor.TypeExtractFunction
 	results, err := Extract(targetFile, config)

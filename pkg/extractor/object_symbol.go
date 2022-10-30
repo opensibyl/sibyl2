@@ -41,8 +41,15 @@ type Symbol struct {
 	Kind      string    `json:"kind"`
 	Span      core.Span `json:"span"`
 	FieldName string    `json:"fieldName"`
+
+	// ptr to origin unit
+	unit *core.Unit
 }
 
 func (s *Symbol) GetSpan() *core.Span {
 	return &s.Span
+}
+
+func (s *Symbol) GetUnit() *core.Unit {
+	return s.unit
 }

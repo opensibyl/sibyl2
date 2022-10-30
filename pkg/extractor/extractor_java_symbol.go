@@ -24,6 +24,7 @@ func (extractor *JavaExtractor) ExtractSymbols(units []*core.Unit) ([]*Symbol, e
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
 			FieldName: eachUnit.FieldName,
+			unit:      eachUnit,
 		}
 		ret = append(ret, symbol)
 	}

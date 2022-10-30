@@ -2,14 +2,11 @@ package sibyl2
 
 import (
 	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"testing"
 )
 
 func TestQuery(t *testing.T) {
-	fileResult, err := Extract("./extract.go", &ExtractConfig{
-		ExtractType: extractor.TypeExtractFunction,
-	})
+	fileResult, err := ExtractFunction("./extract.go", DefaultConfig())
 	if err != nil {
 		panic(err)
 	}
@@ -17,6 +14,11 @@ func TestQuery(t *testing.T) {
 		for _, eachUnit := range each.Units {
 			core.Log.Debugf("unit: %v", eachUnit.GetDesc())
 		}
+	}
+
+	symbolResult, err := ExtractSymbol(".", DefaultConfig())
+	if err != nil {
+		panic(err)
 	}
 
 	// query by lines
@@ -28,10 +30,10 @@ func TestQuery(t *testing.T) {
 	}
 
 	// query by index
-	for _, eachFile := range fileResult {
-		functions := QueryUnitsByIndexName(eachFile, "Extract")
-		for _, each := range functions {
-			core.Log.Infof("found func: %s", each.GetDesc())
+	for _, eachFile := range symbolResult {
+		references := QueryUnitsByIndexName(eachFile, "Extract")
+		for _, each := range references {
+			core.Log.Infof("found ref in %s %v: %s", eachFile.Path, each.GetSpan(), each.GetDesc())
 		}
 	}
 }

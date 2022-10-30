@@ -24,6 +24,7 @@ func (extractor *GolangExtractor) ExtractSymbols(unit []*core.Unit) ([]*Symbol, 
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
 			FieldName: eachUnit.FieldName,
+			unit:      eachUnit,
 		}
 		ret = append(ret, symbol)
 	}

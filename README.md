@@ -74,7 +74,50 @@ after：
 }
 ```
 
-核心场景为研发过程、CI过程中进行高效的代码扫描与信息提取，你可以在 **毫秒级别-秒级别** 无痛为你的整个代码仓生成一份完整的快照图，供其他人、工具后续使用。
+与其他语言：
+
+```java
+public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
+    @Override
+    public void enterMethodDeclarationWithoutMethodBody(
+            Java8Parser.MethodDeclarationWithoutMethodBodyContext ctx) {
+        super.enterMethodDeclarationWithoutMethodBody(ctx);
+        this.storage.save(curMethodStack.peekLast());
+    }
+}
+```
+
+after:
+
+```json
+{
+	"name": "enterMethodDeclarationWithoutMethodBody",
+	"receiver": "com.williamfzc.sibyl.core.listener.java8.Java8SnapshotListener",
+	"parameters": [{
+		"type": "Java8Parser.MethodDeclarationWithoutMethodBodyContext",
+		"name": "ctx"
+	}],
+	"returns": [{
+		"type": "void",
+		"name": ""
+	}],
+	"span": {
+		"start": {
+			"row": 8,
+			"column": 4
+		},
+		"end": {
+			"row": 13,
+			"column": 5
+		}
+	},
+	"extras": {
+		"annotations": ["@Override"]
+	}
+}
+```
+
+核心场景为研发过程、CI过程中进行高效的代码扫描与信息提取。你可以在 **毫秒级别-秒级别** 无痛为你不同语言的、整个代码仓生成一份完整的、同样格式的快照图，供其他人、工具后续使用与扩展。
 
 更多请见文档。
 

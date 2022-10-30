@@ -1,6 +1,9 @@
 package extractor
 
-import "github.com/williamfzc/sibyl2/pkg/core"
+import (
+	"fmt"
+	"github.com/williamfzc/sibyl2/pkg/core"
+)
 
 /*
 Symbol
@@ -44,6 +47,14 @@ type Symbol struct {
 
 	// ptr to origin unit
 	unit *core.Unit
+}
+
+func (s *Symbol) GetIndexName() string {
+	return s.Symbol
+}
+
+func (s *Symbol) GetDesc() string {
+	return fmt.Sprintf("<symbol %s %s>", s.Kind, s.Symbol)
 }
 
 func (s *Symbol) GetSpan() *core.Span {

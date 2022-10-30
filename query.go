@@ -13,7 +13,7 @@ func QueryUnitsByLines[T extractor.DataType](result *extractor.BaseFileResult[T]
 	return ret
 }
 
-func QueryUnitsByIndexName[T extractor.DataType](result *extractor.BaseFileResult[T], indexNames ...string) []T {
+func QueryUnitsByIndexNames[T extractor.DataType](result *extractor.BaseFileResult[T], indexNames ...string) []T {
 	var ret []T
 	for _, eachUnit := range result.Units {
 		for _, eachName := range indexNames {
@@ -21,6 +21,14 @@ func QueryUnitsByIndexName[T extractor.DataType](result *extractor.BaseFileResul
 				ret = append(ret, eachUnit)
 			}
 		}
+	}
+	return ret
+}
+
+func QueryUnitsByIndexNamesInFiles[T extractor.DataType](result []*extractor.BaseFileResult[T], indexNames ...string) []T {
+	var ret []T
+	for _, each := range result {
+		ret = append(ret, QueryUnitsByIndexNames(each, indexNames...)...)
 	}
 	return ret
 }

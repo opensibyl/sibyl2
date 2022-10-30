@@ -20,6 +20,10 @@ func FindAllByOneOfKindInParent(unit *Unit, kinds ...KindRepr) []*Unit {
 	return query.All()
 }
 
+func FindAll(unit *Unit) []*Unit {
+	return NewQuery(unit).Top2Bottom().All()
+}
+
 func FindFirstByOneOfKindInParent(unit *Unit, kinds ...KindRepr) *Unit {
 	query := NewQuery(unit).Bottom2Top()
 	for _, each := range kinds {

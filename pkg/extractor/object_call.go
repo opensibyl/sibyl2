@@ -1,6 +1,9 @@
 package extractor
 
-import "github.com/williamfzc/sibyl2/pkg/core"
+import (
+	"fmt"
+	"github.com/williamfzc/sibyl2/pkg/core"
+)
 
 /*
 Call NON-PRECISE
@@ -18,6 +21,15 @@ type Call struct {
 	Caller    string    `json:"caller"`
 	Arguments []string  `json:"arguments"`
 	Span      core.Span `json:"span"`
+}
+
+func (c *Call) GetIndexName() string {
+	// hard to represent ...
+	return fmt.Sprintf("%s->%s", c.Src, c.Caller)
+}
+
+func (c *Call) GetDesc() string {
+	return fmt.Sprintf("<call %s(%v) in %s>", c.Caller, c.Arguments, c.Src)
 }
 
 func (c *Call) GetSpan() *core.Span {

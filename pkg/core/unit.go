@@ -11,6 +11,14 @@ type Point struct {
 	Column uint32 `json:"column"`
 }
 
+func (s *Span) Lines() []int {
+	var ret = make([]int, s.End.Row-s.Start.Row+1)
+	for i := s.Start.Row; i <= s.End.Row; i++ {
+		ret = append(ret, int(i))
+	}
+	return ret
+}
+
 func (s *Span) ContainLine(lineNum int) bool {
 	// real line number
 	uint32Line := uint32(lineNum) + 1
@@ -24,6 +32,10 @@ func (s *Span) ContainAnyLine(lineNums ...int) bool {
 		}
 	}
 	return false
+}
+
+func (s *Span) MatchAny(target *Span) bool {
+	return !(target.End.Row < s.Start.Row || target.Start.Row > s.End.Row)
 }
 
 type KindRepr = string

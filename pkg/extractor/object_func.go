@@ -49,6 +49,14 @@ func (f *Function) GetSignature() FuncSignature {
 	return fmt.Sprintf("%s|%s|%s", prefix, paramPart, retPart)
 }
 
+func (f *Function) GetIndexName() string {
+	return f.Name
+}
+
+func (f *Function) GetDesc() string {
+	return fmt.Sprintf("<function %s %v>", f.GetSignature(), f.GetSpan())
+}
+
 func (f *Function) GetSpan() *core.Span {
 	return &f.Span
 }

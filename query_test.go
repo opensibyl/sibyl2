@@ -31,7 +31,7 @@ func TestQuery(t *testing.T) {
 
 	// query by index
 	for _, eachFile := range symbolResult {
-		references := QueryUnitsByIndexName(eachFile, "Extract")
+		references := QueryUnitsByIndexNames(eachFile, "Extract")
 		for _, each := range references {
 			core.Log.Infof("found ref in %s %v: %s", eachFile.Path, each.GetSpan(), each.GetDesc())
 		}

@@ -1,8 +1,9 @@
 package extractor
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"testing"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 var goCode = `
@@ -16,6 +17,10 @@ func NormalFunc(lang *sitter.Language) string {
 
 func (*Parser) NormalMethod(lang *sitter.Language) string {
 	return "hi"
+}
+
+func Abcd[T DataType](result *BaseFileResult[T]) []T {
+	return nil
 }
 `
 

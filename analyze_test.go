@@ -2,8 +2,9 @@ package sibyl2
 
 import (
 	"errors"
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"testing"
+
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 func TestAnalyzeFuncGraph(t *testing.T) {
@@ -14,13 +15,15 @@ func TestAnalyzeFuncGraph(t *testing.T) {
 		panic(err)
 	}
 
-	target := QueryUnitsByIndexNamesInFiles(functions, "NewParser")
+	targetFuncName := "NewParser"
+	target := QueryUnitsByIndexNamesInFiles(functions, targetFuncName)
 	if len(target) == 0 {
 		panic(errors.New("func not found"))
 	}
 
 	related := g.FindRelated(target[0])
+	core.Log.Infof("search func %s", targetFuncName)
 	for _, each := range related {
-		core.Log.Infof("found ref %s in %s", each.GetIndexName(), each.Path)
+		core.Log.Infof("found ref %s in %s, link: %s", each.GetIndexName(), each.Path, each.GetRefLinkRepr())
 	}
 }

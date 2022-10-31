@@ -15,15 +15,19 @@ func TestAnalyzeFuncGraph(t *testing.T) {
 		panic(err)
 	}
 
-	targetFuncName := "NewParser"
+	targetFuncName := "unit2Call"
 	target := QueryUnitsByIndexNamesInFiles(functions, targetFuncName)
 	if len(target) == 0 {
 		panic(errors.New("func not found"))
 	}
 
-	related := g.FindRelated(target[0])
-	core.Log.Infof("search func %s", targetFuncName)
-	for _, each := range related {
-		core.Log.Infof("found ref %s in %s, link: %s", each.GetIndexName(), each.Path, each.GetRefLinkRepr())
+	references := g.FindReferences(target[0])
+	calls := g.FindCalls(target[0])
+	core.Log.Debugf("search func %s", targetFuncName)
+	for _, each := range references {
+		core.Log.Debugf("found ref %s in %s, link: %s", each.GetIndexName(), each.Path, each.GetRefLinkRepr())
+	}
+	for _, each := range calls {
+		core.Log.Debugf("found call %s in %s, link: %s", each.GetIndexName(), each.Path, each.GetRefLinkRepr())
 	}
 }

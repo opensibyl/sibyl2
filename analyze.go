@@ -26,7 +26,6 @@ type FunctionWithPath struct {
 
 type FunctionWithRefLink struct {
 	*FunctionWithPath
-	// call link and ref link?
 	Link []*FunctionWithPath `json:"link"`
 }
 
@@ -38,26 +37,37 @@ func (fwr *FunctionWithRefLink) GetRefLinkRepr() string {
 	return strings.Join(ret, "<-")
 }
 
+type FuncGraphType = graph.Graph[string, *FunctionWithPath]
+
 type FuncGraph struct {
-	graph.Graph[string, *FunctionWithPath]
+	ReverseGraph FuncGraphType
+	CallGraph    FuncGraphType
 }
 
-func (fg *FuncGraph) FindRelated(f *extractor.Function) []*FunctionWithRefLink {
+func (fg *FuncGraph) FindReferences(f *extractor.Function) []*FunctionWithRefLink {
+	return fg.bfs(fg.ReverseGraph, f)
+}
+
+func (fg *FuncGraph) FindCalls(f *extractor.Function) []*FunctionWithRefLink {
+	return fg.bfs(fg.CallGraph, f)
+}
+
+func (fg *FuncGraph) bfs(g FuncGraphType, f *extractor.Function) []*FunctionWithRefLink {
 	selfDesc := f.GetDesc()
 	var ret []*FunctionWithRefLink
-	graph.BFS(fg.Graph, f.GetDesc(), func(s string) bool {
-		vertex, err := fg.Vertex(s)
+	graph.BFS(g, f.GetDesc(), func(s string) bool {
+		vertex, err := g.Vertex(s)
 		// exclude itself
 		if (err == nil) && (vertex.GetDesc() != selfDesc) {
 			fwo := &FunctionWithRefLink{}
 			fwo.FunctionWithPath = vertex
-			path, err := graph.ShortestPath(fg.Graph, selfDesc, vertex.GetDesc())
+			path, err := graph.ShortestPath(g, selfDesc, vertex.GetDesc())
 			if err != nil {
 				// ignore this link
 				return false
 			}
 			for _, each := range path {
-				fwp, err := fg.Vertex(each)
+				fwp, err := g.Vertex(each)
 				if err != nil {
 					return false
 				}
@@ -73,7 +83,8 @@ func (fg *FuncGraph) FindRelated(f *extractor.Function) []*FunctionWithRefLink {
 }
 
 func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*extractor.SymbolFileResult) (*FuncGraph, error) {
-	funcGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
+	reverseGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
+	callGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
 
 	// speed up cache
 	funcFileMap := make(map[string]*extractor.FunctionFileResult, len(funcFiles))
@@ -83,10 +94,16 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 
 	for _, eachFuncFile := range funcFiles {
 		for _, eachFunc := range eachFuncFile.Units {
-			err := funcGraph.AddVertex(&FunctionWithPath{
+			// multi graphs shared
+			fwp := &FunctionWithPath{
 				eachFunc,
 				eachFuncFile.Path,
-			})
+			}
+			err := reverseGraph.AddVertex(fwp)
+			if err != nil {
+				return nil, err
+			}
+			err = callGraph.AddVertex(fwp)
 			if err != nil {
 				return nil, err
 			}
@@ -108,11 +125,16 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 					matched := QueryUnitsByLines(functions, eachSymbol.Span.Lines()...)
 					for _, eachMatchFunc := range matched {
 						// eachFunc referenced by eachMatchFunc
-						funcGraph.AddEdge(eachFunc.GetDesc(), eachMatchFunc.GetDesc())
+						reverseGraph.AddEdge(eachFunc.GetDesc(), eachMatchFunc.GetDesc())
+						callGraph.AddEdge(eachMatchFunc.GetDesc(), eachFunc.GetDesc())
 					}
 				}
 			}
 		}
 	}
-	return &FuncGraph{funcGraph}, nil
+	fg := &FuncGraph{
+		ReverseGraph: reverseGraph,
+		CallGraph:    callGraph,
+	}
+	return fg, nil
 }

@@ -19,6 +19,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 		funcFileMap[each.Path] = each
 	}
 
+	// fill graph with vertex
 	for _, eachFuncFile := range funcFiles {
 		for _, eachFunc := range eachFuncFile.Units {
 			// multi graphs shared
@@ -34,7 +35,12 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			if err != nil {
 				return nil, err
 			}
+		}
+	}
 
+	// build relationship
+	for _, eachFuncFile := range funcFiles {
+		for _, eachFunc := range eachFuncFile.Units {
 			// find all the refs
 			var refs []*SymbolWithPath
 			for _, eachSymbolFile := range symbolFiles {

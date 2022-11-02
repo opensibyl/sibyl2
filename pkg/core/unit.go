@@ -12,7 +12,7 @@ type Point struct {
 }
 
 func (s *Span) Lines() []int {
-	var ret = make([]int, s.End.Row-s.Start.Row+1)
+	var ret = make([]int, 0, s.End.Row-s.Start.Row+1)
 	for i := s.Start.Row; i <= s.End.Row; i++ {
 		ret = append(ret, int(i))
 	}

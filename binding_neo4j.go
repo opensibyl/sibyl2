@@ -35,17 +35,9 @@ type Neo4jDriver struct {
 	neo4j.DriverWithContext
 }
 
-func (d *Neo4jDriver) UploadFileResultWithContext(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) {
-	driver := d.DriverWithContext
-	err := insert(wc, f, ctx, driver)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func insert(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context, driver neo4j.DriverWithContext) error {
+func (d *Neo4jDriver) UploadFileResultWithContext(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	// session is cheap to create
-	session := driver.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, createItemFn(wc, f, ctx))
 	if err != nil {

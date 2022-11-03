@@ -53,6 +53,7 @@ create func links:
 
 type Driver interface {
 	UploadFileResultWithContext(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
+	UploadFuncGraphWithContext(wc *WorkspaceConfig, f FuncGraph, ctx context.Context) error
 }
 
 type RepoConfig struct {

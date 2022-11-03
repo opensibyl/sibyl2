@@ -39,14 +39,25 @@ func (d *Neo4jDriver) UploadFileResultWithContext(wc *WorkspaceConfig, f *extrac
 	// session is cheap to create
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
-	_, err := session.ExecuteWrite(ctx, createItemFn(wc, f, ctx))
+	_, err := session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func createItemFn(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) neo4j.ManagedTransactionWork {
+func (d *Neo4jDriver) UploadFuncGraphWithContext(wc *WorkspaceConfig, f FuncGraph, ctx context.Context) error {
+	// session is cheap to create
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, createFuncGraphTransaction(wc, f, ctx))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) neo4j.ManagedTransactionWork {
 	return func(tx neo4j.ManagedTransaction) (any, error) {
 		merged := []string{
 			TemplateMergeRepo,
@@ -88,6 +99,14 @@ func createItemFn(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx cont
 			}
 		}
 
+		// temp ignore return values
+		return nil, nil
+	}
+}
+
+func createFuncGraphTransaction(wc *WorkspaceConfig, f FuncGraph, ctx context.Context) neo4j.ManagedTransactionWork {
+	return func(tx neo4j.ManagedTransaction) (any, error) {
+		// todo
 		// temp ignore return values
 		return nil, nil
 	}

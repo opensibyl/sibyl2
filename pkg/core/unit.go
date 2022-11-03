@@ -1,5 +1,7 @@
 package core
 
+import "fmt"
+
 type Span struct {
 	Start Point `json:"start"`
 	End   Point `json:"end"`
@@ -32,6 +34,10 @@ func (s *Span) ContainAnyLine(lineNums ...int) bool {
 		}
 	}
 	return false
+}
+
+func (s *Span) String() string {
+	return fmt.Sprintf("%d:%d,%d:%d", s.Start.Row, s.Start.Column, s.End.Row, s.End.Column)
 }
 
 func (s *Span) MatchAny(target *Span) bool {

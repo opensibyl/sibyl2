@@ -11,7 +11,16 @@ import (
 )
 
 const (
-	TemplateMergeFunc = "CREATE (func%d:Func {" +
+	TemplateMergeFuncPrefix = "MERGE " +
+		"(:Repo {id: $repo_id})" +
+		"-[:INCLUDE]->" +
+		"(rev:Rev {hash: $rev_hash})"
+	TemplateMergeFuncFile = "MERGE (rev)" +
+		"-[:INCLUDE]->" +
+		"(f:File {path: $file_path, lang: $file_lang})"
+	TemplateMergeFuncSelf = "MERGE (f)" +
+		"-[:INCLUDE]->" +
+		"(:Func {" +
 		"name: $func_name, " +
 		"receiver: $func_receiver, " +
 		"parameters: $func_parameters, " +
@@ -19,15 +28,9 @@ const (
 		"span: $func_span, " +
 		"extras: $func_extras," +
 		"signature: $func_signature })"
-	TemplateMergeFile = "MERGE (file:File {" +
-		"path: $file_path, " +
-		"lang: $file_lang})"
-	TemplateMergeRev = "MERGE (rev:Rev {" +
-		"hash: $rev_hash})"
-	TemplateMergeRepo = "MERGE (repo:Repo {id: $repo_id})"
 
 	TemplateMatchFuncFull = "MATCH " +
-		"(repo:Repo {name: $repo_name, type: $repo_type, id: $repo_id})" +
+		"(repo:Repo {id: $repo_id})" +
 		"-[:INCLUDE]->" +
 		"(rev:Rev {hash: $rev_hash})" +
 		"-[:INCLUDE]->" +
@@ -68,30 +71,21 @@ func (d *Neo4jDriver) UploadFuncContextWithContext(wc *WorkspaceConfig, f *Funct
 
 func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) neo4j.ManagedTransactionWork {
 	return func(tx neo4j.ManagedTransaction) (any, error) {
-		merged := []string{
-			TemplateMergeRepo,
-			TemplateMergeRev,
-			TemplateMergeFile,
-			fmt.Sprintf(TemplateMergeLinkInclude, "repo", "rev"),
-			fmt.Sprintf(TemplateMergeLinkInclude, "rev", "file"),
-		}
-
-		for i, each := range f.Units {
-			newMerged := append(merged, []string{
-				// create func node
-				fmt.Sprintf(TemplateMergeFunc, i),
-				// link them
-				fmt.Sprintf(TemplateMergeLinkInclude, "file", fmt.Sprintf("func%d", i)),
-			}...)
-
+		for _, each := range f.Units {
 			receiver, _ := json.Marshal(each.Receiver)
 			params, _ := json.Marshal(each.Parameters)
 			returns, _ := json.Marshal(each.Returns)
 			extras, _ := json.Marshal(each.Extras)
 			spanLines := each.Span.Lines()
 
+			merged := []string{
+				TemplateMergeFuncPrefix,
+				TemplateMergeFuncFile,
+				TemplateMergeFuncSelf,
+			}
+
 			// todo: merge these run together
-			_, err := tx.Run(ctx, strings.Join(newMerged, " "), map[string]any{
+			_, err := tx.Run(ctx, strings.Join(merged, " "), map[string]any{
 				"repo_id":         wc.RepoId,
 				"rev_hash":        wc.RevHash,
 				"file_path":       f.Path,

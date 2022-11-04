@@ -25,7 +25,7 @@ func TestNeo4jDriver_UploadFile(t *testing.T) {
 	ctx := context.Background()
 	defer driver.Close(ctx)
 	newDriver := &Neo4jDriver{driver}
-	functions, _ := ExtractFunction("F:\\workspace\\github\\sibyl", DefaultConfig())
+	functions, _ := ExtractFunction(".", DefaultConfig())
 
 	core.Log.Infof("start uploading")
 	var wg sync.WaitGroup
@@ -56,8 +56,8 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	ctx := context.Background()
 	defer driver.Close(ctx)
 	newDriver := &Neo4jDriver{driver}
-	functions, _ := ExtractFunction("F:\\workspace\\github\\sibyl", DefaultConfig())
-	symbols, _ := ExtractSymbol("F:\\workspace\\github\\sibyl", DefaultConfig())
+	functions, _ := ExtractFunction(".", DefaultConfig())
+	symbols, _ := ExtractSymbol(".", DefaultConfig())
 	fg, _ := AnalyzeFuncGraph(functions, symbols)
 	core.Log.Infof("target query done")
 	for _, eachFunc := range functions {

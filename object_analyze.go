@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/dominikbraun/graph"
+	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -17,7 +18,8 @@ type SymbolWithPath struct {
 // because they maybe not come from a real file
 type FunctionWithPath struct {
 	*extractor.Function
-	Path string `json:"path"`
+	Path     string        `json:"path"`
+	Language core.LangType `json:"language"`
 }
 
 type FunctionWithRefLink struct {

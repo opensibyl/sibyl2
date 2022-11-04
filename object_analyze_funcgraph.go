@@ -57,18 +57,9 @@ func (fg *FuncGraph) bfs(g FuncGraphType, f *extractor.Function) []*FunctionWith
 		if (err == nil) && (vertex.GetDesc() != selfDesc) {
 			fwo := &FunctionWithRefLink{}
 			fwo.FunctionWithPath = vertex
-			path, err := graph.ShortestPath(g, selfDesc, vertex.GetDesc())
-			if err != nil {
-				// ignore this link
-				return false
-			}
-			for _, each := range path {
-				fwp, err := g.Vertex(each)
-				if err != nil {
-					return false
-				}
-				fwo.Link = append(fwo.Link, fwp)
-			}
+			// calc the shortest path can be slow in large scale graph
+			// these heavy calculations should be done outside this lib
+			fwo.Link = append(fwo.Link, vertex)
 			ret = append(ret, fwo)
 		}
 

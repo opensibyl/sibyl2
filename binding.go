@@ -53,16 +53,24 @@ create func links:
 
 type Driver interface {
 	UploadFileResultWithContext(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
-	UploadFuncGraphWithContext(wc *WorkspaceConfig, f FuncGraph, ctx context.Context) error
+	UploadFuncContextWithContext(wc *WorkspaceConfig, f FunctionContext, ctx context.Context) error
 }
 
-type RepoConfig struct {
-	RepoId   int    `json:"repoId"`
-	RepoName string `json:"repoName"`
-	RepoType string `json:"repoType"`
-}
+/*
+WorkspaceConfig
 
+as an infra lib, it will not assume what kind of repo you used.
+
+just two fields:
+- repoId: unique id of your repo, no matter git or svn, even appId.
+- revHash: unique id of your version.
+*/
 type WorkspaceConfig struct {
-	*RepoConfig
+	RepoId  string `json:"repoId"`
 	RevHash string `json:"revHash"`
+}
+
+func (wc *WorkspaceConfig) Verify() bool {
+	// all the fields should be filled
+	return wc.RepoId != "" && wc.RevHash != ""
 }

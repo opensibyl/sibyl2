@@ -26,6 +26,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			fwp := &FunctionWithPath{
 				eachFunc,
 				eachFuncFile.Path,
+				eachFuncFile.Language,
 			}
 			err := reverseCallGraph.AddVertex(fwp)
 			if err != nil {

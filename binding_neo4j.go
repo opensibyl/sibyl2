@@ -11,24 +11,33 @@ import (
 )
 
 const (
-	TemplateMergeFunc = "MERGE (func%d:Func {" +
+	TemplateMergeFunc = "CREATE (func%d:Func {" +
 		"name: $func_name, " +
 		"receiver: $func_receiver, " +
 		"parameters: $func_parameters, " +
 		"returns: $func_returns, " +
 		"span: $func_span, " +
-		"extras: $func_extras})"
+		"extras: $func_extras," +
+		"signature: $func_signature })"
 	TemplateMergeFile = "MERGE (file:File {" +
 		"path: $file_path, " +
 		"lang: $file_lang})"
 	TemplateMergeRev = "MERGE (rev:Rev {" +
 		"hash: $rev_hash})"
-	TemplateMergeRepo = "MERGE (repo:Repo {" +
-		"name: $repo_name, " +
-		"type: $repo_type, " +
-		"id: $repo_id})"
-	TemplateMergeLinkInclude   = "MERGE (%s)-[:INCLUDE]->(%s)"
-	TemplateMergeLinkReference = "MERGE (%s)-[:REFERENCE]->(%s)"
+	TemplateMergeRepo = "MERGE (repo:Repo {id: $repo_id})"
+
+	TemplateMatchFuncFull = "MATCH " +
+		"(repo:Repo {name: $repo_name, type: $repo_type, id: $repo_id})" +
+		"-[:INCLUDE]->" +
+		"(rev:Rev {hash: $rev_hash})" +
+		"-[:INCLUDE]->" +
+		"(%s:File {path: %s, lang: $file_lang})" +
+		"-[:INCLUDE]->" +
+		"(func%d:Func {signature: $func%d_signature})"
+
+	TemplateMergeLinkInclude       = "MERGE (%s)-[:INCLUDE]->(%s)"
+	TemplateMergeLinkFileReference = "MERGE (%s)-[:FILE_REFERENCE]->(%s)"
+	TemplateMergeLinkFuncReference = "MERGE (%s)-[:FUNC_REFERENCE]->(%s)"
 )
 
 type Neo4jDriver struct {
@@ -46,7 +55,7 @@ func (d *Neo4jDriver) UploadFileResultWithContext(wc *WorkspaceConfig, f *extrac
 	return nil
 }
 
-func (d *Neo4jDriver) UploadFuncGraphWithContext(wc *WorkspaceConfig, f FuncGraph, ctx context.Context) error {
+func (d *Neo4jDriver) UploadFuncContextWithContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error {
 	// session is cheap to create
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
@@ -75,23 +84,25 @@ func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFil
 				fmt.Sprintf(TemplateMergeLinkInclude, "file", fmt.Sprintf("func%d", i)),
 			}...)
 
-			recv, _ := json.Marshal(each.Receiver)
+			receiver, _ := json.Marshal(each.Receiver)
 			params, _ := json.Marshal(each.Parameters)
 			returns, _ := json.Marshal(each.Returns)
 			extras, _ := json.Marshal(each.Extras)
+			spanLines := each.Span.Lines()
+
+			// todo: merge these run together
 			_, err := tx.Run(ctx, strings.Join(newMerged, " "), map[string]any{
 				"repo_id":         wc.RepoId,
-				"repo_name":       wc.RepoName,
-				"repo_type":       wc.RepoType,
 				"rev_hash":        wc.RevHash,
 				"file_path":       f.Path,
 				"file_lang":       f.Language,
 				"func_name":       each.Name,
-				"func_receiver":   string(recv),
+				"func_receiver":   string(receiver),
 				"func_parameters": string(params),
 				"func_returns":    string(returns),
-				"func_span":       each.Span.String(),
+				"func_span":       []int{spanLines[0], spanLines[len(spanLines)-1]},
 				"func_extras":     string(extras),
+				"func_signature":  each.GetSignature(),
 			})
 			_, err = tx.Run(ctx, fmt.Sprintf(TemplateMergeLinkInclude, "file", "func"), nil)
 			if err != nil {
@@ -104,9 +115,38 @@ func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFil
 	}
 }
 
-func createFuncGraphTransaction(wc *WorkspaceConfig, f FuncGraph, ctx context.Context) neo4j.ManagedTransactionWork {
+func createFuncGraphTransaction(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) neo4j.ManagedTransactionWork {
 	return func(tx neo4j.ManagedTransaction) (any, error) {
-		// todo
+		for i, each := range f.Calls {
+			id := i + 1
+			eachFuncName := fmt.Sprintf("func%d", id)
+			eachMerged := []string{
+				fmt.Sprintf(TemplateMatchFuncFull, "srcfile", "$srcPath", 0, 0),
+				fmt.Sprintf(TemplateMatchFuncFull, "targetfile", "$targetPath", id, id),
+			}
+			if each.Path != f.Path {
+				eachMerged = append(eachMerged, fmt.Sprintf(TemplateMergeLinkFileReference, "srcfile", "targetfile"))
+			}
+			eachMerged = append(eachMerged,
+				// create link
+				fmt.Sprintf(TemplateMergeLinkFuncReference, "func0", eachFuncName),
+				"RETURN *")
+
+			// todo: merge these run together
+			_, err := tx.Run(ctx, strings.Join(eachMerged, " "), map[string]any{
+				"repo_id":                           wc.RepoId,
+				"rev_hash":                          wc.RevHash,
+				"srcPath":                           f.Path,
+				"targetPath":                        each.Path,
+				"file_lang":                         each.Language,
+				"func0_signature":                   f.GetSignature(),
+				fmt.Sprintf("func%d_signature", id): each.GetSignature(),
+			})
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		// temp ignore return values
 		return nil, nil
 	}

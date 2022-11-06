@@ -10,7 +10,8 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
-var hasNeo4jBackend = true
+// set it true to run these tests
+const hasNeo4jBackend = false
 
 func TestNeo4jDriver_UploadFile(t *testing.T) {
 	if !hasNeo4jBackend {
@@ -132,6 +133,32 @@ func TestNeo4jDriver_QueryFunctions(t *testing.T) {
 	}
 }
 
+func TestNeo4jDriver_QueryFunctionsWithLines(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	wc := &WorkspaceConfig{
+		RepoId:  "sibyl",
+		RevHash: "12345f",
+	}
+
+	dbUri := "bolt://localhost:7687"
+	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	functions, err := newDriver.QueryFunctionsWithLines(wc, "extract.go", []int{32, 33}, ctx)
+	if err != nil {
+		panic(err)
+	}
+	for _, each := range functions {
+		core.Log.Infof("func: %v", each)
+	}
+}
+
 func TestNeo4jDriver_QueryFunctionWithSignature(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
@@ -154,4 +181,30 @@ func TestNeo4jDriver_QueryFunctionWithSignature(t *testing.T) {
 		panic(err)
 	}
 	core.Log.Infof("ctx4: %v", ctxs.Name)
+}
+
+func TestNeo4jDriver_QueryFunctionContextWithSignature(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	wc := &WorkspaceConfig{
+		RepoId:  "sibyl",
+		RevHash: "12345f",
+	}
+
+	dbUri := "bolt://localhost:7687"
+	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	ctxs, err := newDriver.QueryFunctionContextWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
+	if err != nil {
+		panic(err)
+	}
+	for _, each := range ctxs.ReverseCalls {
+		core.Log.Infof("call: %v", each.GetIndexName())
+	}
 }

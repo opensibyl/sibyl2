@@ -18,11 +18,11 @@ type FuncGraph struct {
 	CallGraph        FuncGraphType
 }
 
-func (fg *FuncGraph) FindReverseCalls(f *extractor.Function) []*FunctionWithRefLink {
+func (fg *FuncGraph) FindReverseCalls(f *extractor.Function) []*FunctionWithPath {
 	return fg.bfs(fg.ReverseCallGraph, f)
 }
 
-func (fg *FuncGraph) FindCalls(f *extractor.Function) []*FunctionWithRefLink {
+func (fg *FuncGraph) FindCalls(f *extractor.Function) []*FunctionWithPath {
 	return fg.bfs(fg.CallGraph, f)
 }
 
@@ -48,19 +48,16 @@ func (fg *FuncGraph) FindRelated(f *extractor.Function) *FunctionContext {
 	return ctx
 }
 
-func (fg *FuncGraph) bfs(g FuncGraphType, f *extractor.Function) []*FunctionWithRefLink {
+func (fg *FuncGraph) bfs(g FuncGraphType, f *extractor.Function) []*FunctionWithPath {
 	selfDesc := f.GetDesc()
-	var ret []*FunctionWithRefLink
-	graph.BFS(g, f.GetDesc(), func(s string) bool {
+	var ret []*FunctionWithPath
+	_ = graph.BFS(g, f.GetDesc(), func(s string) bool {
 		vertex, err := g.Vertex(s)
 		// exclude itself
 		if (err == nil) && (vertex.GetDesc() != selfDesc) {
-			fwo := &FunctionWithRefLink{}
-			fwo.FunctionWithPath = vertex
 			// calc the shortest path can be slow in large scale graph
 			// these heavy calculations should be done outside this lib
-			fwo.Link = append(fwo.Link, vertex)
-			ret = append(ret, fwo)
+			ret = append(ret, vertex)
 		}
 
 		return false

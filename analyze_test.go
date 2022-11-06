@@ -25,10 +25,10 @@ func TestAnalyzeFuncGraph(t *testing.T) {
 	calls := g.FindCalls(target[0])
 	core.Log.Debugf("search func %s", targetFuncName)
 	for _, each := range references {
-		core.Log.Debugf("found ref %s in %s, link: %s", each.GetIndexName(), each.Path, each.GetRefLinkRepr())
+		core.Log.Debugf("found ref %s in %s", each.GetIndexName(), each.Path)
 	}
 	for _, each := range calls {
-		core.Log.Debugf("found call %s in %s, link: %s", each.GetIndexName(), each.Path, each.GetRefLinkRepr())
+		core.Log.Debugf("found call %s in %s", each.GetIndexName(), each.Path)
 	}
 }
 
@@ -48,9 +48,9 @@ func TestAnalyzeFuncGraph2(t *testing.T) {
 
 	ctx := g.FindRelated(target[0])
 	for _, each := range ctx.Calls {
-		core.Log.Infof("call: %s", each.GetRefLinkRepr())
+		core.Log.Infof("call: %s", each.Name)
 	}
 	for _, each := range ctx.ReverseCalls {
-		core.Log.Infof("ref: %s", each.GetRefLinkRepr())
+		core.Log.Infof("ref: %s", each.Name)
 	}
 }

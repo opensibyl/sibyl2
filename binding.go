@@ -57,9 +57,8 @@ type Driver interface {
 	QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
 	QueryFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error)
 	QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
-	//QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context)
-	//QueryFunctionContextsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context)
-	//QueryFunctionContextsWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context)
+	QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error)
+	QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error)
 }
 
 /*

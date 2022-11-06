@@ -123,15 +123,7 @@ func (d *Neo4jDriver) QueryFunctions(wc *WorkspaceConfig, path string, ctx conte
 			file := each.Values[1].(dbtype.Node).Props
 
 			// special handlers for neo4j :)
-			var params []any
-			var returns []any
-			var span map[string]any
-			_ = json.Unmarshal([]byte(rawMap["parameters"].(string)), &params)
-			_ = json.Unmarshal([]byte(rawMap["returns"].(string)), &returns)
-			_ = json.Unmarshal([]byte(rawMap["span"].(string)), &span)
-			rawMap["parameters"] = params
-			rawMap["returns"] = returns
-			rawMap["span"] = span
+			rawMap = funcMapAdapter(rawMap)
 
 			f, err := extractor.FromMap(rawMap)
 			if err != nil {
@@ -175,15 +167,7 @@ func (d *Neo4jDriver) QueryFunctionWithSignature(wc *WorkspaceConfig, signature 
 			file := each.Values[1].(dbtype.Node).Props
 
 			// special handlers for neo4j :)
-			var params []any
-			var returns []any
-			var span map[string]any
-			_ = json.Unmarshal([]byte(rawMap["parameters"].(string)), &params)
-			_ = json.Unmarshal([]byte(rawMap["returns"].(string)), &returns)
-			_ = json.Unmarshal([]byte(rawMap["span"].(string)), &span)
-			rawMap["parameters"] = params
-			rawMap["returns"] = returns
-			rawMap["span"] = span
+			rawMap = funcMapAdapter(rawMap)
 
 			f, err := extractor.FromMap(rawMap)
 			if err != nil {
@@ -209,6 +193,119 @@ func (d *Neo4jDriver) QueryFunctionWithSignature(wc *WorkspaceConfig, signature 
 		return nil, nil
 	}
 	return ret.(*FunctionWithPath), nil
+}
+
+func (d *Neo4jDriver) QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error) {
+	functions, err := d.QueryFunctions(wc, path, ctx)
+	if err != nil {
+		return nil, err
+	}
+	var ret []*FunctionWithPath
+	for _, each := range functions {
+		if each.GetSpan().ContainAnyLine(lines...) {
+			ret = append(ret, each)
+		}
+	}
+	return ret, nil
+}
+
+func (d *Neo4jDriver) QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error) {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	ret, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
+MATCH (repo)-[:INCLUDE]->(rev)-[:INCLUDE]->(srcFile:File)-[:INCLUDE]->(srcFunc)-[:FUNC_REFERENCE]->(f)
+MATCH (f)-[:FUNC_REFERENCE]->(targetFunc)
+MATCH (targetFile:File)-[:INCLUDE]->(targetFunc)
+RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
+`
+		results, err := tx.Run(ctx, query, map[string]any{
+			"repoId":    wc.RepoId,
+			"revHash":   wc.RevHash,
+			"signature": signature,
+		})
+		if err != nil {
+			return nil, err
+		}
+		nodes, err := results.Collect(ctx)
+		if err != nil {
+			return nil, err
+		}
+		fc := &FunctionContext{
+			FunctionWithPath: nil,
+			Calls:            nil,
+			ReverseCalls:     nil,
+		}
+		srcCache := make(map[string]*FunctionWithPath)
+		targetCache := make(map[string]*FunctionWithPath)
+		for _, each := range nodes {
+			rawMap := each.Values[0].(dbtype.Node).Props
+			file := each.Values[1].(dbtype.Node).Props
+			srcMap := each.Values[2].(dbtype.Node).Props
+			srcFile := each.Values[3].(dbtype.Node).Props
+			targetMap := each.Values[4].(dbtype.Node).Props
+			targetFile := each.Values[5].(dbtype.Node).Props
+
+			// special handlers for neo4j :)
+			rawMap = funcMapAdapter(rawMap)
+			srcMap = funcMapAdapter(srcMap)
+			targetMap = funcMapAdapter(targetMap)
+
+			f, err := extractor.FromMap(rawMap)
+			if err != nil {
+				return nil, err
+			}
+			srcf, err := extractor.FromMap(srcMap)
+			if err != nil {
+				return nil, err
+			}
+			srcfwp := &FunctionWithPath{
+				Function: srcf,
+				Path:     srcFile["lang"].(string),
+				Language: core.LangType(srcFile["path"].(string)),
+			}
+			targetf, err := extractor.FromMap(targetMap)
+			if err != nil {
+				return nil, err
+			}
+			targetfwp := &FunctionWithPath{
+				Function: targetf,
+				Path:     targetFile["lang"].(string),
+				Language: core.LangType(targetFile["path"].(string)),
+			}
+
+			fwp := &FunctionWithPath{
+				Function: f,
+				Path:     file["lang"].(string),
+				Language: core.LangType(file["path"].(string)),
+			}
+			fc.FunctionWithPath = fwp
+			srcCache[srcfwp.GetSignature()] = srcfwp
+			targetCache[targetfwp.GetSignature()] = targetfwp
+		}
+		core.Log.Infof("srccache: %v", srcCache)
+
+		srcFinal := make([]*FunctionWithPath, 0, len(srcCache))
+		targetFinal := make([]*FunctionWithPath, 0, len(targetCache))
+		for _, each := range srcCache {
+			srcFinal = append(srcFinal, each)
+		}
+		for _, each := range targetCache {
+			targetFinal = append(targetFinal, each)
+		}
+		fc.ReverseCalls = srcFinal
+		fc.Calls = targetFinal
+
+		return fc, nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	if ret == nil {
+		return nil, nil
+	}
+	return ret.(*FunctionContext), nil
 }
 
 func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) neo4j.ManagedTransactionWork {
@@ -298,4 +395,17 @@ func createFuncGraphTransaction(wc *WorkspaceConfig, f *FunctionContext, ctx con
 		// temp ignore return values
 		return nil, nil
 	}
+}
+
+func funcMapAdapter(origin map[string]any) map[string]any {
+	var params []any
+	var returns []any
+	var span map[string]any
+	_ = json.Unmarshal([]byte(origin["parameters"].(string)), &params)
+	_ = json.Unmarshal([]byte(origin["returns"].(string)), &returns)
+	_ = json.Unmarshal([]byte(origin["span"].(string)), &span)
+	origin["parameters"] = params
+	origin["returns"] = returns
+	origin["span"] = span
+	return origin
 }

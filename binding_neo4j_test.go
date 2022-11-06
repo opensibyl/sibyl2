@@ -12,19 +12,22 @@ import (
 
 // set it true to run these tests
 const hasNeo4jBackend = false
+const dbUri = "bolt://localhost:7687"
+
+var wc = &WorkspaceConfig{
+	RepoId:  "sibyl",
+	RevHash: "12345f",
+}
+
+// don't worry, fake password here :)
+var authToken = neo4j.BasicAuth("neo4j", "williamfzc", "")
 
 func TestNeo4jDriver_UploadFile(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
 
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
-
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}
@@ -54,13 +57,8 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
 
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}
@@ -87,13 +85,7 @@ func TestNeo4jDriver_QueryFiles(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
-
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}
@@ -111,13 +103,7 @@ func TestNeo4jDriver_QueryFunctions(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
-
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}
@@ -137,13 +123,7 @@ func TestNeo4jDriver_QueryFunctionsWithLines(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
-
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}
@@ -163,13 +143,7 @@ func TestNeo4jDriver_QueryFunctionWithSignature(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
-
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}
@@ -187,13 +161,7 @@ func TestNeo4jDriver_QueryFunctionContextWithSignature(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	wc := &WorkspaceConfig{
-		RepoId:  "sibyl",
-		RevHash: "12345f",
-	}
-
-	dbUri := "bolt://localhost:7687"
-	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
 	if err != nil {
 		panic(err)
 	}

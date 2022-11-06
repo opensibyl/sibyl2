@@ -52,8 +52,14 @@ create func links:
 */
 
 type Driver interface {
-	UploadFileResultWithContext(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
-	UploadFuncContextWithContext(wc *WorkspaceConfig, f FunctionContext, ctx context.Context) error
+	UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
+	UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error
+	QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
+	QueryFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error)
+	QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
+	//QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context)
+	//QueryFunctionContextsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context)
+	//QueryFunctionContextsWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context)
 }
 
 /*

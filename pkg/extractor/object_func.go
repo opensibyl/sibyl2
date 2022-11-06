@@ -1,7 +1,9 @@
 package extractor
 
 import (
+	"encoding/json"
 	"fmt"
+	"github.com/mitchellh/mapstructure"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"strings"
 )
@@ -47,6 +49,30 @@ func (f *Function) GetSignature() FuncSignature {
 	retPart := strings.Join(rets, ",")
 
 	return fmt.Sprintf("%s|%s|%s", prefix, paramPart, retPart)
+}
+
+// ToMap export a very simple map without any custom structs. It will lose ptr to origin unit.
+func (f *Function) ToMap() (map[string]any, error) {
+	b, err := json.Marshal(f)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]interface{}
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+// FromMap reverse ToMap
+func FromMap(exported map[string]any) (*Function, error) {
+	ret := &Function{}
+	err := mapstructure.Decode(exported, ret)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }
 
 func (f *Function) GetIndexName() string {

@@ -10,8 +10,13 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 )
 
+var hasNeo4jBackend = true
+
 func TestNeo4jDriver_UploadFile(t *testing.T) {
-	t.Skip("always skip in CI")
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+
 	wc := &WorkspaceConfig{
 		RepoId:  "sibyl",
 		RevHash: "12345f",
@@ -34,7 +39,10 @@ func TestNeo4jDriver_UploadFile(t *testing.T) {
 		a := each
 		go func() {
 			defer wg.Done()
-			newDriver.UploadFileResultWithContext(wc, a, ctx)
+			err := newDriver.UploadFileResult(wc, a, ctx)
+			if err != nil {
+				panic(err)
+			}
 		}()
 	}
 	wg.Wait()
@@ -42,7 +50,9 @@ func TestNeo4jDriver_UploadFile(t *testing.T) {
 }
 
 func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
-	t.Skip("always skip in CI")
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
 	wc := &WorkspaceConfig{
 		RepoId:  "sibyl",
 		RevHash: "12345f",
@@ -63,11 +73,85 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	for _, eachFunc := range functions {
 		for _, eachFFF := range eachFunc.Units {
 			fc := fg.FindRelated(eachFFF)
-			err = newDriver.UploadFuncContextWithContext(wc, fc, ctx)
+			err = newDriver.UploadFuncContext(wc, fc, ctx)
 			if err != nil {
 				panic(err)
 			}
 		}
 	}
 	core.Log.Infof("upload finished")
+}
+
+func TestNeo4jDriver_QueryFiles(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	wc := &WorkspaceConfig{
+		RepoId:  "sibyl",
+		RevHash: "12345f",
+	}
+
+	dbUri := "bolt://localhost:7687"
+	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	files, err := newDriver.QueryFiles(wc, ctx)
+	if err != nil {
+		panic(err)
+	}
+	core.Log.Infof("files: %s", files)
+}
+
+func TestNeo4jDriver_QueryFunctions(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	wc := &WorkspaceConfig{
+		RepoId:  "sibyl",
+		RevHash: "12345f",
+	}
+
+	dbUri := "bolt://localhost:7687"
+	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	files, err := newDriver.QueryFunctions(wc, "extract.go", ctx)
+	if err != nil {
+		panic(err)
+	}
+	for _, each := range files {
+		core.Log.Infof("func: %v", each)
+	}
+}
+
+func TestNeo4jDriver_QueryFunctionWithSignature(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	wc := &WorkspaceConfig{
+		RepoId:  "sibyl",
+		RevHash: "12345f",
+	}
+
+	dbUri := "bolt://localhost:7687"
+	driver, err := neo4j.NewDriverWithContext(dbUri, neo4j.BasicAuth("neo4j", "williamfzc", ""))
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	ctxs, err := newDriver.QueryFunctionWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
+	if err != nil {
+		panic(err)
+	}
+	core.Log.Infof("ctx4: %v", ctxs.Name)
 }

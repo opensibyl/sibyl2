@@ -6,6 +6,9 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+type GolangFuncExtras struct {
+}
+
 func (extractor *GolangExtractor) IsFunction(unit *core.Unit) bool {
 	allowed := []core.KindRepr{
 		KindGolangMethodDecl,
@@ -127,6 +130,8 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 	default:
 		// no returns
 	}
+	// extras
+	funcUnit.Extras = &GolangFuncExtras{}
 
 	return funcUnit, nil
 }
@@ -193,6 +198,9 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function,
 	default:
 		// no returns
 	}
+
+	// extras
+	funcUnit.Extras = &GolangFuncExtras{}
 
 	return funcUnit, nil
 }

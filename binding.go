@@ -59,6 +59,10 @@ type Driver interface {
 	QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
 	QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error)
 	QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error)
+	DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+	InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+	QueryRevs(repoId string, ctx context.Context) []string
+	UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
 }
 
 /*

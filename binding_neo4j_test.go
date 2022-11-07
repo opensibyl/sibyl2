@@ -22,6 +22,24 @@ var wc = &WorkspaceConfig{
 // don't worry, fake password here :)
 var authToken = neo4j.BasicAuth("neo4j", "williamfzc", "")
 
+func TestNeo4jDriver_InitWorkspace(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	err = newDriver.InitWorkspace(wc, ctx)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func TestNeo4jDriver_UploadFile(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
@@ -174,5 +192,39 @@ func TestNeo4jDriver_QueryFunctionContextWithSignature(t *testing.T) {
 	}
 	for _, each := range ctxs.ReverseCalls {
 		core.Log.Infof("call: %v", each.GetIndexName())
+	}
+}
+
+func TestNeo4jDriver_RemoveFileResult(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	err = newDriver.DeleteWorkspace(wc, ctx)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestNeo4jDriver_UpdateFuncProperties(t *testing.T) {
+	if !hasNeo4jBackend {
+		t.Skip("always skip in CI")
+	}
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	ctx := context.Background()
+	defer driver.Close(ctx)
+	newDriver := &Neo4jDriver{driver}
+	err = newDriver.UpdateFuncProperties(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", "covered", 1, ctx)
+	if err != nil {
+		panic(err)
 	}
 }

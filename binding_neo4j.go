@@ -4,10 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"reflect"
 	"strings"
+
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
+	"github.com/williamfzc/sibyl2/pkg/core"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
@@ -42,7 +43,6 @@ const (
 		"(func%d:Func {signature: $func%d_signature})"
 
 	TemplateMergeLinkInclude       = "MERGE (%s)-[:INCLUDE]->(%s)"
-	TemplateMergeLinkFileReference = "MERGE (%s)-[:FILE_REFERENCE]->(%s)"
 	TemplateMergeLinkFuncReference = "MERGE (%s)-[:FUNC_REFERENCE]->(%s)"
 )
 
@@ -51,10 +51,14 @@ type Neo4jDriver struct {
 }
 
 func (d *Neo4jDriver) UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
-	// session is cheap to create
+	err := d.InitWorkspace(wc, ctx)
+	if err != nil {
+		return err
+	}
+
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
-	_, err := session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
+	_, err = session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
 	if err != nil {
 		return err
 	}
@@ -308,6 +312,94 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 	return ret.(*FunctionContext), nil
 }
 
+func (d *Neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(func:Func) DETACH DELETE rev, file, func`
+		_, err := tx.Run(ctx, query, map[string]any{
+			"repoId":  wc.RepoId,
+			"revHash": wc.RevHash,
+		})
+		return nil, err
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Neo4jDriver) InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MERGE (r:Repo {id: $repoId}) 
+MERGE (r)-[:INCLUDE]->(:Rev {hash: $revHash})`
+		_, err := tx.Run(ctx, query, map[string]any{
+			"repoId":  wc.RepoId,
+			"revHash": wc.RevHash,
+		})
+		return nil, err
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *Neo4jDriver) QueryRevs(repoId string, ctx context.Context) []string {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	ret, _ := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `MATCH (:Repo {id: $repoId})-[:INCLUDE]->(r:Rev) RETURN r.hash`
+		ret, err := tx.Run(ctx, query, map[string]any{
+			"repoId": repoId,
+		})
+		if err != nil {
+			return nil, err
+		}
+		revs, err := ret.Collect(ctx)
+		if err != nil {
+			return nil, err
+		}
+
+		var returns []string
+		for _, each := range revs {
+			returns = append(returns, each.Values[0].(string))
+		}
+		return nil, err
+	})
+
+	return ret.([]string)
+}
+
+func (d *Neo4jDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
+SET f.%s = $v
+RETURN f`
+		query = fmt.Sprintf(query, k)
+		_, err := tx.Run(ctx, query, map[string]any{
+			"repoId":    wc.RepoId,
+			"revHash":   wc.RevHash,
+			"signature": signature,
+			"v":         v,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) neo4j.ManagedTransactionWork {
 	return func(tx neo4j.ManagedTransaction) (any, error) {
 		for _, each := range f.Units {
@@ -329,6 +421,7 @@ func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFil
 				}
 			}
 
+			// todo: reuse files nodes and
 			merged := []string{
 				TemplateMergeFuncPrefix,
 				TemplateMergeFuncFile,
@@ -368,9 +461,6 @@ func createFuncGraphTransaction(wc *WorkspaceConfig, f *FunctionContext, ctx con
 			eachMerged := []string{
 				fmt.Sprintf(TemplateMatchFuncFull, "srcfile", "$srcPath", 0, 0),
 				fmt.Sprintf(TemplateMatchFuncFull, "targetfile", "$targetPath", id, id),
-			}
-			if each.Path != f.Path {
-				eachMerged = append(eachMerged, fmt.Sprintf(TemplateMergeLinkFileReference, "srcfile", "targetfile"))
 			}
 			eachMerged = append(eachMerged,
 				// create link

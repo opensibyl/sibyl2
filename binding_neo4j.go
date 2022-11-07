@@ -14,24 +14,22 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
+// functions can be reused
 const (
 	TemplateMergeFuncPrefix = "MERGE " +
 		"(:Repo {id: $repo_id})" +
 		"-[:INCLUDE]->" +
 		"(rev:Rev {hash: $rev_hash})"
-	TemplateMergeFuncFile = "MERGE (rev)" +
-		"-[:INCLUDE]->" +
-		"(f:File {path: $file_path, lang: $file_lang})"
-	TemplateMergeFuncSelf = "MERGE (f)" +
-		"-[:INCLUDE]->" +
-		"(:Func {" +
+	TemplateMergeFuncFile = "MERGE (rev)-[:INCLUDE]->(file:File {path: $file_path, lang: $file_lang}) "
+	TemplateMergeFuncSelf = "MERGE (func:Func {" +
 		"name: $func_name, " +
 		"receiver: $func_receiver, " +
 		"parameters: $func_parameters, " +
 		"returns: $func_returns, " +
 		"span: $func_span, " +
 		"extras: $func_extras," +
-		"signature: $func_signature })"
+		"signature: $func_signature }) " +
+		"MERGE (file)-[:INCLUDE]->(func)"
 
 	TemplateMatchFuncFull = "MATCH " +
 		"(repo:Repo {id: $repo_id})" +
@@ -421,7 +419,6 @@ func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFil
 				}
 			}
 
-			// todo: reuse files nodes and
 			merged := []string{
 				TemplateMergeFuncPrefix,
 				TemplateMergeFuncFile,

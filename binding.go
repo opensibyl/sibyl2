@@ -3,6 +3,8 @@ package sibyl2
 import (
 	"context"
 
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -52,6 +54,7 @@ create func links:
 */
 
 type Driver interface {
+	GetType() DriverType
 	UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
 	UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error
 	QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
@@ -63,6 +66,14 @@ type Driver interface {
 	InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error
 	QueryRevs(repoId string, ctx context.Context) []string
 	UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
+}
+
+type DriverType string
+
+const DtNeo4j DriverType = "NEO4J"
+
+func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
+	return &neo4jDriver{dwc}, nil
 }
 
 /*

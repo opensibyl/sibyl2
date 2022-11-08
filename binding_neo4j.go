@@ -36,11 +36,15 @@ MERGE (file)-[:INCLUDE]->(func)
 	TemplateMergeLinkFuncReference = "MERGE (%s)-[:FUNC_REFERENCE]->(%s)"
 )
 
-type Neo4jDriver struct {
+type neo4jDriver struct {
 	neo4j.DriverWithContext
 }
 
-func (d *Neo4jDriver) UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
+func (d *neo4jDriver) GetType() DriverType {
+	return DtNeo4j
+}
+
+func (d *neo4jDriver) UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
@@ -50,7 +54,7 @@ func (d *Neo4jDriver) UploadFileResult(wc *WorkspaceConfig, f *extractor.Functio
 	return nil
 }
 
-func (d *Neo4jDriver) UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error {
+func (d *neo4jDriver) UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error {
 	// session is cheap to create
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
@@ -61,7 +65,7 @@ func (d *Neo4jDriver) UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext,
 	return nil
 }
 
-func (d *Neo4jDriver) QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error) {
+func (d *neo4jDriver) QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -89,7 +93,7 @@ func (d *Neo4jDriver) QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]st
 	return ret.([]string), nil
 }
 
-func (d *Neo4jDriver) QueryFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error) {
+func (d *neo4jDriver) QueryFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -133,7 +137,7 @@ func (d *Neo4jDriver) QueryFunctions(wc *WorkspaceConfig, path string, ctx conte
 	return ret.([]*FunctionWithPath), nil
 }
 
-func (d *Neo4jDriver) QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error) {
+func (d *neo4jDriver) QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -184,7 +188,7 @@ func (d *Neo4jDriver) QueryFunctionWithSignature(wc *WorkspaceConfig, signature 
 	return ret.(*FunctionWithPath), nil
 }
 
-func (d *Neo4jDriver) QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error) {
+func (d *neo4jDriver) QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error) {
 	functions, err := d.QueryFunctions(wc, path, ctx)
 	if err != nil {
 		return nil, err
@@ -198,7 +202,7 @@ func (d *Neo4jDriver) QueryFunctionsWithLines(wc *WorkspaceConfig, path string, 
 	return ret, nil
 }
 
-func (d *Neo4jDriver) QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error) {
+func (d *neo4jDriver) QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -297,7 +301,7 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 	return ret.(*FunctionContext), nil
 }
 
-func (d *Neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+func (d *neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -316,7 +320,7 @@ MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE
 	return nil
 }
 
-func (d *Neo4jDriver) InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+func (d *neo4jDriver) InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -335,7 +339,7 @@ MERGE (r)-[:INCLUDE]->(:Rev {hash: $revHash})`
 	return nil
 }
 
-func (d *Neo4jDriver) QueryRevs(repoId string, ctx context.Context) []string {
+func (d *neo4jDriver) QueryRevs(repoId string, ctx context.Context) []string {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, _ := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -361,7 +365,7 @@ func (d *Neo4jDriver) QueryRevs(repoId string, ctx context.Context) []string {
 	return ret.([]string)
 }
 
-func (d *Neo4jDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
+func (d *neo4jDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {

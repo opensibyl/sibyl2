@@ -33,7 +33,7 @@ func TestNeo4jDriver_InitWorkspace(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	err = newDriver.InitWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
@@ -51,10 +51,15 @@ func TestNeo4jDriver_UploadFile(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+
+	newDriver, _ := NewNeo4jDriver(driver)
 	functions, _ := ExtractFunction(".", DefaultConfig())
 
 	core.Log.Infof("start uploading")
+	err = newDriver.InitWorkspace(wc, ctx)
+	if err != nil {
+		panic(err)
+	}
 	var wg sync.WaitGroup
 	for _, each := range functions {
 		wg.Add(1)
@@ -82,7 +87,7 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	functions, _ := ExtractFunction(".", DefaultConfig())
 	symbols, _ := ExtractSymbol(".", DefaultConfig())
 	fg, _ := AnalyzeFuncGraph(functions, symbols)
@@ -109,7 +114,7 @@ func TestNeo4jDriver_QueryFiles(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	files, err := newDriver.QueryFiles(wc, ctx)
 	if err != nil {
 		panic(err)
@@ -127,7 +132,7 @@ func TestNeo4jDriver_QueryFunctions(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	files, err := newDriver.QueryFunctions(wc, "extract.go", ctx)
 	if err != nil {
 		panic(err)
@@ -147,7 +152,7 @@ func TestNeo4jDriver_QueryFunctionsWithLines(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	functions, err := newDriver.QueryFunctionsWithLines(wc, "extract.go", []int{32, 33}, ctx)
 	if err != nil {
 		panic(err)
@@ -167,7 +172,7 @@ func TestNeo4jDriver_QueryFunctionWithSignature(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	ctxs, err := newDriver.QueryFunctionWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
 	if err != nil {
 		panic(err)
@@ -185,7 +190,7 @@ func TestNeo4jDriver_QueryFunctionContextWithSignature(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	ctxs, err := newDriver.QueryFunctionContextWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
 	if err != nil {
 		panic(err)
@@ -205,7 +210,7 @@ func TestNeo4jDriver_RemoveFileResult(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	err = newDriver.DeleteWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
@@ -222,7 +227,7 @@ func TestNeo4jDriver_UpdateFuncProperties(t *testing.T) {
 	}
 	ctx := context.Background()
 	defer driver.Close(ctx)
-	newDriver := &Neo4jDriver{driver}
+	newDriver, _ := NewNeo4jDriver(driver)
 	err = newDriver.UpdateFuncProperties(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", "covered", 1, ctx)
 	if err != nil {
 		panic(err)

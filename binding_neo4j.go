@@ -16,20 +16,12 @@ import (
 
 // functions can be reused
 const (
-	TemplateMergeFuncPrefix = "MERGE " +
-		"(:Repo {id: $repo_id})" +
-		"-[:INCLUDE]->" +
-		"(rev:Rev {hash: $rev_hash})"
-	TemplateMergeFuncFile = "MERGE (rev)-[:INCLUDE]->(file:File {path: $file_path, lang: $file_lang}) "
-	TemplateMergeFuncSelf = "MERGE (func:Func {" +
-		"name: $func_name, " +
-		"receiver: $func_receiver, " +
-		"parameters: $func_parameters, " +
-		"returns: $func_returns, " +
-		"span: $func_span, " +
-		"extras: $func_extras," +
-		"signature: $func_signature }) " +
-		"MERGE (file)-[:INCLUDE]->(func)"
+	TemplateMergeFunc = `
+MATCH (repo:Repo {id: $repo_id})-[:INCLUDE]->(rev:Rev {hash: $rev_hash})
+MERGE (rev)-[:INCLUDE]->(file:File {path: $file_path, lang: $file_lang})
+MERGE (func:Func {name: $func_name, receiver: $func_receiver, parameters: $func_parameters, returns: $func_returns, span: $func_span, extras: $func_extras, signature: $func_signature })
+MERGE (file)-[:INCLUDE]->(func)
+`
 
 	TemplateMatchFuncFull = "MATCH " +
 		"(repo:Repo {id: $repo_id})" +
@@ -49,14 +41,9 @@ type Neo4jDriver struct {
 }
 
 func (d *Neo4jDriver) UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
-	err := d.InitWorkspace(wc, ctx)
-	if err != nil {
-		return err
-	}
-
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
-	_, err = session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
+	_, err := session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
 	if err != nil {
 		return err
 	}
@@ -314,7 +301,9 @@ func (d *Neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) 
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(func:Func) DETACH DELETE rev, file, func`
+		query := `
+MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(func:Func) DETACH DELETE rev, file, func
+`
 		_, err := tx.Run(ctx, query, map[string]any{
 			"repoId":  wc.RepoId,
 			"revHash": wc.RevHash,
@@ -419,14 +408,8 @@ func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFil
 				}
 			}
 
-			merged := []string{
-				TemplateMergeFuncPrefix,
-				TemplateMergeFuncFile,
-				TemplateMergeFuncSelf,
-			}
-
 			// todo: merge these run together
-			_, err := tx.Run(ctx, strings.Join(merged, " "), map[string]any{
+			_, err := tx.Run(ctx, TemplateMergeFunc, map[string]any{
 				"repo_id":         wc.RepoId,
 				"rev_hash":        wc.RevHash,
 				"file_path":       f.Path,

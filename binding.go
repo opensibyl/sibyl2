@@ -76,6 +76,9 @@ type driverRead interface {
 }
 
 type driverUpdate interface {
+	UpdateRepoProperties(repoId string, k string, v any, ctx context.Context) error
+	UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error
+	UpdateFileProperties(wc *WorkspaceConfig, path string, k string, v any, ctx context.Context) error
 	UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
 }
 

@@ -14,6 +14,10 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
+// NOTICE:
+// I am not pretty sure that neo4j is a proper database
+// so my implementation here may be a little casual
+
 // functions can be reused
 const (
 	TemplateMergeFunc = `
@@ -307,6 +311,7 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 }
 
 func (d *neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+	// todo: this will remove functions shared by multi revs.
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -402,6 +407,81 @@ func (d *neo4jDriver) ReadRevs(repoId string, ctx context.Context) ([]string, er
 		return nil, err
 	}
 	return ret.([]string), nil
+}
+
+func (d *neo4jDriver) UpdateRepoProperties(repoId string, k string, v any, ctx context.Context) error {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (r:Repo {id: $repoId})
+SET r.%s = $v
+RETURN r`
+		query = fmt.Sprintf(query, k)
+		_, err := tx.Run(ctx, query, map[string]any{
+			"repoId": repoId,
+			"v":      v,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *neo4jDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (:Repo {id: $repoId})-[:INCLUDE]->(r:Rev {hash: $revHash})
+SET r.%s = $v
+RETURN r`
+		query = fmt.Sprintf(query, k)
+		_, err := tx.Run(ctx, query, map[string]any{
+			"repoId":  wc.RepoId,
+			"revHash": wc.RevHash,
+			"v":       v,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (d *neo4jDriver) UpdateFileProperties(wc *WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		query := `
+MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(file:File {path: $path})
+SET file.%s = $v
+RETURN file`
+		query = fmt.Sprintf(query, k)
+		_, err := tx.Run(ctx, query, map[string]any{
+			"repoId":  wc.RepoId,
+			"revHash": wc.RevHash,
+			"path":    path,
+			"v":       v,
+		})
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (d *neo4jDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {

@@ -3,6 +3,8 @@ package sibyl2
 import (
 	"context"
 
+	"github.com/pkg/errors"
+
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 
 	"github.com/williamfzc/sibyl2/pkg/extractor"
@@ -55,17 +57,22 @@ create func links:
 
 type Driver interface {
 	GetType() DriverType
+
 	UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
 	UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error
+	InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+
+	QueryRepos(ctx context.Context) ([]string, error)
+	QueryRevs(repoId string, ctx context.Context) ([]string, error)
 	QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
 	QueryFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error)
 	QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
 	QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error)
 	QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error)
-	DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error
-	InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error
-	QueryRevs(repoId string, ctx context.Context) []string
+
 	UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
+
+	DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error
 }
 
 type DriverType string
@@ -90,7 +97,10 @@ type WorkspaceConfig struct {
 	RevHash string `json:"revHash"`
 }
 
-func (wc *WorkspaceConfig) Verify() bool {
+func (wc *WorkspaceConfig) Verify() error {
 	// all the fields should be filled
-	return wc.RepoId != "" && wc.RevHash != ""
+	if wc == nil || wc.RepoId == "" || wc.RevHash == "" {
+		return errors.Errorf("workspace config verify error: %v", wc)
+	}
+	return nil
 }

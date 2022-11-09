@@ -3,9 +3,10 @@ package extractor
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+
 	"github.com/mitchellh/mapstructure"
 	"github.com/williamfzc/sibyl2/pkg/core"
-	"strings"
 )
 
 type ValueUnit struct {
@@ -65,6 +66,18 @@ func (f *Function) ToMap() (map[string]any, error) {
 	return m, nil
 }
 
+func (f *Function) ToJson() ([]byte, error) {
+	m, err := f.ToMap()
+	if err != nil {
+		return nil, err
+	}
+	raw, err := json.Marshal(m)
+	if err != nil {
+		return nil, err
+	}
+	return raw, nil
+}
+
 // FromMap reverse ToMap
 func FromMap(exported map[string]any) (*Function, error) {
 	ret := &Function{}
@@ -73,6 +86,15 @@ func FromMap(exported map[string]any) (*Function, error) {
 		return nil, err
 	}
 	return ret, nil
+}
+
+func FromJson(exported []byte) (*Function, error) {
+	var m map[string]any
+	err := json.Unmarshal(exported, &m)
+	if err != nil {
+		return nil, err
+	}
+	return FromMap(m)
 }
 
 func (f *Function) GetIndexName() string {

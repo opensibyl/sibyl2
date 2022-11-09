@@ -52,11 +52,12 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 		panic(err)
 	}
 	for _, each := range functions {
-		normal, err := each.ToMap()
+		normal, err := each.ToJson()
 		if err != nil {
 			panic(err)
 		}
-		back, err := FromMap(normal)
+
+		back, err := FromJson(normal)
 		if err != nil {
 			panic(err)
 		}

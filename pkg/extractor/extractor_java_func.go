@@ -6,6 +6,7 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
+// JavaFunctionExtras todo: add class info here
 type JavaFunctionExtras struct {
 	Annotations []string `json:"annotations"`
 }

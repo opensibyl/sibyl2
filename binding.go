@@ -55,24 +55,40 @@ create func links:
 	RETURN *
 */
 
-type Driver interface {
+type driverBase interface {
 	GetType() DriverType
+}
 
-	UploadFileResult(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
-	UploadFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error
-	InitWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+type driverCreate interface {
+	CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
+	CreateFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error
+	CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+}
 
-	QueryRepos(ctx context.Context) ([]string, error)
-	QueryRevs(repoId string, ctx context.Context) ([]string, error)
-	QueryFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
-	QueryFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error)
-	QueryFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
-	QueryFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error)
-	QueryFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error)
+type driverRead interface {
+	ReadRepos(ctx context.Context) ([]string, error)
+	ReadRevs(repoId string, ctx context.Context) ([]string, error)
+	ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
+	ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error)
+	ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
+	ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error)
+	ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error)
+}
 
+type driverUpdate interface {
 	UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
+}
 
+type driverDelete interface {
 	DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+}
+
+type Driver interface {
+	driverBase
+	driverCreate
+	driverRead
+	driverUpdate
+	driverDelete
 }
 
 type DriverType string

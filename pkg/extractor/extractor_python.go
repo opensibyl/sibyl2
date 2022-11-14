@@ -91,20 +91,20 @@ func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, err
 
 func (extractor *PythonExtractor) IsSymbol(unit *core.Unit) bool {
 	//TODO implement me
-	panic("implement me")
+	return false
 }
 
 func (extractor *PythonExtractor) ExtractSymbols(units []*core.Unit) ([]*Symbol, error) {
 	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("NOT IMPLEMENTED")
 }
 
 func (extractor *PythonExtractor) IsCall(unit *core.Unit) bool {
 	//TODO implement me
-	panic("implement me")
+	return false
 }
 
 func (extractor *PythonExtractor) ExtractCalls(units []*core.Unit) ([]*Call, error) {
 	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("NOT IMPLEMENTED")
 }

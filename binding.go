@@ -2,6 +2,7 @@ package sibyl2
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/pkg/errors"
 
@@ -97,9 +98,17 @@ type Driver interface {
 type DriverType string
 
 const DtNeo4j DriverType = "NEO4J"
+const DtInMemory DriverType = "IN_MEMORY"
 
 func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
 	return &neo4jDriver{dwc}, nil
+}
+
+type InMemoryStorage struct {
+}
+
+func NewInMemoryDriver(storage *InMemoryStorage) (Driver, error) {
+	return &memDriver{storage}, nil
 }
 
 /*
@@ -122,4 +131,11 @@ func (wc *WorkspaceConfig) Verify() error {
 		return errors.Errorf("workspace config verify error: %v", wc)
 	}
 	return nil
+}
+
+func (wc *WorkspaceConfig) Key() (string, error) {
+	if err := wc.Verify(); err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("%s_%s", wc.RepoId, wc.RevHash), nil
 }

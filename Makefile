@@ -7,6 +7,7 @@ GOTEST = $(GOCMD) test
 
 build:
 	${GOCMD} build -ldflags '-extldflags "-lstdc++"' ./cmd/sibyl
+	${GOCMD} build -ldflags '-extldflags "-lstdc++"' ./cmd/sibyl_server
 
 test:
 	$(GOTEST) ./...

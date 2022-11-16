@@ -9,13 +9,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
-var GlobalStorage *sibyl2.InMemoryStorage
+var sharedDriver sibyl2.Driver
 
 type FunctionWithSignature struct {
 	*sibyl2.FunctionWithPath
 	Signature string `json:"signature"`
+}
+
+type FunctionUploadUnit struct {
+	WorkspaceConfig *sibyl2.WorkspaceConfig       `json:"workspace"`
+	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`
 }
 
 func HandlePing(c *gin.Context) {
@@ -25,8 +32,7 @@ func HandlePing(c *gin.Context) {
 }
 
 func HandleRepoQuery(c *gin.Context) {
-	newDriver, _ := sibyl2.NewInMemoryDriver(GlobalStorage)
-	repos, err := newDriver.ReadRepos(context.TODO())
+	repos, err := sharedDriver.ReadRepos(context.TODO())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -35,9 +41,8 @@ func HandleRepoQuery(c *gin.Context) {
 }
 
 func HandleRevQuery(c *gin.Context) {
-	newDriver, _ := sibyl2.NewInMemoryDriver(GlobalStorage)
 	repo := c.Query("repo")
-	revs, err := newDriver.ReadRevs(repo, context.TODO())
+	revs, err := sharedDriver.ReadRevs(repo, context.TODO())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -46,7 +51,7 @@ func HandleRevQuery(c *gin.Context) {
 }
 
 func HandleFileQuery(c *gin.Context) {
-	newDriver, _ := sibyl2.NewInMemoryDriver(GlobalStorage)
+
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	wc := &sibyl2.WorkspaceConfig{
@@ -57,7 +62,7 @@ func HandleFileQuery(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	files, err := newDriver.ReadFiles(wc, context.TODO())
+	files, err := sharedDriver.ReadFiles(wc, context.TODO())
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -66,7 +71,6 @@ func HandleFileQuery(c *gin.Context) {
 }
 
 func HandleFunctionsQuery(c *gin.Context) {
-	newDriver, _ := sibyl2.NewInMemoryDriver(GlobalStorage)
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	file := c.Query("file")
@@ -83,7 +87,7 @@ func HandleFunctionsQuery(c *gin.Context) {
 	var functions []*sibyl2.FunctionWithPath
 	var err error
 	if lines == "" {
-		functions, err = newDriver.ReadFunctions(wc, file, context.TODO())
+		functions, err = sharedDriver.ReadFunctions(wc, file, context.TODO())
 	} else {
 		linesStrList := strings.Split(lines, ",")
 		var lineNums = make([]int, 0, len(linesStrList))
@@ -95,7 +99,7 @@ func HandleFunctionsQuery(c *gin.Context) {
 			}
 			lineNums = append(lineNums, num)
 		}
-		functions, err = newDriver.ReadFunctionsWithLines(wc, file, lineNums, context.TODO())
+		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, context.TODO())
 	}
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
@@ -115,7 +119,43 @@ func HandleFunctionsQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
+func HandleRepoFuncUpload(c *gin.Context) {
+	result := &FunctionUploadUnit{}
+	err := c.BindJSON(result)
+	if err != nil {
+		core.Log.Errorf("error when parse: %v\n", err)
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
+		return
+	}
+	if err := result.WorkspaceConfig.Verify(); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	go func() {
+		ctx := context.Background()
+
+		err = sharedDriver.CreateWorkspace(result.WorkspaceConfig, ctx)
+		if err != nil {
+			core.Log.Warnf("error when init: %v\n", err)
+		}
+
+		err := sharedDriver.CreateFuncFile(result.WorkspaceConfig, result.FunctionResult, ctx)
+		if err != nil {
+			core.Log.Errorf("error when upload: %v\n", err)
+		}
+	}()
+
+	c.JSON(http.StatusOK, "received")
+}
+
 func Execute() {
+	driver, err := sibyl2.NewInMemoryDriver()
+	if err != nil {
+		panic(err)
+	}
+	sharedDriver = driver
+
 	engine := gin.Default()
 	engine.Handle(http.MethodGet, "/ping", HandlePing)
 
@@ -125,12 +165,10 @@ func Execute() {
 	v1group.Handle(http.MethodGet, "/file", HandleFileQuery)
 	v1group.Handle(http.MethodGet, "/func", HandleFunctionsQuery)
 
-	err := engine.Run(fmt.Sprintf(":%d", 9876))
+	v1group.Handle(http.MethodPost, "/func", HandleRepoFuncUpload)
+
+	err = engine.Run(fmt.Sprintf(":%d", 9876))
 	if err != nil {
 		fmt.Printf("failed to start repoctor_receiver: %s", err.Error())
 	}
-}
-
-func init() {
-	GlobalStorage = &sibyl2.InMemoryStorage{}
 }

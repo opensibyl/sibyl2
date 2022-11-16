@@ -3,6 +3,7 @@ package sibyl2
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/pkg/errors"
 
@@ -104,11 +105,8 @@ func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
 	return &neo4jDriver{dwc}, nil
 }
 
-type InMemoryStorage struct {
-}
-
-func NewInMemoryDriver(storage *InMemoryStorage) (Driver, error) {
-	return &memDriver{storage}, nil
+func NewInMemoryDriver() (Driver, error) {
+	return NewMemDriver(), nil
 }
 
 /*
@@ -133,9 +131,23 @@ func (wc *WorkspaceConfig) Verify() error {
 	return nil
 }
 
+const flagWcKeySplit = "|,,|"
+
 func (wc *WorkspaceConfig) Key() (string, error) {
 	if err := wc.Verify(); err != nil {
 		return "", err
 	}
-	return fmt.Sprintf("%s_%s", wc.RepoId, wc.RevHash), nil
+	return fmt.Sprintf("%s%s%s", wc.RepoId, flagWcKeySplit, wc.RevHash), nil
+}
+
+func WorkspaceConfigFromKey(key string) (*WorkspaceConfig, error) {
+	parts := strings.Split(key, flagWcKeySplit)
+	if len(parts) < 2 {
+		return nil, errors.New("invalid workspace repr: " + key)
+	}
+	ret := &WorkspaceConfig{
+		RepoId:  parts[0],
+		RevHash: parts[1],
+	}
+	return ret, nil
 }

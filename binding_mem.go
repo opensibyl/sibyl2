@@ -107,7 +107,7 @@ func (m *memDriver) CreateFuncContext(wc *WorkspaceConfig, f *FunctionContext, c
 
 func (m *memDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
 	if m.isWcExisted(wc) {
-		return errors.New("already existed")
+		return nil
 	}
 	key, err := wc.Key()
 	if err != nil {
@@ -182,41 +182,71 @@ func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.
 }
 
 func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error) {
-	//TODO implement me
-	panic("implement me")
+	files, err := m.ReadFiles(wc, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, eachPath := range files {
+		functions, err := m.ReadFunctions(wc, eachPath, ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, eachFunc := range functions {
+			if eachFunc.GetSignature() == signature {
+				return eachFunc, nil
+			}
+		}
+	}
+	return nil, errors.New("no func found: " + signature)
 }
 
 func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error) {
-	//TODO implement me
-	panic("implement me")
+	files, err := m.ReadFiles(wc, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var ret []*FunctionWithPath
+	for _, eachPath := range files {
+		functions, err := m.ReadFunctions(wc, eachPath, ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, eachFunc := range functions {
+			if eachFunc.GetSpan().ContainAnyLine(lines...) {
+				ret = append(ret, eachFunc)
+			}
+		}
+	}
+	return ret, nil
 }
 
 func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error) {
-	//TODO implement me
-	panic("implement me")
+	return nil, errors.New("NOT IMPLEMENTED")
 }
 
 func (m *memDriver) UpdateRepoProperties(repoId string, k string, v any, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	return errors.New("NOT IMPLEMENTED")
 }
 
 func (m *memDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	return errors.New("NOT IMPLEMENTED")
 }
 
 func (m *memDriver) UpdateFileProperties(wc *WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	return errors.New("NOT IMPLEMENTED")
 }
 
 func (m *memDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	return errors.New("NOT IMPLEMENTED")
 }
 
 func (m *memDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	key, err := wc.Key()
+	if err != nil {
+		return err
+	}
+	delete(m.InMemoryStorage, key)
+	return nil
 }

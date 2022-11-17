@@ -13,6 +13,11 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
+var wc = &sibyl2.WorkspaceConfig{
+	RepoId:  "repoId1",
+	RevHash: "revHash1",
+}
+
 func uploadFunctions(wc *sibyl2.WorkspaceConfig, f []*extractor.FunctionFileResult) {
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 	var wg sync.WaitGroup
@@ -46,10 +51,7 @@ func uploadFunctions(wc *sibyl2.WorkspaceConfig, f []*extractor.FunctionFileResu
 }
 
 func TestFuncUpload(t *testing.T) {
-	wc := &sibyl2.WorkspaceConfig{
-		RepoId:  "repoId1",
-		RevHash: "revHash1",
-	}
-	functions, _ := sibyl2.ExtractFunction(".", sibyl2.DefaultConfig())
+	t.Skip("always skip in CI")
+	functions, _ := sibyl2.ExtractFunction("../..", sibyl2.DefaultConfig())
 	uploadFunctions(wc, functions)
 }

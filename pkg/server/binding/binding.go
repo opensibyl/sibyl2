@@ -1,14 +1,13 @@
-package sibyl2
+package binding
 
 import (
 	"context"
 	"fmt"
 	"strings"
 
-	"github.com/pkg/errors"
-
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-
+	"github.com/pkg/errors"
+	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -63,7 +62,7 @@ type driverBase interface {
 
 type driverCreate interface {
 	CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
-	CreateFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error
+	CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error
 	CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error
 }
 
@@ -71,10 +70,10 @@ type driverRead interface {
 	ReadRepos(ctx context.Context) ([]string, error)
 	ReadRevs(repoId string, ctx context.Context) ([]string, error)
 	ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
-	ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error)
-	ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error)
-	ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error)
-	ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error)
+	ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error)
+	ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error)
 }
 
 type driverUpdate interface {

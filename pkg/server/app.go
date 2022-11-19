@@ -11,9 +11,10 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/williamfzc/sibyl2/pkg/server/binding"
 )
 
-var sharedDriver sibyl2.Driver
+var sharedDriver binding.Driver
 
 type FunctionWithSignature struct {
 	*sibyl2.FunctionWithPath
@@ -21,7 +22,7 @@ type FunctionWithSignature struct {
 }
 
 type FunctionUploadUnit struct {
-	WorkspaceConfig *sibyl2.WorkspaceConfig       `json:"workspace"`
+	WorkspaceConfig *binding.WorkspaceConfig      `json:"workspace"`
 	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`
 }
 
@@ -51,10 +52,9 @@ func HandleRevQuery(c *gin.Context) {
 }
 
 func HandleFileQuery(c *gin.Context) {
-
 	repo := c.Query("repo")
 	rev := c.Query("rev")
-	wc := &sibyl2.WorkspaceConfig{
+	wc := &binding.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
 	}
@@ -76,7 +76,7 @@ func HandleFunctionsQuery(c *gin.Context) {
 	file := c.Query("file")
 	lines := c.Query("lines")
 
-	wc := &sibyl2.WorkspaceConfig{
+	wc := &binding.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
 	}
@@ -150,7 +150,7 @@ func HandleRepoFuncUpload(c *gin.Context) {
 }
 
 func Execute() {
-	driver, err := sibyl2.NewInMemoryDriver()
+	driver, err := binding.NewInMemoryDriver()
 	if err != nil {
 		panic(err)
 	}

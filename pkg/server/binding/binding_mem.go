@@ -1,38 +1,56 @@
-package sibyl2
+package binding
 
 import (
 	"context"
 	"errors"
+	"sync"
 
+	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
-// key: workspace config 's key
-// todo: thread-safe
-type InMemoryStorage = map[string]*revUnit
-type revUnit = map[string]*fileStorage
+type InMemoryStorage struct {
+	data map[string]*revUnit // key: workspace config 's key
+	l    *sync.RWMutex
+}
+
+func newStorage() *InMemoryStorage {
+	return &InMemoryStorage{
+		data: make(map[string]*revUnit),
+		l:    new(sync.RWMutex),
+	}
+}
+
+type revUnit struct {
+	data map[string]*fileStorage
+	l    *sync.RWMutex
+}
 
 func newRevUnit() *revUnit {
-	ret := make(map[string]*fileStorage)
-	return &ret
+	return &revUnit{
+		data: make(map[string]*fileStorage),
+		l:    new(sync.RWMutex),
+	}
 }
 
 type fileStorage struct {
 	path      string
 	functions *extractor.FunctionFileResult
 	symbols   *extractor.SymbolFileResult
+	l         *sync.RWMutex
 }
 
 func newFileStorage(path string) *fileStorage {
 	return &fileStorage{
 		path: path,
+		l:    new(sync.RWMutex),
 	}
 }
 
 // this mem driver and storage should only be used in debug
 // it will increase memory cost with no limitation
 type memDriver struct {
-	InMemoryStorage
+	*InMemoryStorage
 }
 
 func (m *memDriver) isWcExisted(wc *WorkspaceConfig) bool {
@@ -40,13 +58,17 @@ func (m *memDriver) isWcExisted(wc *WorkspaceConfig) bool {
 	if err != nil {
 		return false
 	}
-	_, ok := m.InMemoryStorage[key]
+	m.l.RLock()
+	defer m.l.RUnlock()
+	_, ok := m.InMemoryStorage.data[key]
 	return ok
 }
 
 func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*WorkspaceConfig, error) {
-	ret := make([]*WorkspaceConfig, 0, len(m.InMemoryStorage))
-	for each := range m.InMemoryStorage {
+	m.l.RLock()
+	defer m.l.RUnlock()
+	ret := make([]*WorkspaceConfig, 0, len(m.InMemoryStorage.data))
+	for each := range m.InMemoryStorage.data {
 		wc, err := WorkspaceConfigFromKey(each)
 		if err != nil {
 			return nil, err
@@ -57,11 +79,13 @@ func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*WorkspaceConf
 }
 
 func (m *memDriver) getRevUnit(wc *WorkspaceConfig, ctx context.Context) (*revUnit, error) {
+	m.l.RLock()
+	defer m.l.RUnlock()
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
-	v, ok := m.InMemoryStorage[key]
+	v, ok := m.InMemoryStorage.data[key]
 	if !ok {
 		return nil, errors.New("no such workspace config: " + key)
 	}
@@ -69,9 +93,8 @@ func (m *memDriver) getRevUnit(wc *WorkspaceConfig, ctx context.Context) (*revUn
 }
 
 func NewMemDriver() Driver {
-	storage := make(map[string]*revUnit)
 	return &memDriver{
-		storage,
+		newStorage(),
 	}
 }
 
@@ -80,32 +103,38 @@ func (m *memDriver) GetType() DriverType {
 }
 
 func (m *memDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
+	m.l.Lock()
+	defer m.l.Unlock()
 	key, err := wc.Key()
 	if err != nil {
 		return err
 	}
-	unit := m.InMemoryStorage[key]
+	unit := m.InMemoryStorage.data[key]
 	if unit == nil {
 		unit = newRevUnit()
-		m.InMemoryStorage[key] = unit
+		m.InMemoryStorage.data[key] = unit
 	}
 
-	pathUnit := (*unit)[f.Path]
+	unit.l.Lock()
+	defer unit.l.Unlock()
+	pathUnit := unit.data[f.Path]
 	if pathUnit == nil {
 		pathUnit = newFileStorage(f.Path)
-		(*unit)[f.Path] = pathUnit
+		unit.data[f.Path] = pathUnit
 	}
 
 	pathUnit.functions = f
 	return nil
 }
 
-func (m *memDriver) CreateFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error {
+func (m *memDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
 	//TODO implement me
 	panic("implement me")
 }
 
 func (m *memDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+	m.l.Lock()
+	defer m.l.Unlock()
 	if m.isWcExisted(wc) {
 		return nil
 	}
@@ -113,12 +142,14 @@ func (m *memDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) er
 	if err != nil {
 		return err
 	}
-	m.InMemoryStorage[key] = newRevUnit()
+	m.InMemoryStorage.data[key] = newRevUnit()
 	return nil
 }
 
 func (m *memDriver) ReadRepos(ctx context.Context) ([]string, error) {
-	ret := make([]string, 0, len(m.InMemoryStorage))
+	m.l.RLock()
+	defer m.l.RUnlock()
+	ret := make([]string, 0, len(m.InMemoryStorage.data))
 	wcs, err := m.getAllWorkspaceConfig(ctx)
 	if err != nil {
 		return nil, err
@@ -131,7 +162,9 @@ func (m *memDriver) ReadRepos(ctx context.Context) ([]string, error) {
 }
 
 func (m *memDriver) ReadRevs(repoId string, ctx context.Context) ([]string, error) {
-	ret := make([]string, 0, len(m.InMemoryStorage))
+	m.l.RLock()
+	defer m.l.RUnlock()
+	ret := make([]string, 0, len(m.InMemoryStorage.data))
 	wcs, err := m.getAllWorkspaceConfig(ctx)
 	if err != nil {
 		return nil, err
@@ -147,31 +180,35 @@ func (m *memDriver) ReadRevs(repoId string, ctx context.Context) ([]string, erro
 }
 
 func (m *memDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error) {
+	m.l.RLock()
+	defer m.l.RUnlock()
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]string, 0, len(*unit))
-	for each := range *unit {
+	ret := make([]string, 0, len(unit.data))
+	for each := range unit.data {
 		ret = append(ret, each)
 	}
 	return ret, nil
 }
 
-func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error) {
+func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+	m.l.RLock()
+	defer m.l.RUnlock()
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	file, ok := (*unit)[path]
+	file, ok := unit.data[path]
 	if !ok {
 		return nil, errors.New("")
 	}
 
-	ret := make([]*FunctionWithPath, 0, len(*unit))
+	ret := make([]*sibyl2.FunctionWithPath, 0, len(unit.data))
 	for _, eachFunc := range file.functions.Units {
-		fwp := &FunctionWithPath{
+		fwp := &sibyl2.FunctionWithPath{
 			Function: eachFunc,
 			Path:     path,
 			Language: file.functions.Language,
@@ -181,7 +218,9 @@ func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.
 	return ret, nil
 }
 
-func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error) {
+func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
+	m.l.RLock()
+	defer m.l.RUnlock()
 	files, err := m.ReadFiles(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -201,14 +240,20 @@ func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature str
 	return nil, errors.New("no func found: " + signature)
 }
 
-func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error) {
+func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+	m.l.RLock()
+	defer m.l.RUnlock()
 	files, err := m.ReadFiles(wc, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var ret []*FunctionWithPath
+	var ret []*sibyl2.FunctionWithPath
 	for _, eachPath := range files {
+		if path != eachPath {
+			continue
+		}
+
 		functions, err := m.ReadFunctions(wc, eachPath, ctx)
 		if err != nil {
 			return nil, err
@@ -222,7 +267,7 @@ func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lin
 	return ret, nil
 }
 
-func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error) {
+func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
 	return nil, errors.New("NOT IMPLEMENTED")
 }
 
@@ -243,10 +288,12 @@ func (m *memDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, 
 }
 
 func (m *memDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+	m.l.Lock()
+	defer m.l.Unlock()
 	key, err := wc.Key()
 	if err != nil {
 		return err
 	}
-	delete(m.InMemoryStorage, key)
+	delete(m.InMemoryStorage.data, key)
 	return nil
 }

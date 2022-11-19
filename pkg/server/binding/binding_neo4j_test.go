@@ -1,13 +1,13 @@
-package sibyl2
+package binding
 
 import (
 	"context"
 	"sync"
 	"testing"
 
-	"github.com/williamfzc/sibyl2/pkg/core"
-
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 // set it true to run these tests
@@ -53,7 +53,7 @@ func TestNeo4jDriver_UploadFile(t *testing.T) {
 	defer driver.Close(ctx)
 
 	newDriver, _ := NewNeo4jDriver(driver)
-	functions, _ := ExtractFunction(".", DefaultConfig())
+	functions, _ := sibyl2.ExtractFunction(".", sibyl2.DefaultConfig())
 
 	core.Log.Infof("start uploading")
 	err = newDriver.CreateWorkspace(wc, ctx)
@@ -88,9 +88,9 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	ctx := context.Background()
 	defer driver.Close(ctx)
 	newDriver, _ := NewNeo4jDriver(driver)
-	functions, _ := ExtractFunction(".", DefaultConfig())
-	symbols, _ := ExtractSymbol(".", DefaultConfig())
-	fg, _ := AnalyzeFuncGraph(functions, symbols)
+	functions, _ := sibyl2.ExtractFunction(".", sibyl2.DefaultConfig())
+	symbols, _ := sibyl2.ExtractSymbol(".", sibyl2.DefaultConfig())
+	fg, _ := sibyl2.AnalyzeFuncGraph(functions, symbols)
 	core.Log.Infof("target query done")
 	for _, eachFunc := range functions {
 		for _, eachFFF := range eachFunc.Units {

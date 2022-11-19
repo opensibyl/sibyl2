@@ -15,6 +15,7 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/server"
+	"github.com/williamfzc/sibyl2/pkg/server/binding"
 )
 
 var uploadSrc string
@@ -40,7 +41,7 @@ func NewUploadCmd() *cobra.Command {
 			curRepo := filepath.Base(uploadSrc)
 			curRev := head.Hash().String()
 
-			wc := &sibyl2.WorkspaceConfig{
+			wc := &binding.WorkspaceConfig{
 				RepoId:  curRepo,
 				RevHash: curRev,
 			}
@@ -69,7 +70,7 @@ func loadRepo(gitDir string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func uploadFunctions(url string, wc *sibyl2.WorkspaceConfig, f []*extractor.FunctionFileResult) {
+func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.FunctionFileResult) {
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 	var wg sync.WaitGroup
 	wg.Add(len(f))

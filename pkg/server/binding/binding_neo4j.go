@@ -1,4 +1,4 @@
-package sibyl2
+package binding
 
 import (
 	"context"
@@ -7,10 +7,10 @@ import (
 	"reflect"
 	"strings"
 
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
-	"github.com/williamfzc/sibyl2/pkg/core"
-
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
+	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -61,7 +61,7 @@ func (d *neo4jDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionF
 	return nil
 }
 
-func (d *neo4jDriver) CreateFuncContext(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) error {
+func (d *neo4jDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
 	if err := wc.Verify(); err != nil {
 		return err
 	}
@@ -102,7 +102,7 @@ func (d *neo4jDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]str
 	return ret.([]string), nil
 }
 
-func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*FunctionWithPath, error) {
+func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -119,7 +119,7 @@ func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx contex
 		if err != nil {
 			return nil, err
 		}
-		var ret []*FunctionWithPath
+		var ret []*sibyl2.FunctionWithPath
 		for _, each := range nodes {
 			rawMap := each.Values[0].(dbtype.Node).Props
 			file := each.Values[1].(dbtype.Node).Props
@@ -131,7 +131,7 @@ func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx contex
 			if err != nil {
 				return nil, err
 			}
-			fwp := &FunctionWithPath{
+			fwp := &sibyl2.FunctionWithPath{
 				Function: f,
 				Path:     file["lang"].(string),
 				Language: core.LangType(file["path"].(string)),
@@ -143,10 +143,10 @@ func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx contex
 	if err != nil {
 		return nil, err
 	}
-	return ret.([]*FunctionWithPath), nil
+	return ret.([]*sibyl2.FunctionWithPath), nil
 }
 
-func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionWithPath, error) {
+func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -163,7 +163,7 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature s
 		if err != nil {
 			return nil, err
 		}
-		var ret []*FunctionWithPath
+		var ret []*sibyl2.FunctionWithPath
 		for _, each := range nodes {
 			rawMap := each.Values[0].(dbtype.Node).Props
 			file := each.Values[1].(dbtype.Node).Props
@@ -175,7 +175,7 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature s
 			if err != nil {
 				return nil, err
 			}
-			fwp := &FunctionWithPath{
+			fwp := &sibyl2.FunctionWithPath{
 				Function: f,
 				Path:     file["lang"].(string),
 				Language: core.LangType(file["path"].(string)),
@@ -194,15 +194,15 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature s
 	if ret == nil {
 		return nil, nil
 	}
-	return ret.(*FunctionWithPath), nil
+	return ret.(*sibyl2.FunctionWithPath), nil
 }
 
-func (d *neo4jDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*FunctionWithPath, error) {
+func (d *neo4jDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	functions, err := d.ReadFunctions(wc, path, ctx)
 	if err != nil {
 		return nil, err
 	}
-	var ret []*FunctionWithPath
+	var ret []*sibyl2.FunctionWithPath
 	for _, each := range functions {
 		if each.GetSpan().ContainAnyLine(lines...) {
 			ret = append(ret, each)
@@ -211,7 +211,7 @@ func (d *neo4jDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, l
 	return ret, nil
 }
 
-func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*FunctionContext, error) {
+func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
@@ -234,13 +234,13 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 		if err != nil {
 			return nil, err
 		}
-		fc := &FunctionContext{
+		fc := &sibyl2.FunctionContext{
 			FunctionWithPath: nil,
 			Calls:            nil,
 			ReverseCalls:     nil,
 		}
-		srcCache := make(map[string]*FunctionWithPath)
-		targetCache := make(map[string]*FunctionWithPath)
+		srcCache := make(map[string]*sibyl2.FunctionWithPath)
+		targetCache := make(map[string]*sibyl2.FunctionWithPath)
 		for _, each := range nodes {
 			rawMap := each.Values[0].(dbtype.Node).Props
 			file := each.Values[1].(dbtype.Node).Props
@@ -262,7 +262,7 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 			if err != nil {
 				return nil, err
 			}
-			srcfwp := &FunctionWithPath{
+			srcfwp := &sibyl2.FunctionWithPath{
 				Function: srcf,
 				Path:     srcFile["lang"].(string),
 				Language: core.LangType(srcFile["path"].(string)),
@@ -271,13 +271,13 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 			if err != nil {
 				return nil, err
 			}
-			targetfwp := &FunctionWithPath{
+			targetfwp := &sibyl2.FunctionWithPath{
 				Function: targetf,
 				Path:     targetFile["lang"].(string),
 				Language: core.LangType(targetFile["path"].(string)),
 			}
 
-			fwp := &FunctionWithPath{
+			fwp := &sibyl2.FunctionWithPath{
 				Function: f,
 				Path:     file["lang"].(string),
 				Language: core.LangType(file["path"].(string)),
@@ -288,8 +288,8 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 		}
 		core.Log.Infof("srccache: %v", srcCache)
 
-		srcFinal := make([]*FunctionWithPath, 0, len(srcCache))
-		targetFinal := make([]*FunctionWithPath, 0, len(targetCache))
+		srcFinal := make([]*sibyl2.FunctionWithPath, 0, len(srcCache))
+		targetFinal := make([]*sibyl2.FunctionWithPath, 0, len(targetCache))
 		for _, each := range srcCache {
 			srcFinal = append(srcFinal, each)
 		}
@@ -307,7 +307,7 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 	if ret == nil {
 		return nil, nil
 	}
-	return ret.(*FunctionContext), nil
+	return ret.(*sibyl2.FunctionContext), nil
 }
 
 func (d *neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
@@ -560,7 +560,7 @@ func createFunctionFileTransaction(wc *WorkspaceConfig, f *extractor.FunctionFil
 	}
 }
 
-func createFuncGraphTransaction(wc *WorkspaceConfig, f *FunctionContext, ctx context.Context) neo4j.ManagedTransactionWork {
+func createFuncGraphTransaction(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) neo4j.ManagedTransactionWork {
 	return func(tx neo4j.ManagedTransaction) (any, error) {
 		for i, each := range f.Calls {
 			id := i + 1

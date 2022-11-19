@@ -55,9 +55,16 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			}
 			// match any functions?
 			for _, eachSymbol := range refs {
+				// all the functions under this file
 				if functions, ok := funcFileMap[eachSymbol.Path]; ok {
+					// which contains this line
 					matched := QueryUnitsByLines(functions, eachSymbol.Span.Lines()...)
 					for _, eachMatchFunc := range matched {
+						// exclude itself
+						if eachMatchFunc.GetDesc() == eachFunc.GetDesc() {
+							continue
+						}
+
 						// eachFunc referenced by eachMatchFunc
 						reverseCallGraph.AddEdge(eachFunc.GetDesc(), eachMatchFunc.GetDesc())
 						callGraph.AddEdge(eachMatchFunc.GetDesc(), eachFunc.GetDesc())

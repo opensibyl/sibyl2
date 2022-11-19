@@ -2,6 +2,7 @@ package sibyl2
 
 import (
 	"github.com/dominikbraun/graph"
+	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -12,6 +13,12 @@ FuncGraph
 
 It is not a serious `call` graph.
 It based on references not real calls.
+
+Why we used it:
+- We can still use something like `method_invocation`
+- But we mainly use it to evaluate the influence of a method
+- In many languages, scope of `invocation` is too small
+- For example, use `function` as a parameter.
 */
 type FuncGraph struct {
 	ReverseCallGraph FuncGraphType
@@ -51,17 +58,28 @@ func (fg *FuncGraph) FindRelated(f *extractor.Function) *FunctionContext {
 func (fg *FuncGraph) bfs(g FuncGraphType, f *extractor.Function) []*FunctionWithPath {
 	selfDesc := f.GetDesc()
 	var ret []*FunctionWithPath
-	_ = graph.BFS(g, f.GetDesc(), func(s string) bool {
-		vertex, err := g.Vertex(s)
-		// exclude itself
-		if (err == nil) && (vertex.GetDesc() != selfDesc) {
-			// calc the shortest path can be slow in large scale graph
-			// these heavy calculations should be done outside this lib
-			ret = append(ret, vertex)
-		}
 
-		return false
-	})
+	// if there is an edge (a, b),
+	// b is an adjacency of a.
+	// but a isn't an adjacency of b.
+	adjacencyMap, err := g.AdjacencyMap()
+	if err != nil {
+		core.Log.Warnf("failed to get adjacency map: %v", err)
+		return ret
+	}
+
+	// calc the shortest path can be slow in large scale graph
+	// these heavy calculations should be done outside this lib
+	m := adjacencyMap[selfDesc]
+	for k := range m {
+		core.Log.Infof("find adj %v of %v", k, selfDesc)
+		vertex, err := g.Vertex(k)
+		if err != nil {
+			core.Log.Warnf("invalid %s vertex found: %v", k, err)
+			continue
+		}
+		ret = append(ret, vertex)
+	}
 
 	return ret
 }

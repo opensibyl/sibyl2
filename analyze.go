@@ -74,8 +74,8 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 		}
 	}
 	fg := &FuncGraph{
-		ReverseCallGraph: reverseCallGraph,
-		CallGraph:        callGraph,
+		ReverseCallGraph: WrapFuncGraph(reverseCallGraph),
+		CallGraph:        WrapFuncGraph(callGraph),
 	}
 	return fg, nil
 }

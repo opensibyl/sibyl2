@@ -26,7 +26,7 @@ type FunctionContext struct {
 	ReverseCalls []*FunctionWithPath `json:"reverseCalls"`
 }
 
-func (f *FunctionContext) ToGraph() FuncGraphType {
+func (f *FunctionContext) ToGraph() *FuncGraphType {
 	markSelf := graph.VertexAttribute("fillcolor", "red")
 	markDirect := graph.VertexAttribute("fillcolor", "yellow")
 	markFill := graph.VertexAttribute("style", "filled")
@@ -43,5 +43,5 @@ func (f *FunctionContext) ToGraph() FuncGraphType {
 		_ = ctxGraph.AddVertex(each, markFill, markDirect)
 		_ = ctxGraph.AddEdge(each.GetIndexName(), f.GetIndexName())
 	}
-	return ctxGraph
+	return WrapFuncGraph(ctxGraph)
 }

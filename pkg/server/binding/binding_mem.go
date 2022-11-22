@@ -86,7 +86,7 @@ func (m *memDriver) getRevUnit(wc *WorkspaceConfig, ctx context.Context) (*revUn
 	return v, nil
 }
 
-func NewMemDriver() Driver {
+func newMemDriver() Driver {
 	return &memDriver{
 		newStorage(),
 	}

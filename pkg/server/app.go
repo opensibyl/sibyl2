@@ -1,15 +1,12 @@
 package server
 
 import (
-	"context"
 	"fmt"
 	"net/http"
-	"strconv"
-	"strings"
 
 	"github.com/gin-gonic/gin"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
 )
@@ -32,164 +29,24 @@ func HandlePing(c *gin.Context) {
 	})
 }
 
-func HandleRepoQuery(c *gin.Context) {
-	repos, err := sharedDriver.ReadRepos(context.TODO())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, repos)
+type ExecuteConfig struct {
+	DbType        binding.DriverType
+	Neo4jUri      string
+	Neo4jUserName string
+	Neo4jPassword string
 }
 
-func HandleRevQuery(c *gin.Context) {
-	repo := c.Query("repo")
-	revs, err := sharedDriver.ReadRevs(repo, context.TODO())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
+func DefaultExecuteConfig() ExecuteConfig {
+	return ExecuteConfig{
+		binding.DtInMemory,
+		"bolt://localhost:7687",
+		"neo4j",
+		"neo4j",
 	}
-	c.JSON(http.StatusOK, revs)
 }
 
-func HandleFileQuery(c *gin.Context) {
-	repo := c.Query("repo")
-	rev := c.Query("rev")
-	wc := &binding.WorkspaceConfig{
-		RepoId:  repo,
-		RevHash: rev,
-	}
-	if err := wc.Verify(); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-	files, err := sharedDriver.ReadFiles(wc, context.TODO())
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
-	}
-	c.JSON(http.StatusOK, files)
-}
-
-func HandleFunctionsQuery(c *gin.Context) {
-	repo := c.Query("repo")
-	rev := c.Query("rev")
-	file := c.Query("file")
-	lines := c.Query("lines")
-
-	ret, err := handleFunctionQuery(repo, rev, file, lines)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, ret)
-}
-
-func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*FunctionWithSignature, error) {
-	wc := &binding.WorkspaceConfig{
-		RepoId:  repo,
-		RevHash: rev,
-	}
-	if err := wc.Verify(); err != nil {
-		return nil, err
-	}
-	var functions []*sibyl2.FunctionWithPath
-	var err error
-	if lines == "" {
-		functions, err = sharedDriver.ReadFunctions(wc, file, context.TODO())
-	} else {
-		linesStrList := strings.Split(lines, ",")
-		var lineNums = make([]int, 0, len(linesStrList))
-		for _, each := range linesStrList {
-			num, err := strconv.Atoi(each)
-			if err != nil {
-				return nil, err
-			}
-			lineNums = append(lineNums, num)
-		}
-		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, context.TODO())
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	// export signature
-	ret := make([]*FunctionWithSignature, 0, len(functions))
-	for _, each := range functions {
-		fws := &FunctionWithSignature{
-			FunctionWithPath: each,
-			Signature:        each.GetSignature(),
-		}
-		ret = append(ret, fws)
-	}
-	return ret, nil
-}
-
-func HandleFunctionCtxQuery(c *gin.Context) {
-	repo := c.Query("repo")
-	rev := c.Query("rev")
-	file := c.Query("file")
-	lines := c.Query("lines")
-
-	wc := &binding.WorkspaceConfig{
-		RepoId:  repo,
-		RevHash: rev,
-	}
-
-	ret, err := handleFunctionQuery(repo, rev, file, lines)
-	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	var ctxs []*sibyl2.FunctionContext
-	for _, each := range ret {
-		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, context.TODO())
-		if err != nil {
-			c.JSON(http.StatusBadRequest, err)
-			return
-		}
-		ctxs = append(ctxs, funcCtx)
-	}
-	c.JSON(http.StatusOK, ctxs)
-}
-
-func HandleRepoFuncUpload(c *gin.Context) {
-	result := &FunctionUploadUnit{}
-	err := c.BindJSON(result)
-	if err != nil {
-		core.Log.Errorf("error when parse: %v\n", err)
-		c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
-		return
-	}
-	if err := result.WorkspaceConfig.Verify(); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
-	}
-
-	go func() {
-		ctx := context.Background()
-
-		err = sharedDriver.CreateWorkspace(result.WorkspaceConfig, ctx)
-		if err != nil {
-			core.Log.Warnf("error when init: %v\n", err)
-		}
-
-		err := sharedDriver.CreateFuncFile(result.WorkspaceConfig, result.FunctionResult, ctx)
-		if err != nil {
-			core.Log.Errorf("error when upload: %v\n", err)
-		}
-	}()
-
-	c.JSON(http.StatusOK, "received")
-}
-
-func Execute() {
-	driver, err := binding.NewInMemoryDriver()
-	if err != nil {
-		panic(err)
-	}
-	sharedDriver = driver
+func Execute(config ExecuteConfig) {
+	initDriver(config)
 
 	engine := gin.Default()
 	engine.Handle(http.MethodGet, "/ping", HandlePing)
@@ -203,8 +60,39 @@ func Execute() {
 
 	v1group.Handle(http.MethodPost, "/func", HandleRepoFuncUpload)
 
-	err = engine.Run(fmt.Sprintf(":%d", 9876))
+	err := engine.Run(fmt.Sprintf(":%d", 9876))
 	if err != nil {
 		fmt.Printf("failed to start repoctor_receiver: %s", err.Error())
+	}
+}
+
+func initDriver(config ExecuteConfig) {
+	switch config.DbType {
+	case binding.DtInMemory:
+		initMemDriver()
+	case binding.DtNeo4j:
+		initNeo4jDriver(config)
+	default:
+		initMemDriver()
+	}
+}
+
+func initMemDriver() {
+	driver, err := binding.NewInMemoryDriver()
+	if err != nil {
+		panic(err)
+	}
+	sharedDriver = driver
+}
+
+func initNeo4jDriver(config ExecuteConfig) {
+	var authToken = neo4j.BasicAuth(config.Neo4jUserName, config.Neo4jPassword, "")
+	driver, err := neo4j.NewDriverWithContext(config.Neo4jUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	sharedDriver, err = binding.NewNeo4jDriver(driver)
+	if err != nil {
+		panic(err)
 	}
 }

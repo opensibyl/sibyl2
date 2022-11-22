@@ -104,7 +104,7 @@ func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
 }
 
 func NewInMemoryDriver() (Driver, error) {
-	return NewMemDriver(), nil
+	return newMemDriver(), nil
 }
 
 /*

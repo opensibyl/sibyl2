@@ -58,15 +58,11 @@ func (m *memDriver) isWcExisted(wc *WorkspaceConfig) bool {
 	if err != nil {
 		return false
 	}
-	m.l.RLock()
-	defer m.l.RUnlock()
 	_, ok := m.InMemoryStorage.data[key]
 	return ok
 }
 
 func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*WorkspaceConfig, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	ret := make([]*WorkspaceConfig, 0, len(m.InMemoryStorage.data))
 	for each := range m.InMemoryStorage.data {
 		wc, err := WorkspaceConfigFromKey(each)
@@ -79,8 +75,6 @@ func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*WorkspaceConf
 }
 
 func (m *memDriver) getRevUnit(wc *WorkspaceConfig, ctx context.Context) (*revUnit, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -147,8 +141,6 @@ func (m *memDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) er
 }
 
 func (m *memDriver) ReadRepos(ctx context.Context) ([]string, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	ret := make([]string, 0, len(m.InMemoryStorage.data))
 	wcs, err := m.getAllWorkspaceConfig(ctx)
 	if err != nil {
@@ -162,8 +154,6 @@ func (m *memDriver) ReadRepos(ctx context.Context) ([]string, error) {
 }
 
 func (m *memDriver) ReadRevs(repoId string, ctx context.Context) ([]string, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	ret := make([]string, 0, len(m.InMemoryStorage.data))
 	wcs, err := m.getAllWorkspaceConfig(ctx)
 	if err != nil {
@@ -180,8 +170,6 @@ func (m *memDriver) ReadRevs(repoId string, ctx context.Context) ([]string, erro
 }
 
 func (m *memDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -194,8 +182,6 @@ func (m *memDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]strin
 }
 
 func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -219,8 +205,6 @@ func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.
 }
 
 func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	files, err := m.ReadFiles(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -241,8 +225,6 @@ func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature str
 }
 
 func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
-	m.l.RLock()
-	defer m.l.RUnlock()
 	files, err := m.ReadFiles(wc, ctx)
 	if err != nil {
 		return nil, err

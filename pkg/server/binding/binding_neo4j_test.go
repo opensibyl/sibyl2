@@ -233,11 +233,6 @@ func TestNeo4jDriver_UpdateFuncProperties(t *testing.T) {
 		panic(err)
 	}
 
-	err = newDriver.UpdateRepoProperties(wc.RepoId, "repoK", "repoV", ctx)
-	if err != nil {
-		panic(err)
-	}
-
 	err = newDriver.UpdateRevProperties(wc, "revK", "revV", ctx)
 	if err != nil {
 		panic(err)

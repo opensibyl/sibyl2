@@ -19,25 +19,27 @@ import (
 // so my implementation here may be a little casual
 
 // functions can be reused
+
+/*
+indexes and constraint (neo4j 5.x
+avoid some conflicts
+*/
 const (
 	TemplateMergeFunc = `
-MATCH (repo:Repo {id: $repo_id})-[:INCLUDE]->(rev:Rev {hash: $rev_hash})
+MATCH (rev:Rev {id: $repo_id, hash: $rev_hash})
+WITH rev
 MERGE (rev)-[:INCLUDE]->(file:File {path: $file_path, lang: $file_lang})
 MERGE (func:Func {name: $func_name, receiver: $func_receiver, parameters: $func_parameters, returns: $func_returns, span: $func_span, extras: $func_extras, signature: $func_signature })
 MERGE (file)-[:INCLUDE]->(func)
 `
-
-	TemplateMatchFuncFull = "MATCH " +
-		"(repo:Repo {id: $repo_id})" +
-		"-[:INCLUDE]->" +
-		"(rev:Rev {hash: $rev_hash})" +
-		"-[:INCLUDE]->" +
-		"(%s:File {path: %s, lang: $file_lang})" +
-		"-[:INCLUDE]->" +
-		"(func%d:Func {signature: $func%d_signature})"
+	TemplateMatchFuncFull = `
+MATCH (:Rev {id: $repo_id, hash: $rev_hash})
+-[:INCLUDE]->(%s:File {path: %s, lang: $file_lang})
+-[:INCLUDE]->(func%d:Func {signature: $func%d_signature})
+`
 
 	TemplateMergeLinkInclude       = "MERGE (%s)-[:INCLUDE]->(%s)"
-	TemplateMergeLinkFuncReference = "MERGE (%s)-[:FUNC_REFERENCE]->(%s)"
+	TemplateMergeLinkFuncReference = "WITH func%d, func%d MERGE (%s)-[:FUNC_REFERENCE]->(%s)"
 )
 
 type neo4jDriver struct {
@@ -78,7 +80,7 @@ func (d *neo4jDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]str
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(f:File) RETURN f.path`
+		query := `MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(f:File) RETURN f.path`
 		results, err := tx.Run(ctx, query, map[string]any{
 			"repoId":  wc.RepoId,
 			"revHash": wc.RevHash,
@@ -106,7 +108,7 @@ func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx contex
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(file:File {path: $path})-[:INCLUDE]->(f) RETURN f, file`
+		query := `MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File {path: $path})-[:INCLUDE]->(f) RETURN f, file`
 		results, err := tx.Run(ctx, query, map[string]any{
 			"repoId":  wc.RepoId,
 			"revHash": wc.RevHash,
@@ -150,7 +152,7 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature s
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) RETURN f, file`
+		query := `MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) RETURN f, file`
 		results, err := tx.Run(ctx, query, map[string]any{
 			"repoId":    wc.RepoId,
 			"revHash":   wc.RevHash,
@@ -216,7 +218,7 @@ func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, sign
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
-MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
+MATCH (rev:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
 MATCH (repo)-[:INCLUDE]->(rev)-[:INCLUDE]->(srcFile:File)-[:INCLUDE]->(srcFunc)-[:FUNC_REFERENCE]->(f)
 MATCH (f)-[:FUNC_REFERENCE]->(targetFunc)
 MATCH (targetFile:File)-[:INCLUDE]->(targetFunc)
@@ -316,7 +318,7 @@ func (d *neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) 
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
-MATCH (repo:Repo {id: $repoId})-[:INCLUDE]->(rev:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(func:Func) DETACH DELETE rev, file, func
+MATCH (rev:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(func:Func) DETACH DELETE rev, file, func
 `
 		_, err := tx.Run(ctx, query, map[string]any{
 			"repoId":  wc.RepoId,
@@ -339,8 +341,9 @@ func (d *neo4jDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) 
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
-MERGE (r:Repo {id: $repoId}) 
-MERGE (r)-[:INCLUDE]->(:Rev {hash: $revHash})`
+CREATE CONSTRAINT IF NOT EXISTS FOR (r:Rev) REQUIRE (r.hash, r.id) IS UNIQUE;
+MERGE (:Rev {id: $repoId, hash: $revHash})
+`
 		_, err := tx.Run(ctx, query, map[string]any{
 			"repoId":  wc.RepoId,
 			"revHash": wc.RevHash,
@@ -357,7 +360,7 @@ func (d *neo4jDriver) ReadRepos(ctx context.Context) ([]string, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `MATCH (n:Repo) RETURN n.id`
+		query := `MATCH (r:Rev) RETURN r.id`
 		ret, err := tx.Run(ctx, query, map[string]any{})
 		if err != nil {
 			return nil, err
@@ -384,7 +387,7 @@ func (d *neo4jDriver) ReadRevs(repoId string, ctx context.Context) ([]string, er
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `MATCH (:Repo {id: $repoId})-[:INCLUDE]->(r:Rev) RETURN r.hash`
+		query := `MATCH (r:Rev {id: $repoId}) RETURN r.hash`
 		ret, err := tx.Run(ctx, query, map[string]any{
 			"repoId": repoId,
 		})
@@ -409,36 +412,12 @@ func (d *neo4jDriver) ReadRevs(repoId string, ctx context.Context) ([]string, er
 	return ret.([]string), nil
 }
 
-func (d *neo4jDriver) UpdateRepoProperties(repoId string, k string, v any, ctx context.Context) error {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
-	defer session.Close(ctx)
-	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `
-MATCH (r:Repo {id: $repoId})
-SET r.%s = $v
-RETURN r`
-		query = fmt.Sprintf(query, k)
-		_, err := tx.Run(ctx, query, map[string]any{
-			"repoId": repoId,
-			"v":      v,
-		})
-		if err != nil {
-			return nil, err
-		}
-		return nil, nil
-	})
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func (d *neo4jDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
-MATCH (:Repo {id: $repoId})-[:INCLUDE]->(r:Rev {hash: $revHash})
+MATCH (r:Rev {id: $repoId, hash: $revHash})
 SET r.%s = $v
 RETURN r`
 		query = fmt.Sprintf(query, k)
@@ -463,7 +442,7 @@ func (d *neo4jDriver) UpdateFileProperties(wc *WorkspaceConfig, path string, k s
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
-MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(file:File {path: $path})
+MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File {path: $path})
 SET file.%s = $v
 RETURN file`
 		query = fmt.Sprintf(query, k)
@@ -493,7 +472,7 @@ func (d *neo4jDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
-MATCH (:Repo {id: $repoId})-[:INCLUDE]->(:Rev {hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
+MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
 SET f.%s = $v
 RETURN f`
 		query = fmt.Sprintf(query, k)
@@ -571,7 +550,7 @@ func createFuncGraphTransaction(wc *WorkspaceConfig, f *sibyl2.FunctionContext, 
 			}
 			eachMerged = append(eachMerged,
 				// create link
-				fmt.Sprintf(TemplateMergeLinkFuncReference, "func0", eachFuncName),
+				fmt.Sprintf(TemplateMergeLinkFuncReference, 0, id, "func0", eachFuncName),
 				"RETURN *")
 
 			// todo: merge these run together

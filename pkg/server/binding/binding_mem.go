@@ -271,10 +271,6 @@ func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signat
 	return nil, errors.New("NOT IMPLEMENTED")
 }
 
-func (m *memDriver) UpdateRepoProperties(repoId string, k string, v any, ctx context.Context) error {
-	return errors.New("NOT IMPLEMENTED")
-}
-
 func (m *memDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {
 	return errors.New("NOT IMPLEMENTED")
 }

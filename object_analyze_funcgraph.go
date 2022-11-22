@@ -113,5 +113,6 @@ func (fgt *FuncGraphType) GetAdjacencyMap() (*AdjacencyMapType, error) {
 		core.Log.Warnf("failed to get adjacency map: %v", err)
 		return nil, err
 	}
+	fgt.adjMapCache = &m
 	return &m, nil
 }

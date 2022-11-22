@@ -76,13 +76,22 @@ func HandleFunctionsQuery(c *gin.Context) {
 	file := c.Query("file")
 	lines := c.Query("lines")
 
+	ret, err := handleFunctionQuery(repo, rev, file, lines)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, ret)
+}
+
+func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*FunctionWithSignature, error) {
 	wc := &binding.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
 	}
 	if err := wc.Verify(); err != nil {
-		c.JSON(http.StatusBadRequest, err)
-		return
+		return nil, err
 	}
 	var functions []*sibyl2.FunctionWithPath
 	var err error
@@ -94,16 +103,14 @@ func HandleFunctionsQuery(c *gin.Context) {
 		for _, each := range linesStrList {
 			num, err := strconv.Atoi(each)
 			if err != nil {
-				c.JSON(http.StatusBadGateway, err)
-				return
+				return nil, err
 			}
 			lineNums = append(lineNums, num)
 		}
 		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, context.TODO())
 	}
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, err)
-		return
+		return nil, err
 	}
 
 	// export signature
@@ -115,8 +122,36 @@ func HandleFunctionsQuery(c *gin.Context) {
 		}
 		ret = append(ret, fws)
 	}
+	return ret, nil
+}
 
-	c.JSON(http.StatusOK, ret)
+func HandleFunctionCtxQuery(c *gin.Context) {
+	repo := c.Query("repo")
+	rev := c.Query("rev")
+	file := c.Query("file")
+	lines := c.Query("lines")
+
+	wc := &binding.WorkspaceConfig{
+		RepoId:  repo,
+		RevHash: rev,
+	}
+
+	ret, err := handleFunctionQuery(repo, rev, file, lines)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	var ctxs []*sibyl2.FunctionContext
+	for _, each := range ret {
+		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, context.TODO())
+		if err != nil {
+			c.JSON(http.StatusBadRequest, err)
+			return
+		}
+		ctxs = append(ctxs, funcCtx)
+	}
+	c.JSON(http.StatusOK, ctxs)
 }
 
 func HandleRepoFuncUpload(c *gin.Context) {
@@ -164,6 +199,7 @@ func Execute() {
 	v1group.Handle(http.MethodGet, "/rev", HandleRevQuery)
 	v1group.Handle(http.MethodGet, "/file", HandleFileQuery)
 	v1group.Handle(http.MethodGet, "/func", HandleFunctionsQuery)
+	v1group.Handle(http.MethodGet, "/funcctx", HandleFunctionCtxQuery)
 
 	v1group.Handle(http.MethodPost, "/func", HandleRepoFuncUpload)
 

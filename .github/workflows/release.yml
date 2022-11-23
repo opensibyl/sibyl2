@@ -21,6 +21,8 @@ jobs:
       - name: Run GoReleaser
         # https://github.com/actions/runner/issues/2033#issuecomment-1204205989
         run: |
+          go install github.com/swaggo/swag/cmd/swag@latest
+          make
           sudo chown -R root:root $PWD
           docker run --user root -e GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }} --rm --privileged -v $PWD:/go/src/github.com/williamfzc/sibyl2 -v /var/run/docker.sock:/var/run/docker.sock -w /go/src/github.com/williamfzc/sibyl2 williamfzc/xcgo goreleaser --rm-dist --debug
         env:

@@ -58,6 +58,7 @@ create func links:
 
 type driverBase interface {
 	GetType() DriverType
+	InitDriver() error
 }
 
 type driverCreate interface {

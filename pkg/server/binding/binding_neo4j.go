@@ -50,6 +50,25 @@ func (d *neo4jDriver) GetType() DriverType {
 	return DtNeo4j
 }
 
+func (d *neo4jDriver) InitDriver() error {
+	// create indexes
+	ctx := context.TODO()
+	session := d.DriverWithContext.NewSession(context.TODO(), neo4j.SessionConfig{})
+	defer session.Close(ctx)
+	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		create := `CREATE CONSTRAINT IF NOT EXISTS FOR (r:Rev) REQUIRE (r.hash, r.id) IS UNIQUE`
+		_, err := tx.Run(ctx, create, nil)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (d *neo4jDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	if err := wc.Verify(); err != nil {
 		return err
@@ -219,7 +238,7 @@ func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, sign
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
 MATCH (rev:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) 
-MATCH (repo)-[:INCLUDE]->(rev)-[:INCLUDE]->(srcFile:File)-[:INCLUDE]->(srcFunc)-[:FUNC_REFERENCE]->(f)
+MATCH (rev)-[:INCLUDE]->(srcFile:File)-[:INCLUDE]->(srcFunc)-[:FUNC_REFERENCE]->(f)
 MATCH (f)-[:FUNC_REFERENCE]->(targetFunc)
 MATCH (targetFile:File)-[:INCLUDE]->(targetFunc)
 RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
@@ -340,10 +359,7 @@ func (d *neo4jDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) 
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
-		query := `
-CREATE CONSTRAINT IF NOT EXISTS FOR (r:Rev) REQUIRE (r.hash, r.id) IS UNIQUE;
-MERGE (:Rev {id: $repoId, hash: $revHash})
-`
+		query := `MERGE (:Rev {id: $repoId, hash: $revHash})`
 		_, err := tx.Run(ctx, query, map[string]any{
 			"repoId":  wc.RepoId,
 			"revHash": wc.RevHash,

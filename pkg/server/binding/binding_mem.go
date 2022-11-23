@@ -96,6 +96,11 @@ func (m *memDriver) GetType() DriverType {
 	return DtInMemory
 }
 
+func (m *memDriver) InitDriver() error {
+	// do nothing
+	return nil
+}
+
 func (m *memDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()

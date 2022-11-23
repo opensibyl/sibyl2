@@ -23,6 +23,11 @@ type FunctionUploadUnit struct {
 	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`
 }
 
+type FuncContextUploadUnit struct {
+	WorkspaceConfig  *binding.WorkspaceConfig  `json:"workspace"`
+	FunctionContexts []*sibyl2.FunctionContext `json:"functionContext"`
+}
+
 func HandlePing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
@@ -59,6 +64,7 @@ func Execute(config ExecuteConfig) {
 	v1group.Handle(http.MethodGet, "/funcctx", HandleFunctionCtxQuery)
 
 	v1group.Handle(http.MethodPost, "/func", HandleRepoFuncUpload)
+	v1group.Handle(http.MethodPost, "/funcctx", HandleFunctionContextUpload)
 
 	err := engine.Run(fmt.Sprintf(":%d", 9876))
 	if err != nil {
@@ -74,6 +80,10 @@ func initDriver(config ExecuteConfig) {
 		initNeo4jDriver(config)
 	default:
 		initMemDriver()
+	}
+	err := sharedDriver.InitDriver()
+	if err != nil {
+		panic(err)
 	}
 }
 

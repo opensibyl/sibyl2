@@ -6,9 +6,12 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
+	_ "github.com/williamfzc/sibyl2/pkg/server/docs"
 )
 
 var sharedDriver binding.Driver
@@ -28,6 +31,11 @@ type FuncContextUploadUnit struct {
 	FunctionContexts []*sibyl2.FunctionContext `json:"functionContext"`
 }
 
+// @BasePath /
+// @Summary  ping example
+// @Produce  json
+// @Success  200
+// @Router   /ping [get]
 func HandlePing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
@@ -50,11 +58,13 @@ func DefaultExecuteConfig() ExecuteConfig {
 	}
 }
 
+// @title swagger doc for sibyl2 server
 func Execute(config ExecuteConfig) {
 	initDriver(config)
 
 	engine := gin.Default()
 	engine.Handle(http.MethodGet, "/ping", HandlePing)
+	engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1group := engine.Group("/api/v1")
 	v1group.Handle(http.MethodGet, "/repo", HandleRepoQuery)

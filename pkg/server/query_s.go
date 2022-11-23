@@ -11,6 +11,10 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
 )
 
+// @Summary repo query
+// @Produce json
+// @Success 200
+// @Router  /api/v1/repo [get]
 func HandleRepoQuery(c *gin.Context) {
 	repos, err := sharedDriver.ReadRepos(context.TODO())
 	if err != nil {
@@ -20,6 +24,11 @@ func HandleRepoQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, repos)
 }
 
+// @Summary rev query
+// @Param   repo query string true "rev search by repo"
+// @Produce json
+// @Success 200 {array} string
+// @Router  /api/v1/rev [get]
 func HandleRevQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	revs, err := sharedDriver.ReadRevs(repo, context.TODO())
@@ -30,6 +39,12 @@ func HandleRevQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, revs)
 }
 
+// @Summary file query
+// @Param   repo query string true "repo"
+// @Param   rev  query string true "rev"
+// @Produce json
+// @Success 200 {array} string
+// @Router  /api/v1/file [get]
 func HandleFileQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -49,6 +64,14 @@ func HandleFileQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, files)
 }
 
+// @Summary func query
+// @Param   repo  query string true  "repo"
+// @Param   rev   query string true  "rev"
+// @Param   file  query string true  "file"
+// @Param   lines query string false "specific lines"
+// @Produce json
+// @Success 200 {array} FunctionWithSignature
+// @Router  /api/v1/func [get]
 func HandleFunctionsQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -104,6 +127,14 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	return ret, nil
 }
 
+// @Summary func ctx query
+// @Param   repo  query string true  "repo"
+// @Param   rev   query string true  "rev"
+// @Param   file  query string true  "file"
+// @Param   lines query string false "specific lines"
+// @Produce json
+// @Success 200 {array} sibyl2.FunctionContext
+// @Router  /api/v1/funcctx [get]
 func HandleFunctionCtxQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

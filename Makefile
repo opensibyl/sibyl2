@@ -6,16 +6,11 @@ GOCMD = go
 GOTEST = $(GOCMD) test
 
 build_all:
-	$(MAKE) build_client
-	$(MAKE) build_server
-
-build_client:
+	${MAKE} prepare
 	${GOCMD} build -ldflags '-extldflags "-lstdc++"' ./cmd/sibyl
 
-build_server:
-	# create swagger docs too
+prepare:
 	cd ./pkg/server; swag init -g app.go --parseDepth 1 --parseDependency;
-	${GOCMD} build -ldflags '-extldflags "-lstdc++"' ./cmd/sibyl_server
 
 test:
 	$(GOTEST) ./...

@@ -18,6 +18,10 @@ jobs:
           fetch-depth: 0
       - name: Fetch all tags
         run: git fetch --force --tags
+      - name: Pre build
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@latest
+          make
       - name: Run GoReleaser
         # https://github.com/actions/runner/issues/2033#issuecomment-1204205989
         run: |

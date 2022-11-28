@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"os"
 	"time"
 
 	"github.com/spf13/cobra"
+	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"golang.org/x/exp/slices"
 )
 
@@ -57,12 +57,13 @@ func NewExtractCmd() *cobra.Command {
 			if err != nil {
 				panic(err)
 			}
+			core.Log.Infof("file has been saved to: %s", userOutputFile)
 		},
 	}
 
 	extractCmd.PersistentFlags().StringVar(&userSrc, "src", ".", "src dir path")
 	extractCmd.PersistentFlags().StringVar(&userLangType, "lang", "", "lang type of your source code")
-	extractCmd.PersistentFlags().StringVar(&userExtractType, "type", "", "what kind of data you want")
+	extractCmd.PersistentFlags().StringVar(&userExtractType, "type", extractor.TypeExtractFunction, "what kind of data you want")
 	extractCmd.PersistentFlags().StringVar(&userOutputFile, "output", "", "output file")
 	return extractCmd
 }

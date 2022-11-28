@@ -124,9 +124,10 @@ func (r *Runner) GuessLangFromDir(dir string, fileFilter func(string) bool) (Lan
 
 	ret := LangUnknown
 	max := 0
-	for k := range countMap {
-		if countMap[k] > max {
+	for k, v := range countMap {
+		if v > max {
 			ret = k
+			max = v
 		}
 	}
 	return ret, nil

@@ -20,7 +20,7 @@ jobs:
 
     - name: Build
       run: |
-        go install github.com/swaggo/swag/cmd/swag@latest
+        go install github.com/swaggo/swag/cmd/swag@v1.8.7
         make
 
     - name: Test

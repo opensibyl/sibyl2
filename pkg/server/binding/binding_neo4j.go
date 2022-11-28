@@ -111,7 +111,7 @@ func (d *neo4jDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]str
 		if err != nil {
 			return nil, err
 		}
-		var ret []string
+		ret := make([]string, 0, len(nodes))
 		for _, each := range nodes {
 			ret = append(ret, each.Values[0].(string))
 		}
@@ -140,7 +140,7 @@ func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx contex
 		if err != nil {
 			return nil, err
 		}
-		var ret []*sibyl2.FunctionWithPath
+		ret := make([]*sibyl2.FunctionWithPath, 0, len(nodes))
 		for _, each := range nodes {
 			rawMap := each.Values[0].(dbtype.Node).Props
 			file := each.Values[1].(dbtype.Node).Props
@@ -184,7 +184,7 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature s
 		if err != nil {
 			return nil, err
 		}
-		var ret []*sibyl2.FunctionWithPath
+		ret := make([]*sibyl2.FunctionWithPath, 0, len(nodes))
 		for _, each := range nodes {
 			rawMap := each.Values[0].(dbtype.Node).Props
 			file := each.Values[1].(dbtype.Node).Props
@@ -223,7 +223,7 @@ func (d *neo4jDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, l
 	if err != nil {
 		return nil, err
 	}
-	var ret []*sibyl2.FunctionWithPath
+	ret := make([]*sibyl2.FunctionWithPath, 0)
 	for _, each := range functions {
 		if each.GetSpan().ContainAnyLine(lines...) {
 			ret = append(ret, each)
@@ -386,7 +386,7 @@ func (d *neo4jDriver) ReadRepos(ctx context.Context) ([]string, error) {
 			return nil, err
 		}
 
-		var returns []string
+		returns := make([]string, 0, len(revs))
 		for _, each := range revs {
 			returns = append(returns, each.Values[0].(string))
 		}
@@ -415,7 +415,7 @@ func (d *neo4jDriver) ReadRevs(repoId string, ctx context.Context) ([]string, er
 			return nil, err
 		}
 
-		var returns []string
+		returns := make([]string, 0, len(revs))
 		for _, each := range revs {
 			returns = append(returns, each.Values[0].(string))
 		}

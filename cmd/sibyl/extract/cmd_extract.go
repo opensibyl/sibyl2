@@ -1,4 +1,4 @@
-package main
+package extract
 
 import (
 	"encoding/json"
@@ -66,9 +66,4 @@ func NewExtractCmd() *cobra.Command {
 	extractCmd.PersistentFlags().StringVar(&userExtractType, "type", extractor.TypeExtractFunction, "what kind of data you want")
 	extractCmd.PersistentFlags().StringVar(&userOutputFile, "output", "", "output file")
 	return extractCmd
-}
-
-func init() {
-	extractCmd := NewExtractCmd()
-	rootCmd.AddCommand(extractCmd)
 }

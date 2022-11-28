@@ -4,6 +4,9 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/extract"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/server"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/upload"
 )
 
 var rootCmd = &cobra.Command{
@@ -23,4 +26,15 @@ func Execute() {
 
 func main() {
 	Execute()
+}
+
+func init() {
+	extractCmd := extract.NewExtractCmd()
+	rootCmd.AddCommand(extractCmd)
+
+	serverCmd := server.NewServerCmd()
+	rootCmd.AddCommand(serverCmd)
+
+	uploadCmd := upload.NewUploadCmd()
+	rootCmd.AddCommand(uploadCmd)
 }

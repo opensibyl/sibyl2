@@ -1,4 +1,4 @@
-package main
+package upload
 
 import (
 	"bytes"
@@ -50,9 +50,20 @@ func NewUploadCmd() *cobra.Command {
 				panic(err)
 			}
 
+			s, err := sibyl2.ExtractSymbol(uploadSrc, sibyl2.DefaultConfig())
+			if err != nil {
+				panic(err)
+			}
+			g, err := sibyl2.AnalyzeFuncGraph(f, s)
+			if err != nil {
+				panic(err)
+			}
+
 			fullUrl := fmt.Sprintf("%s/api/v1/func", uploadUrl)
+			ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", uploadUrl)
 			core.Log.Infof("upload backend: %s", fullUrl)
 			uploadFunctions(fullUrl, wc, f)
+			uploadGraph(ctxUrl, wc, f, g)
 		},
 	}
 	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", ".", "src dir path")
@@ -102,7 +113,41 @@ func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.Fun
 	wg.Wait()
 }
 
-func init() {
-	uploadCmd := NewUploadCmd()
-	rootCmd.AddCommand(uploadCmd)
+func uploadGraph(url string, wc *binding.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph) {
+	var wg sync.WaitGroup
+	for _, eachFuncFile := range functions {
+		eachFuncFile := eachFuncFile
+		go func() {
+			wg.Add(1)
+			defer wg.Done()
+
+			var ctxs []*sibyl2.FunctionContext
+			for _, eachFunc := range eachFuncFile.Units {
+				related := g.FindRelated(eachFunc)
+				ctxs = append(ctxs, related)
+			}
+			core.Log.Infof("uploading: %s", eachFuncFile.Path)
+			uploadCtx(url, wc, ctxs)
+		}()
+	}
+	wg.Wait()
+}
+
+func uploadCtx(url string, wc *binding.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
+	uploadUnit := &server.FuncContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
+	jsonStr, err := json.Marshal(uploadUnit)
+	if err != nil {
+		panic(err)
+	}
+	resp, err := http.Post(
+		url,
+		"application/json",
+		bytes.NewBuffer(jsonStr))
+	if err != nil {
+		panic(err)
+	}
+	data, err := io.ReadAll(resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		core.Log.Errorf("upload resp: %v", string(data))
+	}
 }

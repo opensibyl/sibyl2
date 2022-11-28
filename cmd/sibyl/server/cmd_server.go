@@ -1,4 +1,4 @@
-package main
+package server
 
 import (
 	"github.com/spf13/cobra"
@@ -35,9 +35,4 @@ func NewServerCmd() *cobra.Command {
 	serverCmd.PersistentFlags().StringVar(&serverUser, "user", "", "neo4j user")
 	serverCmd.PersistentFlags().StringVar(&serverPwd, "pwd", "", "neo4j password")
 	return serverCmd
-}
-
-func init() {
-	serverCmd := NewServerCmd()
-	rootCmd.AddCommand(serverCmd)
 }

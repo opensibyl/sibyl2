@@ -1,9 +1,9 @@
 package main
 
 import (
-	"fmt"
-	"github.com/spf13/cobra"
 	"log"
+
+	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
@@ -11,7 +11,7 @@ var rootCmd = &cobra.Command{
 	Short: "sibyl cmd",
 	Long:  `sibyl cmd`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("Root cmd from sibyl 2")
+		cmd.Help()
 	},
 }
 

@@ -52,6 +52,9 @@ func (r *Runner) scanFiles(filePath string, lang LangType, fileFilter func(strin
 	var files []string
 
 	handleFunc := func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		if !lang.MatchName(path) {
 			return nil
 		}
@@ -105,6 +108,9 @@ func (r *Runner) GuessLangFromDir(dir string, fileFilter func(string) bool) (Lan
 	}
 
 	handleFunc := func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
 		if fileFilter != nil {
 			if !fileFilter(path) {
 				return nil

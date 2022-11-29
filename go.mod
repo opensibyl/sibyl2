@@ -3,6 +3,7 @@ module github.com/williamfzc/sibyl2
 go 1.19
 
 require (
+	github.com/bluekeyes/go-gitdiff v0.7.0
 	github.com/dominikbraun/graph v0.13.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-git/go-git/v5 v5.4.2

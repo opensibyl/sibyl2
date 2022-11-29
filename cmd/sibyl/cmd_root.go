@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/diff"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/extract"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/server"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/upload"
@@ -37,4 +38,7 @@ func init() {
 
 	uploadCmd := upload.NewUploadCmd()
 	rootCmd.AddCommand(uploadCmd)
+
+	diffCmd := diff.NewDiffCommand()
+	rootCmd.AddCommand(diffCmd)
 }

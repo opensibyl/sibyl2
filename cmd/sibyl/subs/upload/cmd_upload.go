@@ -64,6 +64,7 @@ func NewUploadCmd() *cobra.Command {
 			core.Log.Infof("upload backend: %s", fullUrl)
 			uploadFunctions(fullUrl, wc, f)
 			uploadGraph(ctxUrl, wc, f, g)
+			core.Log.Infof("upload finished")
 		},
 	}
 	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", ".", "src dir path")

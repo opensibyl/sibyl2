@@ -27,7 +27,7 @@ jobs:
 
       - name: Pre build
         run: |
-          go install github.com/swaggo/swag/cmd/swag@latest
+          go install github.com/swaggo/swag/cmd/swag@1.8.7
           make prepare
 
       - name: Run GoReleaser

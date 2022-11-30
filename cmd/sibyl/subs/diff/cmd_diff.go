@@ -14,6 +14,7 @@ var diffSrc string
 var diffPatch string
 var diffRaw string
 var diffOutputFile string
+var diffThin bool
 
 func NewDiffCommand() *cobra.Command {
 	diffCmd := &cobra.Command{
@@ -33,10 +34,16 @@ func NewDiffCommand() *cobra.Command {
 				panic(err)
 			}
 
-			output, err := json.MarshalIndent(&results, "", "  ")
+			var output []byte
+			if diffThin {
+				output, err = json.MarshalIndent(results.Flatten(), "", "  ")
+			} else {
+				output, err = json.MarshalIndent(&results, "", "  ")
+			}
 			if err != nil {
 				panic(err)
 			}
+
 			if diffOutputFile == "" {
 				diffOutputFile = fmt.Sprintf("sibyl-diff-%d.json", time.Now().Unix())
 			}
@@ -51,5 +58,6 @@ func NewDiffCommand() *cobra.Command {
 	diffCmd.PersistentFlags().StringVar(&diffPatch, "patch", "", "patch")
 	diffCmd.PersistentFlags().StringVar(&diffRaw, "patchRaw", "", "patch raw")
 	diffCmd.PersistentFlags().StringVar(&diffOutputFile, "output", "", "output json file")
+	diffCmd.PersistentFlags().BoolVar(&diffThin, "thin", false, "")
 	return diffCmd
 }

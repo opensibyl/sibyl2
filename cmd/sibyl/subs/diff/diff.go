@@ -17,13 +17,56 @@ type FunctionWithWeight struct {
 }
 
 type FileFragment struct {
+	Path      string                    `json:"path"`
+	Lines     []int                     `json:"lines"`
+	Functions []*sibyl2.FunctionContext `json:"functions"`
+}
+
+type ThinFileFragment struct {
 	Path      string                `json:"path"`
 	Lines     []int                 `json:"lines"`
 	Functions []*FunctionWithWeight `json:"functions"`
 }
 
+func (f *FileFragment) Flatten() *ThinFileFragment {
+	ret := &ThinFileFragment{}
+	ret.Path = f.Path
+
+	lineCount := len(f.Lines)
+	switch lineCount {
+	case 0:
+		ret.Lines = []int{}
+	case 1:
+		ret.Lines = []int{f.Lines[0]}
+	default:
+		ret.Lines = []int{f.Lines[0], f.Lines[lineCount-1]}
+	}
+
+	for _, each := range f.Functions {
+		fww := &FunctionWithWeight{
+			Function:        each.Function,
+			ReferenceCount:  len(each.Calls),
+			ReferencedCount: len(each.ReverseCalls),
+		}
+		ret.Functions = append(ret.Functions, fww)
+	}
+	return ret
+}
+
 type ParseResult struct {
 	Fragments []*FileFragment `json:"fragments"`
+}
+
+type ThinParseResult struct {
+	Fragments []*ThinFileFragment `json:"fragments"`
+}
+
+func (p *ParseResult) Flatten() *ThinParseResult {
+	ret := &ThinParseResult{}
+	for _, each := range p.Fragments {
+		ret.Fragments = append(ret.Fragments, each.Flatten())
+	}
+	return ret
 }
 
 type AffectedLineMap = map[string][]int
@@ -107,12 +150,7 @@ func affectedLines2Functions(srcDir string, m *AffectedLineMap) (*ParseResult, e
 				for _, eachFuncUnit := range eachFuncFile.Units {
 					if eachFuncUnit.GetSpan().ContainAnyLine(lines...) {
 						related := g.FindRelated(eachFuncUnit)
-						fww := &FunctionWithWeight{
-							Function:        eachFuncUnit,
-							ReferenceCount:  len(related.Calls),
-							ReferencedCount: len(related.ReverseCalls),
-						}
-						fragment.Functions = append(fragment.Functions, fww)
+						fragment.Functions = append(fragment.Functions, related)
 					}
 				}
 				break

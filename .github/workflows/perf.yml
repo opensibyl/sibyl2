@@ -1,0 +1,39 @@
+name: perftest
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
+
+      - name: Build
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@v1.8.7
+          make
+
+      - name: Prepare third party repos
+        run: |
+          # java
+          git clone --depth=1 https://github.com/google/guava.git
+          git clone --depth=1 https://github.com/antlr/antlr4.git
+          # golang
+          git clone --depth=1 https://github.com/gin-gonic/gin.git
+          git clone --depth=1 https://github.com/spf13/cobra.git
+
+      - name: Execute
+        run: |
+          ./sibyl extract --src ./guava
+          ./sibyl extract --src ./antlr4
+          ./sibyl extract --src ./gin
+          ./sibyl extract --src ./cobra

@@ -2,12 +2,10 @@ package diff
 
 import (
 	"bytes"
-	"encoding/json"
 	"os"
 	"path/filepath"
 
 	"github.com/bluekeyes/go-gitdiff/gitdiff"
-	"github.com/spf13/cobra"
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
@@ -56,17 +54,13 @@ func Unified2Affected(patch []byte) (AffectedLineMap, error) {
 	return affectedMap, nil
 }
 
-func parsePatch(srcDir string, patchFile string) (*ParseResult, error) {
-	patch, err := os.ReadFile(patchFile)
-	if err != nil {
-		return nil, err
-	}
-	srcDir, err = filepath.Abs(srcDir)
+func parsePatchRaw(srcDir string, patchRaw []byte) (*ParseResult, error) {
+	srcDir, err := filepath.Abs(srcDir)
 	if err != nil {
 		return nil, err
 	}
 
-	affectedMap, err := Unified2Affected(patch)
+	affectedMap, err := Unified2Affected(patchRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -77,6 +71,14 @@ func parsePatch(srcDir string, patchFile string) (*ParseResult, error) {
 		return nil, err
 	}
 	return result, nil
+}
+
+func parsePatch(srcDir string, patchFile string) (*ParseResult, error) {
+	patch, err := os.ReadFile(patchFile)
+	if err != nil {
+		return nil, err
+	}
+	return parsePatchRaw(srcDir, patch)
 }
 
 func affectedLines2Functions(srcDir string, m *AffectedLineMap) (*ParseResult, error) {
@@ -120,33 +122,4 @@ func affectedLines2Functions(srcDir string, m *AffectedLineMap) (*ParseResult, e
 	}
 
 	return result, nil
-}
-
-var diffSrc string
-var diffPatch string
-
-func NewDiffCommand() *cobra.Command {
-	diffCmd := &cobra.Command{
-		Use:    "diff",
-		Short:  "test",
-		Long:   `test`,
-		Hidden: false,
-		Run: func(cmd *cobra.Command, args []string) {
-			results, err := parsePatch(diffSrc, diffPatch)
-			if err != nil {
-				panic(err)
-			}
-			output, err := json.MarshalIndent(&results, "", "  ")
-			if err != nil {
-				panic(err)
-			}
-			err = os.WriteFile("b.json", output, 0644)
-			if err != nil {
-				panic(err)
-			}
-		},
-	}
-	diffCmd.PersistentFlags().StringVar(&diffSrc, "src", ".", "src dir path")
-	diffCmd.PersistentFlags().StringVar(&diffPatch, "patch", "", "patch")
-	return diffCmd
 }

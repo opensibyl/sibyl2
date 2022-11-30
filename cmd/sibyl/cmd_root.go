@@ -4,10 +4,10 @@ import (
 	"log"
 
 	"github.com/spf13/cobra"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/diff"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/extract"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/server"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/upload"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/diff"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/extract"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/server"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/upload"
 )
 
 var rootCmd = &cobra.Command{
@@ -29,6 +29,7 @@ func main() {
 	Execute()
 }
 
+// now we build only one big fat execution
 func init() {
 	extractCmd := extract.NewExtractCmd()
 	rootCmd.AddCommand(extractCmd)

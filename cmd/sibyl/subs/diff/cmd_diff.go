@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"os/exec"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -11,6 +12,8 @@ import (
 )
 
 var diffSrc string
+var diffFrom string
+var diffTo string
 var diffPatch string
 var diffRaw string
 var diffOutputFile string
@@ -25,11 +28,28 @@ func NewDiffCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			var results *ParseResult
 			var err error
-			if diffRaw != "" {
-				results, err = parsePatchRaw(diffSrc, []byte(diffRaw))
+
+			if diffFrom != "" && diffTo != "" {
+				core.Log.Infof("diff with rev")
+
+				// about why I use cmd rather than some libs
+				// because go-git 's patch has some bugs ...
+				gitDiffCmd := exec.Command("git", "diff", diffFrom, diffTo)
+				gitDiffCmd.Dir = diffSrc
+				data, err := gitDiffCmd.Output()
+				if err != nil {
+					panic(err)
+				}
+				results, err = parsePatchRaw(diffSrc, data)
 			} else {
-				results, err = parsePatch(diffSrc, diffPatch)
+				core.Log.Infof("diff with patch")
+				if diffRaw != "" {
+					results, err = parsePatchRaw(diffSrc, []byte(diffRaw))
+				} else {
+					results, err = parsePatch(diffSrc, diffPatch)
+				}
 			}
+
 			if err != nil {
 				panic(err)
 			}
@@ -55,8 +75,13 @@ func NewDiffCommand() *cobra.Command {
 		},
 	}
 	diffCmd.PersistentFlags().StringVar(&diffSrc, "src", ".", "src dir path")
+	diffCmd.PersistentFlags().StringVar(&diffFrom, "from", "", "from rev")
+	diffCmd.PersistentFlags().StringVar(&diffTo, "to", "", "to rev")
+
 	diffCmd.PersistentFlags().StringVar(&diffPatch, "patch", "", "patch")
 	diffCmd.PersistentFlags().StringVar(&diffRaw, "patchRaw", "", "patch raw")
+
+	// for output
 	diffCmd.PersistentFlags().StringVar(&diffOutputFile, "output", "", "output json file")
 	diffCmd.PersistentFlags().BoolVar(&diffThin, "thin", false, "")
 	return diffCmd

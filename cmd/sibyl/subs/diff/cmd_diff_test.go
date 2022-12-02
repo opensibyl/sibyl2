@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestDiff(t *testing.T) {
+func TestDiffPatch(t *testing.T) {
 	cmd := NewDiffCommand()
 	b := bytes.NewBufferString("")
 	cmd.SetOut(b)
@@ -37,5 +37,19 @@ index 3bf552b..339495a 100644
  }
 
 `})
-	cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func TestDiff(t *testing.T) {
+	cmd := NewDiffCommand()
+	b := bytes.NewBufferString("")
+	cmd.SetOut(b)
+	cmd.SetArgs([]string{"--src", "../../..", "--from", "HEAD~1", "--to", "HEAD"})
+	err := cmd.Execute()
+	if err != nil {
+		panic(err)
+	}
 }

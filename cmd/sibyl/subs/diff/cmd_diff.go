@@ -36,8 +36,9 @@ func NewDiffCommand() *cobra.Command {
 				// because go-git 's patch has some bugs ...
 				gitDiffCmd := exec.Command("git", "diff", diffFrom, diffTo)
 				gitDiffCmd.Dir = diffSrc
-				data, err := gitDiffCmd.Output()
+				data, err := gitDiffCmd.CombinedOutput()
 				if err != nil {
+					core.Log.Errorf("git cmd error: %s", data)
 					panic(err)
 				}
 				results, err = parsePatchRaw(diffSrc, data)

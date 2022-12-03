@@ -8,8 +8,10 @@ import (
 	"net/http"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/spf13/cobra"
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
@@ -21,6 +23,17 @@ import (
 var uploadSrc string
 var uploadLangType string
 var uploadUrl string
+var uploadWithCtx bool
+var uploadBatchLimit int
+
+var httpClient = retryablehttp.NewClient()
+
+func init() {
+	httpClient.RetryMax = 3
+	httpClient.RetryWaitMin = 500 * time.Millisecond
+	httpClient.RetryWaitMax = 10 * time.Second
+	httpClient.Logger = nil
+}
 
 func NewUploadCmd() *cobra.Command {
 	uploadCmd := &cobra.Command{
@@ -54,22 +67,32 @@ func NewUploadCmd() *cobra.Command {
 			if err != nil {
 				panic(err)
 			}
-			g, err := sibyl2.AnalyzeFuncGraph(f, s)
-			if err != nil {
-				panic(err)
-			}
 
 			fullUrl := fmt.Sprintf("%s/api/v1/func", uploadUrl)
 			ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", uploadUrl)
 			core.Log.Infof("upload backend: %s", fullUrl)
 			uploadFunctions(fullUrl, wc, f)
-			uploadGraph(ctxUrl, wc, f, g)
+			core.Log.Infof("upload functions finished")
+
+			// building edges in neo4j can be very slow
+			// by default disabled
+			if uploadWithCtx {
+				g, err := sibyl2.AnalyzeFuncGraph(f, s)
+				if err != nil {
+					panic(err)
+				}
+				uploadGraph(ctxUrl, wc, f, g)
+				core.Log.Infof("upload graph finished")
+			}
+
 			core.Log.Infof("upload finished")
 		},
 	}
 	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", ".", "src dir path")
 	uploadCmd.PersistentFlags().StringVar(&uploadLangType, "lang", "", "lang type of your source code")
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", "http://127.0.0.1:9876", "backend url")
+	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", false, "with func context")
+	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", 20, "with func context")
 
 	return uploadCmd
 }
@@ -84,21 +107,42 @@ func loadRepo(gitDir string) (*git.Repository, error) {
 
 func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.FunctionFileResult) {
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
-	var wg sync.WaitGroup
-	wg.Add(len(f))
+
+	// pack
+	var fullUnits []*server.FunctionUploadUnit
 	for _, each := range f {
 		unit := &server.FunctionUploadUnit{
 			WorkspaceConfig: wc,
 			FunctionResult:  each,
 		}
+		fullUnits = append(fullUnits, unit)
+	}
+	// submit
+	ptr := 0
+	batch := uploadBatchLimit
+	for ptr < len(fullUnits) {
+		core.Log.Debugf("upload batch: %d - %d", ptr, ptr+batch)
+		uploadFuncUnits(url, fullUnits[ptr:ptr+batch])
+		ptr += batch
+	}
+}
 
-		go func() {
+func uploadFuncUnits(url string, units []*server.FunctionUploadUnit) {
+
+	var wg sync.WaitGroup
+	for _, unit := range units {
+		if unit == nil {
+			continue
+		}
+		go func(u *server.FunctionUploadUnit) {
+			wg.Add(1)
 			defer wg.Done()
-			jsonStr, err := json.Marshal(unit)
+
+			jsonStr, err := json.Marshal(u)
 			if err != nil {
 				panic(err)
 			}
-			resp, err := http.Post(
+			resp, err := httpClient.Post(
 				url,
 				"application/json",
 				bytes.NewBuffer(jsonStr))
@@ -107,40 +151,47 @@ func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.Fun
 			}
 			data, err := io.ReadAll(resp.Body)
 			if resp.StatusCode != http.StatusOK {
-				core.Log.Errorf("upload %s resp: %v", unit.FunctionResult.Path, string(data))
+				core.Log.Errorf("upload failed: %v", string(data))
 			}
-		}()
+		}(unit)
 	}
 	wg.Wait()
 }
 
 func uploadGraph(url string, wc *binding.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph) {
 	var wg sync.WaitGroup
-	for _, eachFuncFile := range functions {
-		eachFuncFile := eachFuncFile
-		go func() {
-			wg.Add(1)
-			defer wg.Done()
-
-			var ctxs []*sibyl2.FunctionContext
-			for _, eachFunc := range eachFuncFile.Units {
-				related := g.FindRelated(eachFunc)
-				ctxs = append(ctxs, related)
+	ptr := 0
+	batch := uploadBatchLimit
+	for ptr < len(functions) {
+		core.Log.Debugf("upload batch: %d - %d", ptr, ptr+batch)
+		for _, eachFuncFile := range functions[ptr : ptr+batch] {
+			if eachFuncFile == nil {
+				continue
 			}
-			core.Log.Infof("uploading: %s", eachFuncFile.Path)
-			uploadCtx(url, wc, ctxs)
-		}()
+			go func(funcFile *extractor.FunctionFileResult) {
+				wg.Add(1)
+				defer wg.Done()
+
+				var ctxs []*sibyl2.FunctionContext
+				for _, eachFunc := range funcFile.Units {
+					related := g.FindRelated(eachFunc)
+					ctxs = append(ctxs, related)
+				}
+				uploadFunctionContexts(url, wc, ctxs)
+			}(eachFuncFile)
+		}
+		wg.Wait()
+		ptr += batch
 	}
-	wg.Wait()
 }
 
-func uploadCtx(url string, wc *binding.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
+func uploadFunctionContexts(url string, wc *binding.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
 	uploadUnit := &server.FuncContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
 	jsonStr, err := json.Marshal(uploadUnit)
 	if err != nil {
 		panic(err)
 	}
-	resp, err := http.Post(
+	resp, err := httpClient.Post(
 		url,
 		"application/json",
 		bytes.NewBuffer(jsonStr))

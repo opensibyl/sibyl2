@@ -34,16 +34,18 @@ func newRevUnit() *revUnit {
 }
 
 type fileStorage struct {
-	path      string
-	functions *extractor.FunctionFileResult
-	symbols   *extractor.SymbolFileResult
-	l         *sync.RWMutex
+	path             string
+	functions        *extractor.FunctionFileResult
+	symbols          *extractor.SymbolFileResult
+	functionContexts map[string]*sibyl2.FunctionContext
+	l                *sync.RWMutex
 }
 
 func newFileStorage(path string) *fileStorage {
 	return &fileStorage{
-		path: path,
-		l:    new(sync.RWMutex),
+		path:             path,
+		functionContexts: make(map[string]*sibyl2.FunctionContext),
+		l:                new(sync.RWMutex),
 	}
 }
 
@@ -127,8 +129,26 @@ func (m *memDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFil
 }
 
 func (m *memDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	m.l.Lock()
+	defer m.l.Unlock()
+	key, err := wc.Key()
+	if err != nil {
+		return err
+	}
+	unit := m.InMemoryStorage.data[key]
+	if unit == nil {
+		unit = newRevUnit()
+		m.InMemoryStorage.data[key] = unit
+	}
+
+	unit.l.Lock()
+	defer unit.l.Unlock()
+	pathUnit := unit.data[f.Path]
+	if pathUnit != nil {
+		// overwrite whatever
+		pathUnit.functionContexts[f.GetSignature()] = f
+	}
+	return nil
 }
 
 func (m *memDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
@@ -255,7 +275,19 @@ func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lin
 }
 
 func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
-	return nil, errors.New("NOT IMPLEMENTED")
+	unit, err := m.getRevUnit(wc, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, eachFile := range unit.data {
+		v, ok := eachFile.functionContexts[signature]
+		if !ok {
+			continue
+		}
+		return v, nil
+	}
+	return nil, errors.New("function context not found")
 }
 
 func (m *memDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {

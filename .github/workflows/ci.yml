@@ -12,6 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
+      with:
+        # at least support HEAD~1 for testing
+        fetch-depth: 2
 
     - name: Set up Go
       uses: actions/setup-go@v3

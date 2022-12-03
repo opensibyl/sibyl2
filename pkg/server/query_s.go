@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,7 +15,7 @@ import (
 // @Success 200
 // @Router  /api/v1/repo [get]
 func HandleRepoQuery(c *gin.Context) {
-	repos, err := sharedDriver.ReadRepos(context.TODO())
+	repos, err := sharedDriver.ReadRepos(LifecycleContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -31,7 +30,7 @@ func HandleRepoQuery(c *gin.Context) {
 // @Router  /api/v1/rev [get]
 func HandleRevQuery(c *gin.Context) {
 	repo := c.Query("repo")
-	revs, err := sharedDriver.ReadRevs(repo, context.TODO())
+	revs, err := sharedDriver.ReadRevs(repo, LifecycleContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -56,7 +55,7 @@ func HandleFileQuery(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	files, err := sharedDriver.ReadFiles(wc, context.TODO())
+	files, err := sharedDriver.ReadFiles(wc, LifecycleContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -98,7 +97,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	var functions []*sibyl2.FunctionWithPath
 	var err error
 	if lines == "" {
-		functions, err = sharedDriver.ReadFunctions(wc, file, context.TODO())
+		functions, err = sharedDriver.ReadFunctions(wc, file, LifecycleContext)
 	} else {
 		linesStrList := strings.Split(lines, ",")
 		var lineNums = make([]int, 0, len(linesStrList))
@@ -109,7 +108,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 			}
 			lineNums = append(lineNums, num)
 		}
-		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, context.TODO())
+		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, LifecycleContext)
 	}
 	if err != nil {
 		return nil, err
@@ -154,7 +153,7 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 
 	var ctxs []*sibyl2.FunctionContext
 	for _, each := range ret {
-		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, context.TODO())
+		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, LifecycleContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
 			return

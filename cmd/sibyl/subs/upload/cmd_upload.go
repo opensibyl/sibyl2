@@ -121,22 +121,21 @@ func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.Fun
 	ptr := 0
 	batch := uploadBatchLimit
 	for ptr < len(fullUnits) {
-		core.Log.Debugf("upload batch: %d - %d", ptr, ptr+batch)
+		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
 		uploadFuncUnits(url, fullUnits[ptr:ptr+batch])
 		ptr += batch
 	}
 }
 
 func uploadFuncUnits(url string, units []*server.FunctionUploadUnit) {
-
 	var wg sync.WaitGroup
 	for _, unit := range units {
 		if unit == nil {
 			continue
 		}
-		go func(u *server.FunctionUploadUnit) {
-			wg.Add(1)
-			defer wg.Done()
+		wg.Add(1)
+		go func(u *server.FunctionUploadUnit, waitGroup *sync.WaitGroup) {
+			defer waitGroup.Done()
 
 			jsonStr, err := json.Marshal(u)
 			if err != nil {
@@ -153,7 +152,7 @@ func uploadFuncUnits(url string, units []*server.FunctionUploadUnit) {
 			if resp.StatusCode != http.StatusOK {
 				core.Log.Errorf("upload failed: %v", string(data))
 			}
-		}(unit)
+		}(unit, &wg)
 	}
 	wg.Wait()
 }
@@ -163,22 +162,22 @@ func uploadGraph(url string, wc *binding.WorkspaceConfig, functions []*extractor
 	ptr := 0
 	batch := uploadBatchLimit
 	for ptr < len(functions) {
-		core.Log.Debugf("upload batch: %d - %d", ptr, ptr+batch)
+		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
 		for _, eachFuncFile := range functions[ptr : ptr+batch] {
 			if eachFuncFile == nil {
 				continue
 			}
-			go func(funcFile *extractor.FunctionFileResult) {
-				wg.Add(1)
-				defer wg.Done()
+			wg.Add(1)
+			go func(funcFile *extractor.FunctionFileResult, waitGroup *sync.WaitGroup, graph *sibyl2.FuncGraph) {
+				defer waitGroup.Done()
 
 				var ctxs []*sibyl2.FunctionContext
 				for _, eachFunc := range funcFile.Units {
-					related := g.FindRelated(eachFunc)
+					related := graph.FindRelated(eachFunc)
 					ctxs = append(ctxs, related)
 				}
 				uploadFunctionContexts(url, wc, ctxs)
-			}(eachFuncFile)
+			}(eachFuncFile, &wg, g)
 		}
 		wg.Wait()
 		ptr += batch

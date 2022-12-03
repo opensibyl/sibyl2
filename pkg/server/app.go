@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -14,6 +15,7 @@ import (
 	_ "github.com/williamfzc/sibyl2/pkg/server/docs"
 )
 
+var LifecycleContext context.Context
 var sharedDriver binding.Driver
 
 type FunctionWithSignature struct {
@@ -43,10 +45,12 @@ func HandlePing(c *gin.Context) {
 }
 
 type ExecuteConfig struct {
-	DbType        binding.DriverType
-	Neo4jUri      string
-	Neo4jUserName string
-	Neo4jPassword string
+	DbType            binding.DriverType
+	Neo4jUri          string
+	Neo4jUserName     string
+	Neo4jPassword     string
+	UploadWorkerCount int
+	UploadQueueSize   int
 }
 
 func DefaultExecuteConfig() ExecuteConfig {
@@ -55,12 +59,19 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"bolt://localhost:7687",
 		"neo4j",
 		"neo4j",
+		12,
+		128,
 	}
 }
 
 // @title swagger doc for sibyl2 server
 func Execute(config ExecuteConfig) {
+	ctx, cancel := context.WithCancel(context.Background())
+	LifecycleContext = ctx
+	defer cancel()
+
 	initDriver(config)
+	initUpload(config)
 
 	engine := gin.Default()
 	engine.Handle(http.MethodGet, "/ping", HandlePing)

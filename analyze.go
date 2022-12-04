@@ -2,6 +2,7 @@ package sibyl2
 
 import (
 	"github.com/dominikbraun/graph"
+	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -38,14 +39,24 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			}
 		}
 	}
+	core.Log.Infof("vertex filled")
 
 	// build relationship
 	for _, eachFuncFile := range funcFiles {
 		for _, eachFunc := range eachFuncFile.Units {
-			// find all the refs
+			// ignore length < 4 functions
+			// current calculation can not get the correct results for them
+			// which still takes lots of calc time
+			index := eachFunc.GetIndexName()
+			if len(index) < 4 {
+				continue
+			}
+
+			// find all the refs of this function
+			// todo: perf
 			var refs []*SymbolWithPath
 			for _, eachSymbolFile := range symbolFiles {
-				symbols := QueryUnitsByIndexNames(eachSymbolFile, eachFunc.GetIndexName())
+				symbols := QueryUnitsByIndexNames(eachSymbolFile, index)
 				for _, eachSymbol := range symbols {
 					refs = append(refs, &SymbolWithPath{
 						Symbol: eachSymbol,
@@ -53,6 +64,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 					})
 				}
 			}
+
 			// match any functions?
 			for _, eachSymbol := range refs {
 				// all the functions under this file

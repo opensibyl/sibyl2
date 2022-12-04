@@ -59,8 +59,8 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"bolt://localhost:7687",
 		"neo4j",
 		"neo4j",
-		12,
-		128,
+		64,
+		1024,
 	}
 }
 

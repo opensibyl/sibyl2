@@ -88,7 +88,11 @@ func startWorker(ctx context.Context) {
 			for _, each := range result.FunctionContexts {
 				err = sharedDriver.CreateFuncContext(result.WorkspaceConfig, each, ctx)
 				if err != nil {
-					core.Log.Warnf("error when upload: %v\n", err)
+					// deadlock easily happen in neo4j when creating complex edges
+					// append to the queue
+					// should replace with dead message queue
+					core.Log.Warnf("err when create ctx for: %v", each.GetSignature())
+					funcCtxUnitQueue <- result
 				}
 			}
 

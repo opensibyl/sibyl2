@@ -53,7 +53,9 @@ func (d *neo4jDriver) GetType() DriverType {
 func (d *neo4jDriver) InitDriver() error {
 	// create indexes
 	ctx := context.TODO()
-	session := d.DriverWithContext.NewSession(context.TODO(), neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(context.TODO(), neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		create := `CREATE CONSTRAINT IF NOT EXISTS FOR (r:Rev) REQUIRE (r.hash, r.id) IS UNIQUE`
@@ -73,7 +75,9 @@ func (d *neo4jDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionF
 	if err := wc.Verify(); err != nil {
 		return err
 	}
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, createFunctionFileTransaction(wc, f, ctx))
 	if err != nil {
@@ -86,7 +90,9 @@ func (d *neo4jDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionC
 	if err := wc.Verify(); err != nil {
 		return err
 	}
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, createFuncGraphTransaction(wc, f, ctx))
 	if err != nil {
@@ -96,7 +102,9 @@ func (d *neo4jDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionC
 }
 
 func (d *neo4jDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error) {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(f:File) RETURN f.path`
@@ -124,7 +132,9 @@ func (d *neo4jDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]str
 }
 
 func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File {path: $path})-[:INCLUDE]->(f) RETURN f, file`
@@ -168,7 +178,9 @@ func (d *neo4jDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx contex
 }
 
 func (d *neo4jDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `MATCH (:Rev {id: $repoId, hash: $revHash})-[:INCLUDE]->(file:File)-[:INCLUDE]->(f:Func {signature: $signature}) RETURN f, file`
@@ -233,7 +245,9 @@ func (d *neo4jDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, l
 }
 
 func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
@@ -333,7 +347,9 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 
 func (d *neo4jDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
 	// todo: this will remove functions shared by multi revs.
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
@@ -356,7 +372,9 @@ func (d *neo4jDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) 
 		return err
 	}
 
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `MERGE (:Rev {id: $repoId, hash: $revHash})`
@@ -373,7 +391,9 @@ func (d *neo4jDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) 
 }
 
 func (d *neo4jDriver) ReadRepos(ctx context.Context) ([]string, error) {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `MATCH (r:Rev) RETURN r.id`
@@ -400,7 +420,9 @@ func (d *neo4jDriver) ReadRepos(ctx context.Context) ([]string, error) {
 }
 
 func (d *neo4jDriver) ReadRevs(repoId string, ctx context.Context) ([]string, error) {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeRead,
+	})
 	defer session.Close(ctx)
 	ret, err := session.ExecuteRead(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `MATCH (r:Rev {id: $repoId}) RETURN r.hash`
@@ -429,7 +451,9 @@ func (d *neo4jDriver) ReadRevs(repoId string, ctx context.Context) ([]string, er
 }
 
 func (d *neo4jDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
@@ -454,7 +478,9 @@ RETURN r`
 }
 
 func (d *neo4jDriver) UpdateFileProperties(wc *WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `
@@ -484,7 +510,9 @@ func (d *neo4jDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string
 		return err
 	}
 
-	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{})
+	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
+		AccessMode: neo4j.AccessModeWrite,
+	})
 	defer session.Close(ctx)
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		query := `

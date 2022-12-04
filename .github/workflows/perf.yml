@@ -9,6 +9,14 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5
+        ports:
+          - 7687:7687
+        env:
+          # test only
+          NEO4J_AUTH: neo4j/williamfzc
     steps:
       - uses: actions/checkout@v3
 
@@ -33,7 +41,11 @@ jobs:
 
       - name: Execute
         run: |
-          ./sibyl extract --src ./guava
-          ./sibyl extract --src ./antlr4
-          ./sibyl extract --src ./gin
-          ./sibyl extract --src ./cobra
+          ./sibyl server --uri bolt://localhost:7687 --user neo4j --pwd williamfzc &
+          sleep 2
+          ./sibyl upload --src ./guava --withCtx --batch 50
+          ./sibyl upload --src ./antlr4 --withCtx --batch 50
+          ./sibyl upload --src ./gin --withCtx --batch 50
+          ./sibyl upload --src ./cobra --withCtx --batch 50
+        env:
+          GIN_MODE: release

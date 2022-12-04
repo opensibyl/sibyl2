@@ -11,6 +11,14 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    services:
+      neo4j:
+        image: neo4j:5
+        ports:
+          - 7687:7687
+        env:
+          # test only
+          NEO4J_AUTH: neo4j/williamfzc
     steps:
       - name: Checkout
         uses: actions/checkout@v2

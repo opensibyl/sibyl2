@@ -1,0 +1,21 @@
+name: goreleaser
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  imagebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Pack image
+        run:
+          docker build -t williamfzc/sibyl2/$GITHUB_REF_NAME .
+      - name: Upload image
+        run:
+          docker push williamfzc/sibyl2:$GITHUB_REF_NAME

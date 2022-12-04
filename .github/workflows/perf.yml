@@ -9,16 +9,10 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    services:
-      neo4j:
-        image: neo4j:5
-        ports:
-          - 7687:7687
-        env:
-          # test only
-          NEO4J_AUTH: neo4j/williamfzc
     steps:
       - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -34,17 +28,10 @@ jobs:
         run: |
           # java
           git clone --depth=1 https://github.com/google/guava.git
-          git clone --depth=1 https://github.com/antlr/antlr4.git
           # golang
           git clone --depth=1 https://github.com/gin-gonic/gin.git
-          git clone --depth=1 https://github.com/spf13/cobra.git
 
-      - name: Test With Upload
+      - name: Test In Offline
         run: |
-          ./sibyl server --uri bolt://localhost:7687 --user neo4j --pwd williamfzc --workers 128 --queueSize 1024 &
-          sleep 2
-          # ci time is expensive so pick only two repos
-          ./sibyl upload --src ./guava --withCtx
-          ./sibyl upload --src ./gin --withCtx
-        env:
-          GIN_MODE: release
+          ./sibyl upload --src ./guava --withCtx --dry
+          ./sibyl upload --src ./gin --withCtx --dry

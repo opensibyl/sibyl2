@@ -39,13 +39,6 @@ jobs:
           git clone --depth=1 https://github.com/gin-gonic/gin.git
           git clone --depth=1 https://github.com/spf13/cobra.git
 
-      - name: Test Without Upload
-        run: |
-          ./sibyl upload --src ./guava --withCtx --dry
-          ./sibyl upload --src ./antlr4 --withCtx --dry
-          ./sibyl upload --src ./gin --withCtx --dry
-          ./sibyl upload --src ./cobra --withCtx --dry
-
       - name: Test With Upload
         run: |
           ./sibyl server --uri bolt://localhost:7687 --user neo4j --pwd williamfzc --workers 128 --queueSize 1024 &

@@ -78,14 +78,17 @@ func Execute(config ExecuteConfig) {
 	engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1group := engine.Group("/api/v1")
+	// query
 	v1group.Handle(http.MethodGet, "/repo", HandleRepoQuery)
 	v1group.Handle(http.MethodGet, "/rev", HandleRevQuery)
 	v1group.Handle(http.MethodGet, "/file", HandleFileQuery)
 	v1group.Handle(http.MethodGet, "/func", HandleFunctionsQuery)
 	v1group.Handle(http.MethodGet, "/funcctx", HandleFunctionCtxQuery)
-
+	// upload
 	v1group.Handle(http.MethodPost, "/func", HandleRepoFuncUpload)
 	v1group.Handle(http.MethodPost, "/funcctx", HandleFunctionContextUpload)
+	// admin
+	v1group.Handle(http.MethodGet, "/monitor/upload", HandleStatusUpload)
 
 	err := engine.Run(fmt.Sprintf(":%d", 9876))
 	if err != nil {

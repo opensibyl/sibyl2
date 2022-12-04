@@ -18,4 +18,5 @@ jobs:
           docker build -t williamfzc/sibyl2:$GITHUB_REF_NAME .
       - name: Upload image
         run:
+          docker login -u williamfzc -p ${{ secrets.DOCKER_TOKEN }}
           docker push williamfzc/sibyl2:$GITHUB_REF_NAME

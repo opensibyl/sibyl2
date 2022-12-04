@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  sibyl_server:
+    image: "williamfzc/sibyl2"
+    ports:
+      - "9876:9876"
+    command: "/app/sibyl server --uri bolt://neo4j:7687 --user neo4j --pwd williamfzc --workers 128 --queueSize 1024 &"
+    depends_on:
+      - "neo4j"
+  neo4j:
+    image: "neo4j:5-community"
+    ports:
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/williamfzc

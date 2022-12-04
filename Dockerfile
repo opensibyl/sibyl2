@@ -21,6 +21,8 @@ RUN make
 ## Deploy
 FROM alpine
 
+RUN apk add --no-cache libstdc++
+
 WORKDIR /
 
 COPY --from=build /app/sibyl /app/sibyl
@@ -31,4 +33,4 @@ RUN adduser -D sibyl
 USER sibyl
 ENV GIN_MODE=release
 
-ENTRYPOINT ["/app/sibyl"]
+ENTRYPOINT ["/app/sibyl", "server"]

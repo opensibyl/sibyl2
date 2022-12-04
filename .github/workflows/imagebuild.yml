@@ -15,7 +15,7 @@ jobs:
           fetch-depth: 0
       - name: Pack image
         run:
-          docker build -t williamfzc/sibyl2/$GITHUB_REF_NAME .
+          docker build -t williamfzc/sibyl2:$GITHUB_REF_NAME .
       - name: Upload image
         run:
           docker push williamfzc/sibyl2:$GITHUB_REF_NAME

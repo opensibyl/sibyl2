@@ -11,7 +11,7 @@ import (
 )
 
 // set it true to run these tests
-const hasNeo4jBackend = false
+const hasNeo4jBackend = true
 const dbUri = "bolt://localhost:7687"
 
 var wc = &WorkspaceConfig{

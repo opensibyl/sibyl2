@@ -25,6 +25,7 @@ var uploadLangType string
 var uploadUrl string
 var uploadWithCtx bool
 var uploadBatchLimit int
+var uploadDryRun bool
 
 var httpClient = retryablehttp.NewClient()
 
@@ -71,7 +72,9 @@ func NewUploadCmd() *cobra.Command {
 			fullUrl := fmt.Sprintf("%s/api/v1/func", uploadUrl)
 			ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", uploadUrl)
 			core.Log.Infof("upload backend: %s", fullUrl)
-			uploadFunctions(fullUrl, wc, f)
+			if !uploadDryRun {
+				uploadFunctions(fullUrl, wc, f)
+			}
 			core.Log.Infof("upload functions finished")
 
 			// building edges in neo4j can be very slow
@@ -81,7 +84,9 @@ func NewUploadCmd() *cobra.Command {
 				if err != nil {
 					panic(err)
 				}
-				uploadGraph(ctxUrl, wc, f, g)
+				if !uploadDryRun {
+					uploadGraph(ctxUrl, wc, f, g)
+				}
 				core.Log.Infof("upload graph finished")
 			}
 
@@ -93,6 +98,7 @@ func NewUploadCmd() *cobra.Command {
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", "http://127.0.0.1:9876", "backend url")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", false, "with func context")
 	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", 20, "with func context")
+	uploadCmd.PersistentFlags().BoolVar(&uploadDryRun, "dry", false, "dry run without upload")
 
 	return uploadCmd
 }

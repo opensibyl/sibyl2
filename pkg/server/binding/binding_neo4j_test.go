@@ -11,7 +11,7 @@ import (
 )
 
 // set it true to run these tests
-const hasNeo4jBackend = false
+const hasNeo4jBackend = true
 const dbUri = "bolt://localhost:7687"
 
 var wc = &WorkspaceConfig{
@@ -21,20 +21,24 @@ var wc = &WorkspaceConfig{
 
 // don't worry, fake password here :)
 var authToken = neo4j.BasicAuth("neo4j", "williamfzc", "")
+var sharedDriver neo4j.DriverWithContext
+
+func init() {
+	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	sharedDriver = driver
+}
 
 func TestNeo4jDriver_InitWorkspace(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
 
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
-	err = newDriver.CreateWorkspace(wc, ctx)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
+	err := newDriver.CreateWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -45,18 +49,13 @@ func TestNeo4jDriver_UploadFile(t *testing.T) {
 		t.Skip("always skip in CI")
 	}
 
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
 
-	newDriver, _ := NewNeo4jDriver(driver)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
 	functions, _ := sibyl2.ExtractFunction(".", sibyl2.DefaultConfig())
 
 	core.Log.Infof("start uploading")
-	err = newDriver.CreateWorkspace(wc, ctx)
+	err := newDriver.CreateWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -81,13 +80,8 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 		t.Skip("always skip in CI")
 	}
 
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
 	functions, _ := sibyl2.ExtractFunction(".", sibyl2.DefaultConfig())
 	symbols, _ := sibyl2.ExtractSymbol(".", sibyl2.DefaultConfig())
 	fg, _ := sibyl2.AnalyzeFuncGraph(functions, symbols)
@@ -95,7 +89,7 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	for _, eachFunc := range functions {
 		for _, eachFFF := range eachFunc.Units {
 			fc := fg.FindRelated(eachFFF)
-			err = newDriver.CreateFuncContext(wc, fc, ctx)
+			err := newDriver.CreateFuncContext(wc, fc, ctx)
 			if err != nil {
 				panic(err)
 			}
@@ -108,13 +102,8 @@ func TestNeo4jDriver_QueryFiles(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
 	files, err := newDriver.ReadFiles(wc, ctx)
 	if err != nil {
 		panic(err)
@@ -126,13 +115,8 @@ func TestNeo4jDriver_QueryFunctions(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
 	files, err := newDriver.ReadFunctions(wc, "extract.go", ctx)
 	if err != nil {
 		panic(err)
@@ -146,13 +130,8 @@ func TestNeo4jDriver_QueryFunctionsWithLines(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
 	functions, err := newDriver.ReadFunctionsWithLines(wc, "extract.go", []int{32, 33}, ctx)
 	if err != nil {
 		panic(err)
@@ -166,37 +145,23 @@ func TestNeo4jDriver_QueryFunctionWithSignature(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
-	ctxs, err := newDriver.ReadFunctionWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
+	_, err := newDriver.ReadFunctionWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
 	if err != nil {
 		panic(err)
 	}
-	core.Log.Infof("ctx4: %v", ctxs.Name)
 }
 
 func TestNeo4jDriver_QueryFunctionContextWithSignature(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
-	ctxs, err := newDriver.ReadFunctionContextWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
+	_, err := newDriver.ReadFunctionContextWithSignature(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", ctx)
 	if err != nil {
 		panic(err)
-	}
-	for _, each := range ctxs.ReverseCalls {
-		core.Log.Infof("call: %v", each.GetIndexName())
 	}
 }
 
@@ -204,14 +169,9 @@ func TestNeo4jDriver_RemoveFileResult(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
-	err = newDriver.DeleteWorkspace(wc, ctx)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
+	err := newDriver.DeleteWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -221,14 +181,9 @@ func TestNeo4jDriver_UpdateFuncProperties(t *testing.T) {
 	if !hasNeo4jBackend {
 		t.Skip("always skip in CI")
 	}
-	driver, err := neo4j.NewDriverWithContext(dbUri, authToken)
-	if err != nil {
-		panic(err)
-	}
 	ctx := context.Background()
-	defer driver.Close(ctx)
-	newDriver, _ := NewNeo4jDriver(driver)
-	err = newDriver.UpdateFuncProperties(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", "covered", 1, ctx)
+	newDriver, _ := NewNeo4jDriver(sharedDriver)
+	err := newDriver.UpdateFuncProperties(wc, "::ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error", "covered", 1, ctx)
 	if err != nil {
 		panic(err)
 	}

@@ -74,7 +74,6 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 				}
 				refWithPaths := make([]*SymbolWithPath, 0, len(refs))
 				for _, eachRef := range refs {
-					core.Log.Infof("handle %s", eachRef.GetDesc())
 					swp := &SymbolWithPath{
 						Symbol: eachRef,
 						Path:   symbolPath,

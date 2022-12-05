@@ -10,6 +10,14 @@ import (
 // for some higher levels usages
 // Starts with `Analyze`
 
+func isFuncNameInvalid(funcName string) bool {
+	// ignore length < 4 functions
+	// current calculation can not get the correct results for them
+	// which still takes lots of calc time
+	tooShort := len(funcName) < 4
+	return tooShort
+}
+
 func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*extractor.SymbolFileResult) (*FuncGraph, error) {
 	reverseCallGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
 	callGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
@@ -19,6 +27,65 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 	for _, each := range funcFiles {
 		funcFileMap[each.Path] = each
 	}
+
+	symbolMap := make(map[string]map[string][]*extractor.Symbol, len(symbolFiles))
+	for _, each := range symbolFiles {
+		functions, ok := funcFileMap[each.Path]
+		// this file only contains symbols
+		if !ok {
+			continue
+		}
+		// out of function scope
+		validSymbols := make([]*extractor.Symbol, 0)
+		for _, eachS := range each.Units {
+			for _, eachF := range functions.Units {
+				if eachF.GetSpan().ContainAnyLine(eachS.GetSpan().Lines()...) {
+					validSymbols = append(validSymbols, eachS)
+					break
+				}
+			}
+		}
+		symbolMap[each.Path] = make(map[string][]*extractor.Symbol)
+		for _, eachSymbol := range validSymbols {
+			if symbolList, ok := symbolMap[each.Path][eachSymbol.GetIndexName()]; ok {
+				symbolList = append(symbolList, eachSymbol)
+			} else {
+				symbolList := make([]*extractor.Symbol, 0)
+				symbolList = append(symbolList, eachSymbol)
+				symbolMap[each.Path][eachSymbol.GetIndexName()] = symbolList
+			}
+		}
+	}
+	core.Log.Infof("symbol clean up")
+
+	funcRefMap := make(map[string][]*SymbolWithPath, 0)
+	for symbolPath, symbolNameMap := range symbolMap {
+		for _, eachFuncFile := range funcFiles {
+			for _, eachFunc := range eachFuncFile.Units {
+				index := eachFunc.GetIndexName()
+				if isFuncNameInvalid(index) {
+					continue
+				}
+
+				funcName := eachFunc.GetIndexName()
+				refs, ok := symbolNameMap[funcName]
+				if !ok {
+					continue
+				}
+				refWithPaths := make([]*SymbolWithPath, 0, len(refs))
+				for _, eachRef := range refs {
+					core.Log.Infof("handle %s", eachRef.GetDesc())
+					swp := &SymbolWithPath{
+						Symbol: eachRef,
+						Path:   symbolPath,
+					}
+					refWithPaths = append(refWithPaths, swp)
+				}
+				funcRefMap[funcName] = append(funcRefMap[funcName], refWithPaths...)
+			}
+		}
+	}
+	core.Log.Infof("symbol refs finished")
 
 	// fill graph with vertex
 	for _, eachFuncFile := range funcFiles {
@@ -43,35 +110,21 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 
 	// build relationship
 	for _, eachFuncFile := range funcFiles {
+		core.Log.Infof("file %s , methods: %d", eachFuncFile.Path, len(eachFuncFile.Units))
 		for _, eachFunc := range eachFuncFile.Units {
-			// ignore length < 4 functions
-			// current calculation can not get the correct results for them
-			// which still takes lots of calc time
-			index := eachFunc.GetIndexName()
-			if len(index) < 4 {
+			refs, ok := funcRefMap[eachFunc.GetIndexName()]
+			if !ok {
 				continue
 			}
 
-			// find all the refs of this function
-			// todo: perf
-			var refs []*SymbolWithPath
-			for _, eachSymbolFile := range symbolFiles {
-				symbols := QueryUnitsByIndexNames(eachSymbolFile, index)
-				for _, eachSymbol := range symbols {
-					refs = append(refs, &SymbolWithPath{
-						Symbol: eachSymbol,
-						Path:   eachSymbolFile.Path,
-					})
+			for _, each := range refs {
+				targetFuncFile, ok := funcFileMap[each.Path]
+				if !ok {
+					continue
 				}
-			}
-
-			// match any functions?
-			for _, eachSymbol := range refs {
-				// all the functions under this file
-				if functions, ok := funcFileMap[eachSymbol.Path]; ok {
-					// which contains this line
-					matched := QueryUnitsByLines(functions, eachSymbol.Span.Lines()...)
-					for _, eachMatchFunc := range matched {
+				for _, eachMatchFunc := range targetFuncFile.Units {
+					if eachMatchFunc.GetSpan().ContainAnyLine(each.Span.Lines()...) {
+						// match
 						// exclude itself
 						if eachMatchFunc.GetDesc() == eachFunc.GetDesc() {
 							continue
@@ -80,6 +133,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 						// eachFunc referenced by eachMatchFunc
 						reverseCallGraph.AddEdge(eachFunc.GetDesc(), eachMatchFunc.GetDesc())
 						callGraph.AddEdge(eachMatchFunc.GetDesc(), eachFunc.GetDesc())
+						break
 					}
 				}
 			}

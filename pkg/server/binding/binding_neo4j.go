@@ -57,6 +57,8 @@ func (d *neo4jDriver) InitDriver() error {
 		AccessMode: neo4j.AccessModeWrite,
 	})
 	defer session.Close(ctx)
+
+	// unique index for rev
 	_, err := session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
 		create := `CREATE CONSTRAINT IF NOT EXISTS FOR (r:Rev) REQUIRE (r.hash, r.id) IS UNIQUE`
 		_, err := tx.Run(ctx, create, nil)
@@ -68,6 +70,25 @@ func (d *neo4jDriver) InitDriver() error {
 	if err != nil {
 		return err
 	}
+
+	// index for lookup and write:
+	_, err = session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		create := `CREATE INDEX ON :File(path)`
+		_, err := tx.Run(ctx, create, nil)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+	_, err = session.ExecuteWrite(ctx, func(tx neo4j.ManagedTransaction) (any, error) {
+		create := `CREATE INDEX ON :Func(signature)`
+		_, err := tx.Run(ctx, create, nil)
+		if err != nil {
+			return nil, err
+		}
+		return nil, nil
+	})
+
 	return nil
 }
 

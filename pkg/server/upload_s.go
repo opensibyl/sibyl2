@@ -11,8 +11,16 @@ import (
 
 var funcUnitQueue chan *FunctionUploadUnit
 var funcCtxUnitQueue chan *FuncContextUploadUnit
-var workerCount = 8
-var workerQueueSize = 128
+
+// default neo4j db may be very slow in I/O
+var workerCount = 64
+
+// tiny mq, will block request when it is full
+// so make it large enough in your scenario
+// or add a real mq
+// for example,
+// each build for repo which contains 3000 files = 3000 jobs in seconds
+var workerQueueSize = 10240
 
 func HandleRepoFuncUpload(c *gin.Context) {
 	result := &FunctionUploadUnit{}

@@ -80,10 +80,12 @@ func NewUploadCmd() *cobra.Command {
 			// building edges in neo4j can be very slow
 			// by default disabled
 			if uploadWithCtx {
+				core.Log.Infof("start calculating func graph")
 				g, err := sibyl2.AnalyzeFuncGraph(f, s)
 				if err != nil {
 					panic(err)
 				}
+				core.Log.Infof("graph ready")
 				if !uploadDryRun {
 					uploadGraph(ctxUrl, wc, f, g)
 				}
@@ -97,7 +99,7 @@ func NewUploadCmd() *cobra.Command {
 	uploadCmd.PersistentFlags().StringVar(&uploadLangType, "lang", "", "lang type of your source code")
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", "http://127.0.0.1:9876", "backend url")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", false, "with func context")
-	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", 20, "with func context")
+	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", 50, "with func context")
 	uploadCmd.PersistentFlags().BoolVar(&uploadDryRun, "dry", false, "dry run without upload")
 
 	return uploadCmd

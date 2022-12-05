@@ -27,11 +27,11 @@ jobs:
       - name: Prepare third party repos
         run: |
           # java
-          git clone --depth=1 https://github.com/google/guava.git
+          git clone --depth=1 https://github.com/spring-projects/spring-boot.git
           # golang
           git clone --depth=1 https://github.com/gin-gonic/gin.git
 
       - name: Test In Offline
         run: |
-          ./sibyl upload --src ./guava --withCtx --dry
+          ./sibyl upload --src ./spring-boot --withCtx --dry
           ./sibyl upload --src ./gin --withCtx --dry

@@ -58,6 +58,12 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		panic(err)
 	}
 	for _, each := range data {
-		core.Log.Debugf("each: %s %s", each.Name, each.Extras)
+		core.Log.Debugf("each: %s %s %s", each.Name, each.Extras, each.BodySpan.String())
+		// check base info
+		if each.Name == "enterMethodDeclarationWithoutMethodBody" {
+			if each.BodySpan.String() != "12:71,15:5" {
+				panic(nil)
+			}
+		}
 	}
 }

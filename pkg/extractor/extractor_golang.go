@@ -19,6 +19,7 @@ const (
 	FieldGolangParameters     core.KindRepr = "parameters"
 	FieldGolangFunction       core.KindRepr = "function"
 	FieldGolangArguments      core.KindRepr = "arguments"
+	FieldGolangResult         core.KindRepr = "result"
 )
 
 type GolangExtractor struct {

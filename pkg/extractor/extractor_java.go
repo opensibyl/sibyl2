@@ -4,7 +4,7 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
-// https://github.com/tree-sitter/tree-sitter-java/tree/master/src
+// https://github.com/tree-sitter/tree-sitter-java/tree/master/src/node-types.json
 const (
 	KindJavaProgram              core.KindRepr = "program"
 	KindJavaProgramDeclaration   core.KindRepr = "package_declaration"
@@ -20,6 +20,7 @@ const (
 	KindJavaModifiers            core.KindRepr = "modifiers"
 	KindJavaAnnotation           core.KindRepr = "annotation"
 	KindJavaMarkerAnnotation     core.KindRepr = "marker_annotation"
+	KindJavaBlock                core.KindRepr = "block"
 	FieldJavaType                core.KindRepr = "type"
 	FieldJavaDimensions          core.KindRepr = "dimensions"
 	FieldJavaObject              core.KindRepr = "object"

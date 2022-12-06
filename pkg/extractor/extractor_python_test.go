@@ -17,6 +17,7 @@ def a():
 @CCC(abcde='acde')
 def b(s):
 	print("defabc")
+	print("wowo")
 
 class C(object):
 	pass
@@ -37,5 +38,11 @@ func TestPythonExtractor_ExtractFunctions(t *testing.T) {
 	for _, each := range functions {
 		core.Log.Debugf("%s", each.Name)
 		core.Log.Debugf("%+v", each.Extras)
+
+		if each.Name == "b" {
+			if each.BodySpan.String() != "10:1,11:14" {
+				panic(nil)
+			}
+		}
 	}
 }

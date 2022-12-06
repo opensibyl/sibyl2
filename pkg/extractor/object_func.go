@@ -19,7 +19,10 @@ type Function struct {
 	Receiver   string       `json:"receiver"`
 	Parameters []*ValueUnit `json:"parameters"`
 	Returns    []*ValueUnit `json:"returns"`
-	Span       core.Span    `json:"span"`
+	// this span will include header and content
+	Span core.Span `json:"span"`
+	// which includes only body
+	BodySpan core.Span `json:"bodySpan"`
 
 	// which contains language-specific contents
 	Extras interface{} `json:"extras"`

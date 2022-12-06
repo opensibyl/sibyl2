@@ -33,9 +33,16 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 	}
 
 	extractor := GetExtractor(core.LangGo)
-	_, err = extractor.ExtractFunctions(units)
+	funcs, err := extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)
+	}
+
+	// check its base info
+	target := funcs[0]
+	core.Log.Debugf("target: %s, span: %s", target.Name, target.BodySpan.String())
+	if target.BodySpan.String() != "5:46,7:1" {
+		panic(nil)
 	}
 }
 

@@ -6,11 +6,13 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
+// https://github.com/tree-sitter/tree-sitter-python/blob/master/src/node-types.json
 const (
-	KindPythonFunctionDefinition  = "function_definition"
-	KindPythonIdentifier          = "identifier"
-	KindPythonDecoratedDefinition = "decorated_definition"
-	KindPythonDecorator           = "decorator"
+	KindPythonFunctionDefinition  core.KindRepr = "function_definition"
+	KindPythonIdentifier          core.KindRepr = "identifier"
+	KindPythonDecoratedDefinition core.KindRepr = "decorated_definition"
+	KindPythonDecorator           core.KindRepr = "decorator"
+	KindPythonBlock               core.KindRepr = "block"
 )
 
 type PythonExtractor struct {
@@ -62,6 +64,11 @@ func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, err
 	funcUnit := NewFunction()
 	funcUnit.Span = unit.Span
 	funcUnit.unit = unit
+	// body scope
+	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindPythonBlock)
+	if funcBody != nil {
+		funcUnit.BodySpan = funcBody.Span
+	}
 
 	funcName := core.FindFirstByKindInSubsWithBfs(unit, KindPythonIdentifier)
 	if funcName == nil {

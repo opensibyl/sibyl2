@@ -49,6 +49,11 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 	funcUnit := NewFunction()
 	funcUnit.Span = unit.Span
 	funcUnit.unit = unit
+	// body scope
+	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindJavaBlock)
+	if funcBody != nil {
+		funcUnit.BodySpan = funcBody.Span
+	}
 
 	pkgName := ""
 	clazzName := ""

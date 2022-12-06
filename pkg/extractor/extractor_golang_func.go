@@ -2,6 +2,7 @@ package extractor
 
 import (
 	"errors"
+
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"golang.org/x/exp/slices"
 )
@@ -60,6 +61,12 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 	funcUnit := &Function{}
 	funcUnit.Span = unit.Span
 	funcUnit.unit = unit
+
+	// body scope
+	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
+	if funcBody != nil {
+		funcUnit.BodySpan = funcBody.Span
+	}
 
 	// name
 	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangFieldIdentifier)
@@ -140,6 +147,11 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function,
 	funcUnit := &Function{}
 	funcUnit.Span = unit.Span
 	funcUnit.unit = unit
+	// body scope
+	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
+	if funcBody != nil {
+		funcUnit.BodySpan = funcBody.Span
+	}
 
 	// name
 	funcIdentifier := core.FindFirstByKindInSubsWithDfs(unit, KindGolangIdentifier)

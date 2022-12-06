@@ -36,6 +36,20 @@ func (s *Span) ContainAnyLine(lineNums ...int) bool {
 	return false
 }
 
+func (s *Span) HasInteraction(another *Span) bool {
+	if s.End.Row < another.Start.Row || s.Start.Row > another.End.Row {
+		// of course
+		return false
+	}
+	if s.End.Row == another.Start.Row {
+		return s.End.Column >= another.Start.Column
+	}
+	if s.Start.Row == another.End.Row {
+		return s.Start.Column <= another.End.Column
+	}
+	return true
+}
+
 func (s *Span) String() string {
 	return fmt.Sprintf("%d:%d,%d:%d", s.Start.Row, s.Start.Column, s.End.Row, s.End.Column)
 }

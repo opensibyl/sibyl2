@@ -10,6 +10,8 @@ import (
 // for some higher levels usages
 // Starts with `Analyze`
 
+const refLimit = 1024
+
 func isFuncNameInvalid(funcName string) bool {
 	// ignore length < 4 functions
 	// current calculation can not get the correct results for them
@@ -39,7 +41,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 		validSymbols := make([]*extractor.Symbol, 0)
 		for _, eachS := range each.Units {
 			for _, eachF := range functions.Units {
-				if eachF.GetSpan().ContainAnyLine(eachS.GetSpan().Lines()...) {
+				if eachF.BodySpan.HasInteraction(eachS.GetSpan()) {
 					validSymbols = append(validSymbols, eachS)
 					break
 				}
@@ -116,13 +118,22 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 				continue
 			}
 
+			// in some languages (like java) which has `override`
+			// will create thousands of refs for some special methods (toString, etc.)
+			// which makes the final graph very, very large
+			// and at the most time these methods will not be analyzed
+			if len(refs) > refLimit {
+				core.Log.Warnf("func %s exceed the ref limit %d, now %d", eachFunc.GetIndexName(), refLimit, len(refs))
+				continue
+			}
+
 			for _, each := range refs {
 				targetFuncFile, ok := funcFileMap[each.Path]
 				if !ok {
 					continue
 				}
 				for _, eachMatchFunc := range targetFuncFile.Units {
-					if eachMatchFunc.GetSpan().ContainAnyLine(each.Span.Lines()...) {
+					if eachMatchFunc.BodySpan.HasInteraction(each.GetSpan()) {
 						// match
 						// exclude itself
 						if eachMatchFunc.GetDesc() == eachFunc.GetDesc() {

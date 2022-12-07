@@ -11,16 +11,15 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server/binding"
 	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
-var wc = &binding.WorkspaceConfig{
+var wc = &object.WorkspaceConfig{
 	RepoId:  "sibyl",
 	RevHash: "12345f",
 }
 
-func uploadFunctions(wc *binding.WorkspaceConfig, f []*extractor.FunctionFileResult) {
+func uploadFunctions(wc *object.WorkspaceConfig, f []*extractor.FunctionFileResult) {
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 	var wg sync.WaitGroup
 	wg.Add(len(f))

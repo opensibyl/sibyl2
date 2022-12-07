@@ -8,13 +8,14 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 // set it true to run these tests
 const hasNeo4jBackend = true
 const dbUri = "bolt://localhost:7687"
 
-var wc = &WorkspaceConfig{
+var wc = &object.WorkspaceConfig{
 	RepoId:  "sibyl",
 	RevHash: "12345f",
 }

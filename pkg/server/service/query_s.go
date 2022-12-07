@@ -1,6 +1,7 @@
-package server
+package service
 
 import (
+	"context"
 	"net/http"
 	"strconv"
 	"strings"
@@ -8,14 +9,18 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
+
+var sharedContext context.Context
+var sharedDriver binding.Driver
 
 // @Summary repo query
 // @Produce json
 // @Success 200
 // @Router  /api/v1/repo [get]
 func HandleRepoQuery(c *gin.Context) {
-	repos, err := sharedDriver.ReadRepos(LifecycleContext)
+	repos, err := sharedDriver.ReadRepos(sharedContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -30,7 +35,7 @@ func HandleRepoQuery(c *gin.Context) {
 // @Router  /api/v1/rev [get]
 func HandleRevQuery(c *gin.Context) {
 	repo := c.Query("repo")
-	revs, err := sharedDriver.ReadRevs(repo, LifecycleContext)
+	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -55,7 +60,7 @@ func HandleFileQuery(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	files, err := sharedDriver.ReadFiles(wc, LifecycleContext)
+	files, err := sharedDriver.ReadFiles(wc, sharedContext)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, err)
 		return
@@ -69,7 +74,7 @@ func HandleFileQuery(c *gin.Context) {
 // @Param   file  query string true  "file"
 // @Param   lines query string false "specific lines"
 // @Produce json
-// @Success 200 {array} FunctionWithSignature
+// @Success 200 {array} object.FunctionWithSignature
 // @Router  /api/v1/func [get]
 func HandleFunctionsQuery(c *gin.Context) {
 	repo := c.Query("repo")
@@ -86,7 +91,7 @@ func HandleFunctionsQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*FunctionWithSignature, error) {
+func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*object.FunctionWithSignature, error) {
 	wc := &binding.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
@@ -97,7 +102,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	var functions []*sibyl2.FunctionWithPath
 	var err error
 	if lines == "" {
-		functions, err = sharedDriver.ReadFunctions(wc, file, LifecycleContext)
+		functions, err = sharedDriver.ReadFunctions(wc, file, sharedContext)
 	} else {
 		linesStrList := strings.Split(lines, ",")
 		var lineNums = make([]int, 0, len(linesStrList))
@@ -108,16 +113,16 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 			}
 			lineNums = append(lineNums, num)
 		}
-		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, LifecycleContext)
+		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, sharedContext)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	// export signature
-	ret := make([]*FunctionWithSignature, 0, len(functions))
+	ret := make([]*object.FunctionWithSignature, 0, len(functions))
 	for _, each := range functions {
-		fws := &FunctionWithSignature{
+		fws := &object.FunctionWithSignature{
 			FunctionWithPath: each,
 			Signature:        each.GetSignature(),
 		}
@@ -153,7 +158,7 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 
 	var ctxs []*sibyl2.FunctionContext
 	for _, each := range ret {
-		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, LifecycleContext)
+		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, sharedContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
 			return
@@ -161,4 +166,9 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 		ctxs = append(ctxs, funcCtx)
 	}
 	c.JSON(http.StatusOK, ctxs)
+}
+
+func InitServices(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver) {
+	sharedContext = ctx
+	sharedDriver = driver
 }

@@ -9,124 +9,79 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
 	_ "github.com/williamfzc/sibyl2/pkg/server/docs"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/williamfzc/sibyl2/pkg/server/service"
+	"github.com/williamfzc/sibyl2/pkg/server/worker"
 )
 
-var LifecycleContext context.Context
-var sharedDriver binding.Driver
-
-type FunctionWithSignature struct {
-	*sibyl2.FunctionWithPath
-	Signature string `json:"signature"`
-}
-
-type FunctionUploadUnit struct {
-	WorkspaceConfig *binding.WorkspaceConfig      `json:"workspace"`
-	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`
-}
-
-type FuncContextUploadUnit struct {
-	WorkspaceConfig  *binding.WorkspaceConfig  `json:"workspace"`
-	FunctionContexts []*sibyl2.FunctionContext `json:"functionContext"`
-}
-
-// @BasePath /
-// @Summary  ping example
-// @Produce  json
-// @Success  200
-// @Router   /ping [get]
-func HandlePing(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"message": "pong",
-	})
-}
-
-type ExecuteConfig struct {
-	DbType            binding.DriverType
-	Neo4jUri          string
-	Neo4jUserName     string
-	Neo4jPassword     string
-	UploadWorkerCount int
-	UploadQueueSize   int
-}
-
-func DefaultExecuteConfig() ExecuteConfig {
-	return ExecuteConfig{
-		binding.DtInMemory,
-		"bolt://localhost:7687",
-		"neo4j",
-		"neo4j",
-		64,
-		1024,
-	}
-}
-
 // @title swagger doc for sibyl2 server
-func Execute(config ExecuteConfig) {
+func Execute(config object.ExecuteConfig) {
 	ctx, cancel := context.WithCancel(context.Background())
-	LifecycleContext = ctx
 	defer cancel()
 
-	initDriver(config)
-	initUpload(config)
+	sharedDriver := initDriver(config)
+	service.InitServices(config, ctx, sharedDriver)
+	worker.InitWorker(config, ctx, sharedDriver)
 
 	engine := gin.Default()
-	engine.Handle(http.MethodGet, "/ping", HandlePing)
-	engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	v1group := engine.Group("/api/v1")
 	// query
-	v1group.Handle(http.MethodGet, "/repo", HandleRepoQuery)
-	v1group.Handle(http.MethodGet, "/rev", HandleRevQuery)
-	v1group.Handle(http.MethodGet, "/file", HandleFileQuery)
-	v1group.Handle(http.MethodGet, "/func", HandleFunctionsQuery)
-	v1group.Handle(http.MethodGet, "/funcctx", HandleFunctionCtxQuery)
+	v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
+	v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
+	v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
+	v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
+	v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
 	// upload
-	v1group.Handle(http.MethodPost, "/func", HandleRepoFuncUpload)
-	v1group.Handle(http.MethodPost, "/funcctx", HandleFunctionContextUpload)
+	v1group.Handle(http.MethodPost, "/func", service.HandleRepoFuncUpload)
+	v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
 	// admin
-	v1group.Handle(http.MethodGet, "/monitor/upload", HandleStatusUpload)
+	v1group.Handle(http.MethodGet, "/monitor/upload", service.HandleStatusUpload)
+	engine.Handle(http.MethodGet, "/ping", service.HandlePing)
+	engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	err := engine.Run(fmt.Sprintf(":%d", 9876))
+	err := engine.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {
 		fmt.Printf("failed to start repoctor_receiver: %s", err.Error())
 	}
 }
 
-func initDriver(config ExecuteConfig) {
+func initDriver(config object.ExecuteConfig) binding.Driver {
+	var driver binding.Driver
 	switch config.DbType {
 	case binding.DtInMemory:
-		initMemDriver()
+		driver = initMemDriver()
 	case binding.DtNeo4j:
-		initNeo4jDriver(config)
+		driver = initNeo4jDriver(config)
 	default:
-		initMemDriver()
+		driver = initMemDriver()
 	}
-	err := sharedDriver.InitDriver()
+	err := driver.InitDriver()
 	if err != nil {
 		panic(err)
 	}
+	return driver
 }
 
-func initMemDriver() {
+func initMemDriver() binding.Driver {
 	driver, err := binding.NewInMemoryDriver()
 	if err != nil {
 		panic(err)
 	}
-	sharedDriver = driver
+	return driver
 }
 
-func initNeo4jDriver(config ExecuteConfig) {
+func initNeo4jDriver(config object.ExecuteConfig) binding.Driver {
 	var authToken = neo4j.BasicAuth(config.Neo4jUserName, config.Neo4jPassword, "")
 	driver, err := neo4j.NewDriverWithContext(config.Neo4jUri, authToken)
 	if err != nil {
 		panic(err)
 	}
-	sharedDriver, err = binding.NewNeo4jDriver(driver)
+	final, err := binding.NewNeo4jDriver(driver)
 	if err != nil {
 		panic(err)
 	}
+	return final
 }

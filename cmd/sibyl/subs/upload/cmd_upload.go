@@ -16,8 +16,8 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 var uploadSrc string
@@ -117,9 +117,9 @@ func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.Fun
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 
 	// pack
-	var fullUnits []*server.FunctionUploadUnit
+	var fullUnits []*object.FunctionUploadUnit
 	for _, each := range f {
-		unit := &server.FunctionUploadUnit{
+		unit := &object.FunctionUploadUnit{
 			WorkspaceConfig: wc,
 			FunctionResult:  each,
 		}
@@ -135,14 +135,14 @@ func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.Fun
 	}
 }
 
-func uploadFuncUnits(url string, units []*server.FunctionUploadUnit) {
+func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
 	var wg sync.WaitGroup
 	for _, unit := range units {
 		if unit == nil {
 			continue
 		}
 		wg.Add(1)
-		go func(u *server.FunctionUploadUnit, waitGroup *sync.WaitGroup) {
+		go func(u *object.FunctionUploadUnit, waitGroup *sync.WaitGroup) {
 			defer waitGroup.Done()
 
 			jsonStr, err := json.Marshal(u)
@@ -193,7 +193,7 @@ func uploadGraph(url string, wc *binding.WorkspaceConfig, functions []*extractor
 }
 
 func uploadFunctionContexts(url string, wc *binding.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
-	uploadUnit := &server.FuncContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
+	uploadUnit := &object.FuncContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
 	jsonStr, err := json.Marshal(uploadUnit)
 	if err != nil {
 		panic(err)

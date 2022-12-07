@@ -4,6 +4,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/williamfzc/sibyl2/pkg/server"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 var serverBackendUrl string
@@ -18,7 +19,7 @@ func NewServerCmd() *cobra.Command {
 		Short: "sibyl server cmd",
 		Long:  `sibyl server cmd`,
 		Run: func(cmd *cobra.Command, args []string) {
-			config := server.DefaultExecuteConfig()
+			config := object.DefaultExecuteConfig()
 			if serverBackendUrl != "" {
 				config.DbType = binding.DtNeo4j
 				config.Neo4jUri = serverBackendUrl

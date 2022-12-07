@@ -12,6 +12,7 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 var wc = &binding.WorkspaceConfig{
@@ -24,7 +25,7 @@ func uploadFunctions(wc *binding.WorkspaceConfig, f []*extractor.FunctionFileRes
 	var wg sync.WaitGroup
 	wg.Add(len(f))
 	for _, each := range f {
-		unit := &FunctionUploadUnit{
+		unit := &object.FunctionUploadUnit{
 			WorkspaceConfig: wc,
 			FunctionResult:  each,
 		}

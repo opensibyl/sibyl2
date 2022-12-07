@@ -1,13 +1,17 @@
 package object
 
 type ExecuteConfig struct {
-	Port              int
-	DbType            DriverType
-	Neo4jUri          string
-	Neo4jUserName     string
-	Neo4jPassword     string
-	UploadWorkerCount int
-	UploadQueueSize   int
+	Port int `json:"port"`
+	// binding
+	DbType        DriverType `json:"dbType"`
+	Neo4jUri      string     `json:"neo4JUri"`
+	Neo4jUserName string     `json:"neo4JUserName"`
+	Neo4jPassword string     `json:"neo4JPassword"`
+	// worker
+	WorkerCount     int `json:"workerCount"`
+	WorkerQueueSize int `json:"workerQueueSize"`
+	// queue
+	QueueType QueueType `json:"queueType"`
 }
 
 func DefaultExecuteConfig() ExecuteConfig {
@@ -19,5 +23,6 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"neo4j",
 		64,
 		1024,
+		QueueTypeMemory,
 	}
 }

@@ -303,7 +303,7 @@ func (m *memDriver) UpdateFuncProperties(*object.WorkspaceConfig, string, string
 	return errors.New("NOT IMPLEMENTED")
 }
 
-func (m *memDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
+func (m *memDriver) DeleteWorkspace(wc *object.WorkspaceConfig, _ context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()
 	key, err := wc.Key()
@@ -312,4 +312,12 @@ func (m *memDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Cont
 	}
 	delete(m.InMemoryStorage.data, key)
 	return nil
+}
+
+func initMemDriver() Driver {
+	driver, err := NewInMemoryDriver()
+	if err != nil {
+		panic(err)
+	}
+	return driver
 }

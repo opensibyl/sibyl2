@@ -30,10 +30,10 @@ func NewServerCmd() *cobra.Command {
 				config.Neo4jPassword = serverPwd
 			}
 			if serverUploadWorkerCount != 0 {
-				config.UploadWorkerCount = serverUploadWorkerCount
+				config.WorkerCount = serverUploadWorkerCount
 			}
 			if serverUploadQueueSize != 0 {
-				config.UploadQueueSize = serverUploadQueueSize
+				config.WorkerQueueSize = serverUploadQueueSize
 			}
 
 			server.Execute(config)

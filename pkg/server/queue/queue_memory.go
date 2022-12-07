@@ -7,6 +7,10 @@ type MemoryQueue struct {
 	funcCtxPushList []chan<- *object.FunctionContextUploadUnit
 }
 
+func (q *MemoryQueue) GetType() object.QueueType {
+	return object.QueueTypeMemory
+}
+
 func (q *MemoryQueue) WatchFunc(c chan<- *object.FunctionUploadUnit) {
 	q.funcPushList = append(q.funcPushList, c)
 }

@@ -650,3 +650,16 @@ func funcMapAdapter(origin map[string]any) map[string]any {
 	origin["span"] = span
 	return origin
 }
+
+func initNeo4jDriver(config object.ExecuteConfig) Driver {
+	var authToken = neo4j.BasicAuth(config.Neo4jUserName, config.Neo4jPassword, "")
+	driver, err := neo4j.NewDriverWithContext(config.Neo4jUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	final, err := NewNeo4jDriver(driver)
+	if err != nil {
+		panic(err)
+	}
+	return final
+}

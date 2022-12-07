@@ -23,8 +23,8 @@ var workerCount = 64
 var workerQueueSize = 10240
 
 func InitWorker(config object.ExecuteConfig, context context.Context, driver binding.Driver, q queue.Queue) {
-	workerCount = config.UploadWorkerCount
-	workerQueueSize = config.UploadQueueSize
+	workerCount = config.WorkerCount
+	workerQueueSize = config.WorkerQueueSize
 
 	funcUnitQueue = make(chan *object.FunctionUploadUnit, workerQueueSize)
 	funcCtxUnitQueue = make(chan *object.FunctionContextUploadUnit, workerQueueSize)

@@ -131,24 +131,3 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
 	}
 	return driver
 }
-
-func initMemDriver() Driver {
-	driver, err := NewInMemoryDriver()
-	if err != nil {
-		panic(err)
-	}
-	return driver
-}
-
-func initNeo4jDriver(config object.ExecuteConfig) Driver {
-	var authToken = neo4j.BasicAuth(config.Neo4jUserName, config.Neo4jPassword, "")
-	driver, err := neo4j.NewDriverWithContext(config.Neo4jUri, authToken)
-	if err != nil {
-		panic(err)
-	}
-	final, err := NewNeo4jDriver(driver)
-	if err != nil {
-		panic(err)
-	}
-	return final
-}

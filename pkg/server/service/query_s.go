@@ -10,10 +10,12 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
 	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/williamfzc/sibyl2/pkg/server/queue"
 )
 
 var sharedContext context.Context
 var sharedDriver binding.Driver
+var sharedQueue queue.Queue
 
 // @Summary repo query
 // @Produce json
@@ -52,7 +54,7 @@ func HandleRevQuery(c *gin.Context) {
 func HandleFileQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
-	wc := &binding.WorkspaceConfig{
+	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
 	}
@@ -92,7 +94,7 @@ func HandleFunctionsQuery(c *gin.Context) {
 }
 
 func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*object.FunctionWithSignature, error) {
-	wc := &binding.WorkspaceConfig{
+	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
 	}
@@ -145,7 +147,7 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 	file := c.Query("file")
 	lines := c.Query("lines")
 
-	wc := &binding.WorkspaceConfig{
+	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
 	}
@@ -168,7 +170,8 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ctxs)
 }
 
-func InitServices(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver) {
+func InitService(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver, q queue.Queue) {
 	sharedContext = ctx
 	sharedDriver = driver
+	sharedQueue = q
 }

@@ -6,10 +6,11 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
 	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/williamfzc/sibyl2/pkg/server/queue"
 )
 
 var funcUnitQueue chan *object.FunctionUploadUnit
-var funcCtxUnitQueue chan *object.FuncContextUploadUnit
+var funcCtxUnitQueue chan *object.FunctionContextUploadUnit
 
 // default neo4j db may be very slow in I/O
 var workerCount = 64
@@ -21,21 +22,17 @@ var workerCount = 64
 // each build for repo which contains 3000 files = 3000 jobs in seconds
 var workerQueueSize = 10240
 
-func InitWorker(config object.ExecuteConfig, context context.Context, driver binding.Driver) {
+func InitWorker(config object.ExecuteConfig, context context.Context, driver binding.Driver, q queue.Queue) {
 	workerCount = config.UploadWorkerCount
 	workerQueueSize = config.UploadQueueSize
 
 	funcUnitQueue = make(chan *object.FunctionUploadUnit, workerQueueSize)
-	funcCtxUnitQueue = make(chan *object.FuncContextUploadUnit, workerQueueSize)
+	funcCtxUnitQueue = make(chan *object.FunctionContextUploadUnit, workerQueueSize)
+
+	q.WatchFunc(funcUnitQueue)
+	q.WatchFuncCtx(funcCtxUnitQueue)
+
 	initWorkers(context, driver)
-}
-
-func SubmitFunc(unit *object.FunctionUploadUnit) {
-	funcUnitQueue <- unit
-}
-
-func SubmitFuncCtx(unit *object.FuncContextUploadUnit) {
-	funcCtxUnitQueue <- unit
 }
 
 func GetFuncQueueTodoCount() int {

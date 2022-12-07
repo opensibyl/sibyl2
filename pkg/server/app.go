@@ -6,12 +6,12 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	"github.com/williamfzc/sibyl2/pkg/server/binding"
 	_ "github.com/williamfzc/sibyl2/pkg/server/docs"
 	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/williamfzc/sibyl2/pkg/server/queue"
 	"github.com/williamfzc/sibyl2/pkg/server/service"
 	"github.com/williamfzc/sibyl2/pkg/server/worker"
 )
@@ -21,9 +21,10 @@ func Execute(config object.ExecuteConfig) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sharedDriver := initDriver(config)
-	service.InitServices(config, ctx, sharedDriver)
-	worker.InitWorker(config, ctx, sharedDriver)
+	sharedDriver := binding.InitDriver(config, ctx)
+	mq := queue.InitQueue(config, ctx)
+	service.InitService(config, ctx, sharedDriver, mq)
+	worker.InitWorker(config, ctx, sharedDriver, mq)
 
 	engine := gin.Default()
 
@@ -46,42 +47,4 @@ func Execute(config object.ExecuteConfig) {
 	if err != nil {
 		fmt.Printf("failed to start repoctor_receiver: %s", err.Error())
 	}
-}
-
-func initDriver(config object.ExecuteConfig) binding.Driver {
-	var driver binding.Driver
-	switch config.DbType {
-	case binding.DtInMemory:
-		driver = initMemDriver()
-	case binding.DtNeo4j:
-		driver = initNeo4jDriver(config)
-	default:
-		driver = initMemDriver()
-	}
-	err := driver.InitDriver()
-	if err != nil {
-		panic(err)
-	}
-	return driver
-}
-
-func initMemDriver() binding.Driver {
-	driver, err := binding.NewInMemoryDriver()
-	if err != nil {
-		panic(err)
-	}
-	return driver
-}
-
-func initNeo4jDriver(config object.ExecuteConfig) binding.Driver {
-	var authToken = neo4j.BasicAuth(config.Neo4jUserName, config.Neo4jPassword, "")
-	driver, err := neo4j.NewDriverWithContext(config.Neo4jUri, authToken)
-	if err != nil {
-		panic(err)
-	}
-	final, err := binding.NewNeo4jDriver(driver)
-	if err != nil {
-		panic(err)
-	}
-	return final
 }

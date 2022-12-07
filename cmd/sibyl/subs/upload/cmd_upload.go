@@ -16,7 +16,6 @@ import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server/binding"
 	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
@@ -55,7 +54,7 @@ func NewUploadCmd() *cobra.Command {
 			curRepo := filepath.Base(uploadSrc)
 			curRev := head.Hash().String()
 
-			wc := &binding.WorkspaceConfig{
+			wc := &object.WorkspaceConfig{
 				RepoId:  curRepo,
 				RevHash: curRev,
 			}
@@ -113,7 +112,7 @@ func loadRepo(gitDir string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func uploadFunctions(url string, wc *binding.WorkspaceConfig, f []*extractor.FunctionFileResult) {
+func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.FunctionFileResult) {
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 
 	// pack
@@ -165,7 +164,7 @@ func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
 	wg.Wait()
 }
 
-func uploadGraph(url string, wc *binding.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph) {
+func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph) {
 	var wg sync.WaitGroup
 	ptr := 0
 	batch := uploadBatchLimit
@@ -192,8 +191,8 @@ func uploadGraph(url string, wc *binding.WorkspaceConfig, functions []*extractor
 	}
 }
 
-func uploadFunctionContexts(url string, wc *binding.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
-	uploadUnit := &object.FuncContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
+func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
+	uploadUnit := &object.FunctionContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
 	jsonStr, err := json.Marshal(uploadUnit)
 	if err != nil {
 		panic(err)

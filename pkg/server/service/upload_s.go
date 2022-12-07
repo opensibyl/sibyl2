@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/williamfzc/sibyl2/pkg/core"
 	"github.com/williamfzc/sibyl2/pkg/server/object"
-	"github.com/williamfzc/sibyl2/pkg/server/worker"
 )
 
 func HandleRepoFuncUpload(c *gin.Context) {
@@ -22,12 +21,12 @@ func HandleRepoFuncUpload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	worker.SubmitFunc(result)
+	sharedQueue.SubmitFunc(result)
 	c.JSON(http.StatusOK, "received")
 }
 
 func HandleFunctionContextUpload(c *gin.Context) {
-	result := &object.FuncContextUploadUnit{}
+	result := &object.FunctionContextUploadUnit{}
 	err := c.BindJSON(result)
 	if err != nil {
 		core.Log.Errorf("error when parse: %v\n", err)
@@ -38,6 +37,6 @@ func HandleFunctionContextUpload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	worker.SubmitFuncCtx(result)
+	sharedQueue.SubmitFuncCtx(result)
 	c.JSON(http.StatusOK, "received")
 }

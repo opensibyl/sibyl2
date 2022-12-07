@@ -7,6 +7,7 @@ import (
 
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 type InMemoryStorage struct {
@@ -55,7 +56,7 @@ type memDriver struct {
 	*InMemoryStorage
 }
 
-func (m *memDriver) isWcExisted(wc *WorkspaceConfig) bool {
+func (m *memDriver) isWcExisted(wc *object.WorkspaceConfig) bool {
 	key, err := wc.Key()
 	if err != nil {
 		return false
@@ -64,8 +65,8 @@ func (m *memDriver) isWcExisted(wc *WorkspaceConfig) bool {
 	return ok
 }
 
-func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*WorkspaceConfig, error) {
-	ret := make([]*WorkspaceConfig, 0, len(m.InMemoryStorage.data))
+func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*object.WorkspaceConfig, error) {
+	ret := make([]*object.WorkspaceConfig, 0, len(m.InMemoryStorage.data))
 	for each := range m.InMemoryStorage.data {
 		wc, err := WorkspaceConfigFromKey(each)
 		if err != nil {
@@ -76,7 +77,7 @@ func (m *memDriver) getAllWorkspaceConfig(ctx context.Context) ([]*WorkspaceConf
 	return ret, nil
 }
 
-func (m *memDriver) getRevUnit(wc *WorkspaceConfig, ctx context.Context) (*revUnit, error) {
+func (m *memDriver) getRevUnit(wc *object.WorkspaceConfig, _ context.Context) (*revUnit, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -94,16 +95,16 @@ func newMemDriver() Driver {
 	}
 }
 
-func (m *memDriver) GetType() DriverType {
-	return DtInMemory
+func (m *memDriver) GetType() object.DriverType {
+	return object.DtInMemory
 }
 
-func (m *memDriver) InitDriver() error {
+func (m *memDriver) InitDriver(_ context.Context) error {
 	// do nothing
 	return nil
 }
 
-func (m *memDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
+func (m *memDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, _ context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()
 	key, err := wc.Key()
@@ -128,7 +129,7 @@ func (m *memDriver) CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFil
 	return nil
 }
 
-func (m *memDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
+func (m *memDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, _ context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()
 	key, err := wc.Key()
@@ -151,7 +152,7 @@ func (m *memDriver) CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionCon
 	return nil
 }
 
-func (m *memDriver) CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+func (m *memDriver) CreateWorkspace(wc *object.WorkspaceConfig, _ context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()
 	if m.isWcExisted(wc) {
@@ -194,7 +195,7 @@ func (m *memDriver) ReadRevs(repoId string, ctx context.Context) ([]string, erro
 	return ret, nil
 }
 
-func (m *memDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error) {
+func (m *memDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error) {
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -206,7 +207,7 @@ func (m *memDriver) ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]strin
 	return ret, nil
 }
 
-func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+func (m *memDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -229,7 +230,7 @@ func (m *memDriver) ReadFunctions(wc *WorkspaceConfig, path string, ctx context.
 	return ret, nil
 }
 
-func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
+func (m *memDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
 	files, err := m.ReadFiles(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -249,7 +250,7 @@ func (m *memDriver) ReadFunctionWithSignature(wc *WorkspaceConfig, signature str
 	return nil, errors.New("no func found: " + signature)
 }
 
-func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+func (m *memDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	files, err := m.ReadFiles(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -274,7 +275,7 @@ func (m *memDriver) ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lin
 	return ret, nil
 }
 
-func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
+func (m *memDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
 	unit, err := m.getRevUnit(wc, ctx)
 	if err != nil {
 		return nil, err
@@ -290,19 +291,19 @@ func (m *memDriver) ReadFunctionContextWithSignature(wc *WorkspaceConfig, signat
 	return nil, errors.New("function context not found")
 }
 
-func (m *memDriver) UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error {
+func (m *memDriver) UpdateRevProperties(*object.WorkspaceConfig, string, any, context.Context) error {
 	return errors.New("NOT IMPLEMENTED")
 }
 
-func (m *memDriver) UpdateFileProperties(wc *WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
+func (m *memDriver) UpdateFileProperties(*object.WorkspaceConfig, string, string, any, context.Context) error {
 	return errors.New("NOT IMPLEMENTED")
 }
 
-func (m *memDriver) UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
+func (m *memDriver) UpdateFuncProperties(*object.WorkspaceConfig, string, string, any, context.Context) error {
 	return errors.New("NOT IMPLEMENTED")
 }
 
-func (m *memDriver) DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error {
+func (m *memDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()
 	key, err := wc.Key()

@@ -3,7 +3,6 @@ package object
 import (
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server/binding"
 )
 
 type FunctionWithSignature struct {
@@ -12,11 +11,11 @@ type FunctionWithSignature struct {
 }
 
 type FunctionUploadUnit struct {
-	WorkspaceConfig *binding.WorkspaceConfig      `json:"workspace"`
+	WorkspaceConfig *WorkspaceConfig              `json:"workspace"`
 	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`
 }
 
-type FuncContextUploadUnit struct {
-	WorkspaceConfig  *binding.WorkspaceConfig  `json:"workspace"`
+type FunctionContextUploadUnit struct {
+	WorkspaceConfig  *WorkspaceConfig          `json:"workspace"`
 	FunctionContexts []*sibyl2.FunctionContext `json:"functionContext"`
 }

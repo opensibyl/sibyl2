@@ -2,13 +2,13 @@ package binding
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/pkg/errors"
 	"github.com/williamfzc/sibyl2"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 // binding to backend databases
@@ -57,34 +57,34 @@ create func links:
 */
 
 type driverBase interface {
-	GetType() DriverType
-	InitDriver() error
+	GetType() object.DriverType
+	InitDriver(ctx context.Context) error
 }
 
 type driverCreate interface {
-	CreateFuncFile(wc *WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
-	CreateFuncContext(wc *WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error
-	CreateWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+	CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
+	CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error
+	CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error
 }
 
 type driverRead interface {
 	ReadRepos(ctx context.Context) ([]string, error)
 	ReadRevs(repoId string, ctx context.Context) ([]string, error)
-	ReadFiles(wc *WorkspaceConfig, ctx context.Context) ([]string, error)
-	ReadFunctions(wc *WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
-	ReadFunctionWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error)
-	ReadFunctionsWithLines(wc *WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
-	ReadFunctionContextWithSignature(wc *WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error)
+	ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error)
+	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error)
+	ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error)
 }
 
 type driverUpdate interface {
-	UpdateRevProperties(wc *WorkspaceConfig, k string, v any, ctx context.Context) error
-	UpdateFileProperties(wc *WorkspaceConfig, path string, k string, v any, ctx context.Context) error
-	UpdateFuncProperties(wc *WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
+	UpdateRevProperties(wc *object.WorkspaceConfig, k string, v any, ctx context.Context) error
+	UpdateFileProperties(wc *object.WorkspaceConfig, path string, k string, v any, ctx context.Context) error
+	UpdateFuncProperties(wc *object.WorkspaceConfig, signature string, k string, v any, ctx context.Context) error
 }
 
 type driverDelete interface {
-	DeleteWorkspace(wc *WorkspaceConfig, ctx context.Context) error
+	DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error
 }
 
 type Driver interface {
@@ -95,11 +95,6 @@ type Driver interface {
 	driverDelete
 }
 
-type DriverType string
-
-const DtNeo4j DriverType = "NEO4J"
-const DtInMemory DriverType = "IN_MEMORY"
-
 func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
 	return &neo4jDriver{dwc}, nil
 }
@@ -108,45 +103,52 @@ func NewInMemoryDriver() (Driver, error) {
 	return newMemDriver(), nil
 }
 
-/*
-WorkspaceConfig
-
-as an infra lib, it will not assume what kind of repo you used.
-
-just two fields:
-- repoId: unique id of your repo, no matter git or svn, even appId.
-- revHash: unique id of your version.
-*/
-type WorkspaceConfig struct {
-	RepoId  string `json:"repoId"`
-	RevHash string `json:"revHash"`
-}
-
-func (wc *WorkspaceConfig) Verify() error {
-	// all the fields should be filled
-	if wc == nil || wc.RepoId == "" || wc.RevHash == "" {
-		return errors.Errorf("workspace config verify error: %v", wc)
-	}
-	return nil
-}
-
-const flagWcKeySplit = "|,,|"
-
-func (wc *WorkspaceConfig) Key() (string, error) {
-	if err := wc.Verify(); err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("%s%s%s", wc.RepoId, flagWcKeySplit, wc.RevHash), nil
-}
-
-func WorkspaceConfigFromKey(key string) (*WorkspaceConfig, error) {
-	parts := strings.Split(key, flagWcKeySplit)
+func WorkspaceConfigFromKey(key string) (*object.WorkspaceConfig, error) {
+	parts := strings.Split(key, object.FlagWcKeySplit)
 	if len(parts) < 2 {
 		return nil, errors.New("invalid workspace repr: " + key)
 	}
-	ret := &WorkspaceConfig{
+	ret := &object.WorkspaceConfig{
 		RepoId:  parts[0],
 		RevHash: parts[1],
 	}
 	return ret, nil
+}
+
+func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
+	var driver Driver
+	switch config.DbType {
+	case object.DtInMemory:
+		driver = initMemDriver()
+	case object.DtNeo4j:
+		driver = initNeo4jDriver(config)
+	default:
+		driver = initMemDriver()
+	}
+	err := driver.InitDriver(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return driver
+}
+
+func initMemDriver() Driver {
+	driver, err := NewInMemoryDriver()
+	if err != nil {
+		panic(err)
+	}
+	return driver
+}
+
+func initNeo4jDriver(config object.ExecuteConfig) Driver {
+	var authToken = neo4j.BasicAuth(config.Neo4jUserName, config.Neo4jPassword, "")
+	driver, err := neo4j.NewDriverWithContext(config.Neo4jUri, authToken)
+	if err != nil {
+		panic(err)
+	}
+	final, err := NewNeo4jDriver(driver)
+	if err != nil {
+		panic(err)
+	}
+	return final
 }

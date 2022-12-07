@@ -1,10 +1,8 @@
 package object
 
-import "github.com/williamfzc/sibyl2/pkg/server/binding"
-
 type ExecuteConfig struct {
 	Port              int
-	DbType            binding.DriverType
+	DbType            DriverType
 	Neo4jUri          string
 	Neo4jUserName     string
 	Neo4jPassword     string
@@ -15,7 +13,7 @@ type ExecuteConfig struct {
 func DefaultExecuteConfig() ExecuteConfig {
 	return ExecuteConfig{
 		9876,
-		binding.DtInMemory,
+		DtInMemory,
 		"bolt://localhost:7687",
 		"neo4j",
 		"neo4j",

@@ -8,18 +8,19 @@ import (
 
 type Queue interface {
 	GetType() object.QueueType
-	SubmitFunc(unit *object.FunctionUploadUnit)
-	SubmitFuncCtx(unit *object.FunctionContextUploadUnit)
+	Defer() error
+	SubmitFunc(unit *object.FunctionUploadUnit) (err error)
+	SubmitFuncCtx(unit *object.FunctionContextUploadUnit) (err error)
 	WatchFunc(chan<- *object.FunctionUploadUnit)
 	WatchFuncCtx(chan<- *object.FunctionContextUploadUnit)
 }
 
-func InitQueue(config object.ExecuteConfig, _ context.Context) Queue {
+func InitQueue(config object.ExecuteConfig, ctx context.Context) Queue {
 	switch config.QueueType {
 	case object.QueueTypeMemory:
 		return newMemoryQueue()
 	case object.QueueTypeKafka:
-		return newKafkaQueue(config)
+		return newKafkaQueue(config, ctx)
 	default:
 		return newMemoryQueue()
 	}

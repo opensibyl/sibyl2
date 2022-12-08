@@ -1,36 +1,126 @@
 package queue
 
-import "github.com/williamfzc/sibyl2/pkg/server/object"
+import (
+	"context"
+	"strings"
+	"time"
+
+	"github.com/segmentio/kafka-go"
+	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/williamfzc/sibyl2/pkg/server/object"
+)
 
 type KafkaQueue struct {
 	funcPushList    []chan<- *object.FunctionUploadUnit
 	funcCtxPushList []chan<- *object.FunctionContextUploadUnit
+
+	ctx                context.Context
+	kafkaWriter        *kafka.Writer
+	kafkaFuncReader    *kafka.Reader
+	kafkaFuncCtxReader *kafka.Reader
+	funcTopic          string
+	funcCtxTopic       string
 }
 
 func (k *KafkaQueue) GetType() object.QueueType {
 	return object.QueueTypeKafka
 }
 
-func (k *KafkaQueue) SubmitFunc(unit *object.FunctionUploadUnit) {
-	//TODO implement me
-	panic("implement me")
+func (k *KafkaQueue) Defer() error {
+	return k.kafkaWriter.Close()
 }
 
-func (k *KafkaQueue) SubmitFuncCtx(unit *object.FunctionContextUploadUnit) {
-	//TODO implement me
-	panic("implement me")
+func (k *KafkaQueue) SubmitFunc(unit *object.FunctionUploadUnit) error {
+	v, err := object.SerializeUploadUnit(unit)
+	if err != nil {
+		return err
+	}
+
+	err = k.kafkaWriter.WriteMessages(k.ctx, kafka.Message{
+		Topic: k.funcTopic,
+		Value: v,
+		Time:  time.Time{},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (k *KafkaQueue) SubmitFuncCtx(unit *object.FunctionContextUploadUnit) error {
+	v, err := object.SerializeUploadUnit(unit)
+	if err != nil {
+		return err
+	}
+
+	err = k.kafkaWriter.WriteMessages(k.ctx, kafka.Message{
+		Topic: k.funcCtxTopic,
+		Value: v,
+		Time:  time.Time{},
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (k *KafkaQueue) WatchFunc(units chan<- *object.FunctionUploadUnit) {
-	//TODO implement me
-	panic("implement me")
+	go func() {
+		for {
+			m, err := k.kafkaFuncReader.ReadMessage(k.ctx)
+			if err != nil {
+				core.Log.Errorf("kafka read failed: %v", err)
+				break
+			}
+			unit, err := object.DeserializeFuncUploadUnit(m.Value)
+			if err != nil {
+				core.Log.Warnf("not a valid func upload object: %v", err)
+			}
+			units <- unit
+		}
+	}()
 }
 
 func (k *KafkaQueue) WatchFuncCtx(units chan<- *object.FunctionContextUploadUnit) {
-	//TODO implement me
-	panic("implement me")
+	go func() {
+		for {
+			m, err := k.kafkaFuncCtxReader.ReadMessage(k.ctx)
+			if err != nil {
+				core.Log.Errorf("kafka read failed: %v", err)
+				break
+			}
+			unit, err := object.DeserializeFuncCtxUploadUnit(m.Value)
+			if err != nil {
+				core.Log.Warnf("not a valid func ctx upload object: %v", err)
+			}
+			units <- unit
+		}
+	}()
 }
 
-func newKafkaQueue(_ object.ExecuteConfig) *KafkaQueue {
-	return &KafkaQueue{}
+func newKafkaQueue(config object.ExecuteConfig, ctx context.Context) *KafkaQueue {
+	addr := strings.Split(config.KafkaAddrs, ",")
+
+	// todo writer and reader in different inst
+	funcWriter := &kafka.Writer{
+		Addr:     kafka.TCP(addr...),
+		Balancer: &kafka.LeastBytes{},
+	}
+	funcReader := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: addr,
+		Topic:   config.KafkaFuncTopic,
+	})
+	funcCtxReader := kafka.NewReader(kafka.ReaderConfig{
+		Brokers: addr,
+		Topic:   config.KafkaFuncCtxTopic,
+	})
+
+	return &KafkaQueue{
+		kafkaWriter:        funcWriter,
+		ctx:                ctx,
+		funcTopic:          config.KafkaFuncTopic,
+		funcCtxTopic:       config.KafkaFuncCtxTopic,
+		kafkaFuncReader:    funcReader,
+		kafkaFuncCtxReader: funcCtxReader,
+	}
 }

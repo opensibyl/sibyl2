@@ -23,6 +23,8 @@ func Execute(config object.ExecuteConfig) {
 
 	sharedDriver := binding.InitDriver(config, ctx)
 	mq := queue.InitQueue(config, ctx)
+	defer mq.Defer()
+
 	service.InitService(config, ctx, sharedDriver, mq)
 	worker.InitWorker(config, ctx, sharedDriver, mq)
 

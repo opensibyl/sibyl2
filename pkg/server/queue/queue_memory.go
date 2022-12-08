@@ -30,3 +30,7 @@ func (q *MemoryQueue) SubmitFuncCtx(unit *object.FunctionContextUploadUnit) {
 		each <- unit
 	}
 }
+
+func newMemoryQueue() *MemoryQueue {
+	return &MemoryQueue{}
+}

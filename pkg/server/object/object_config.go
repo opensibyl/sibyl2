@@ -11,7 +11,10 @@ type ExecuteConfig struct {
 	WorkerCount     int `json:"workerCount"`
 	WorkerQueueSize int `json:"workerQueueSize"`
 	// queue
-	QueueType QueueType `json:"queueType"`
+	QueueType         QueueType `json:"queueType"`
+	KafkaAddrs        string    `json:"kafkaAddrs"`
+	KafkaFuncTopic    string    `json:"kafkaFuncTopic"`
+	KafkaFuncCtxTopic string    `json:"kafkaFuncCtxTopic"`
 }
 
 func DefaultExecuteConfig() ExecuteConfig {
@@ -24,5 +27,8 @@ func DefaultExecuteConfig() ExecuteConfig {
 		64,
 		1024,
 		QueueTypeMemory,
+		"localhost:9092,localhost:9093,localhost:9094",
+		"sibyl-upload-func",
+		"sibyl-upload-funcctx",
 	}
 }

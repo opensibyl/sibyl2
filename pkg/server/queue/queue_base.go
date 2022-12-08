@@ -17,10 +17,10 @@ type Queue interface {
 func InitQueue(config object.ExecuteConfig, _ context.Context) Queue {
 	switch config.QueueType {
 	case object.QueueTypeMemory:
-		return &MemoryQueue{}
+		return newMemoryQueue()
 	case object.QueueTypeKafka:
-		return &KafkaQueue{}
+		return newKafkaQueue(config)
 	default:
-		return &MemoryQueue{}
+		return newMemoryQueue()
 	}
 }

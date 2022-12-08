@@ -30,3 +30,7 @@ func (k *KafkaQueue) WatchFuncCtx(units chan<- *object.FunctionContextUploadUnit
 	//TODO implement me
 	panic("implement me")
 }
+
+func newKafkaQueue(_ object.ExecuteConfig) *KafkaQueue {
+	return &KafkaQueue{}
+}

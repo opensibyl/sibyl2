@@ -116,7 +116,7 @@ func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.Func
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 
 	// pack
-	var fullUnits []*object.FunctionUploadUnit
+	fullUnits := make([]*object.FunctionUploadUnit, 0, len(f))
 	for _, each := range f {
 		unit := &object.FunctionUploadUnit{
 			WorkspaceConfig: wc,
@@ -129,8 +129,15 @@ func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.Func
 	batch := uploadBatchLimit
 	for ptr < len(fullUnits) {
 		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
-		uploadFuncUnits(url, fullUnits[ptr:ptr+batch])
-		ptr += batch
+
+		newPtr := ptr + batch
+		if newPtr < len(fullUnits) {
+			uploadFuncUnits(url, fullUnits[ptr:ptr+batch])
+		} else {
+			uploadFuncUnits(url, fullUnits[ptr:])
+		}
+
+		ptr = newPtr
 	}
 }
 
@@ -170,7 +177,16 @@ func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.
 	batch := uploadBatchLimit
 	for ptr < len(functions) {
 		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
-		for _, eachFuncFile := range functions[ptr : ptr+batch] {
+
+		newPtr := ptr + batch
+		var todoFuncs []*extractor.FunctionFileResult
+		if newPtr < len(functions) {
+			todoFuncs = functions[ptr:newPtr]
+		} else {
+			todoFuncs = functions[ptr:]
+		}
+
+		for _, eachFuncFile := range todoFuncs {
 			if eachFuncFile == nil {
 				continue
 			}
@@ -187,7 +203,7 @@ func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.
 			}(eachFuncFile, &wg, g)
 		}
 		wg.Wait()
-		ptr += batch
+		ptr = newPtr
 	}
 }
 

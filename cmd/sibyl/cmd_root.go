@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/diff"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/extract"
+	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/history"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/server"
 	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/upload"
 )
@@ -42,4 +43,7 @@ func init() {
 
 	diffCmd := diff.NewDiffCommand()
 	rootCmd.AddCommand(diffCmd)
+
+	historyCmd := history.NewHistoryCmd()
+	rootCmd.AddCommand(historyCmd)
 }

@@ -21,7 +21,7 @@ func HandleRepoFuncUpload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	sharedQueue.SubmitFunc(result)
+	go sharedQueue.SubmitFunc(result)
 	c.JSON(http.StatusOK, "received")
 }
 
@@ -37,6 +37,6 @@ func HandleFunctionContextUpload(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, err)
 		return
 	}
-	sharedQueue.SubmitFuncCtx(result)
+	go sharedQueue.SubmitFuncCtx(result)
 	c.JSON(http.StatusOK, "received")
 }

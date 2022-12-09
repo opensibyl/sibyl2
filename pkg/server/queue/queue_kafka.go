@@ -33,15 +33,18 @@ func (k *KafkaQueue) Defer() error {
 func (k *KafkaQueue) SubmitFunc(unit *object.FunctionUploadUnit) error {
 	v, err := object.SerializeUploadUnit(unit)
 	if err != nil {
+		core.Log.Errorf("error when serialize upload unit: %v", err)
 		return err
 	}
 
+	// why this `write` a little slow ...
 	err = k.kafkaWriter.WriteMessages(k.ctx, kafka.Message{
 		Topic: k.funcTopic,
 		Value: v,
 		Time:  time.Time{},
 	})
 	if err != nil {
+		core.Log.Errorf("error when write kafka msg: %v", err)
 		return err
 	}
 	return nil
@@ -50,6 +53,7 @@ func (k *KafkaQueue) SubmitFunc(unit *object.FunctionUploadUnit) error {
 func (k *KafkaQueue) SubmitFuncCtx(unit *object.FunctionContextUploadUnit) error {
 	v, err := object.SerializeUploadUnit(unit)
 	if err != nil {
+		core.Log.Errorf("error when serialize upload unit: %v", err)
 		return err
 	}
 
@@ -59,6 +63,7 @@ func (k *KafkaQueue) SubmitFuncCtx(unit *object.FunctionContextUploadUnit) error
 		Time:  time.Time{},
 	})
 	if err != nil {
+		core.Log.Errorf("error when write kafka msg: %v", err)
 		return err
 	}
 	return nil
@@ -68,6 +73,7 @@ func (k *KafkaQueue) WatchFunc(units chan<- *object.FunctionUploadUnit) {
 	go func() {
 		for {
 			m, err := k.kafkaFuncReader.ReadMessage(k.ctx)
+			core.Log.Debugf("rece new func: %d", m.Offset)
 			if err != nil {
 				core.Log.Errorf("kafka read failed: %v", err)
 				break
@@ -85,6 +91,7 @@ func (k *KafkaQueue) WatchFuncCtx(units chan<- *object.FunctionContextUploadUnit
 	go func() {
 		for {
 			m, err := k.kafkaFuncCtxReader.ReadMessage(k.ctx)
+			core.Log.Debugf("rece new func ctx: %d", m.Offset)
 			if err != nil {
 				core.Log.Errorf("kafka read failed: %v", err)
 				break
@@ -109,10 +116,12 @@ func newKafkaQueue(config object.ExecuteConfig, ctx context.Context) *KafkaQueue
 	funcReader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: addr,
 		Topic:   config.KafkaFuncTopic,
+		GroupID: "sibyl-consumer-func",
 	})
 	funcCtxReader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: addr,
 		Topic:   config.KafkaFuncCtxTopic,
+		GroupID: "sibyl-consumer-funcctx",
 	})
 
 	return &KafkaQueue{

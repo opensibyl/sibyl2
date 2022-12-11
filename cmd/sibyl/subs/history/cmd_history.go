@@ -2,6 +2,7 @@ package history
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 /*
@@ -27,6 +28,9 @@ how it works:
 - convert these graphs to video
 */
 
+var sourceDir string
+var outputFile string
+
 func NewHistoryCmd() *cobra.Command {
 	historyCmd := &cobra.Command{
 		Use:    "history",
@@ -34,8 +38,16 @@ func NewHistoryCmd() *cobra.Command {
 		Long:   `test`,
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
-
+			err := handle(sourceDir, outputFile)
+			if err != nil {
+				core.Log.Errorf("error when handle: %v", err)
+				panic(err)
+			}
 		},
 	}
+
+	historyCmd.PersistentFlags().StringVar(&sourceDir, "src", ".", "src dir path")
+	historyCmd.PersistentFlags().StringVar(&outputFile, "output", "./output.html", "output.html")
+
 	return historyCmd
 }

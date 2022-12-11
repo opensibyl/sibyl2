@@ -1,12 +1,11 @@
 package diff
 
 import (
-	"bytes"
 	"os"
 	"path/filepath"
 
-	"github.com/bluekeyes/go-gitdiff/gitdiff"
 	"github.com/williamfzc/sibyl2"
+	"github.com/williamfzc/sibyl2/pkg/ext"
 	"github.com/williamfzc/sibyl2/pkg/extractor"
 )
 
@@ -69,41 +68,13 @@ func (p *ParseResult) Flatten() *ThinParseResult {
 	return ret
 }
 
-type AffectedLineMap = map[string][]int
-
-func Unified2Affected(patch []byte) (AffectedLineMap, error) {
-	parsed, _, err := gitdiff.Parse(bytes.NewReader(patch))
-	if err != nil {
-		return nil, err
-	}
-
-	affectedMap := make(map[string][]int)
-	for _, each := range parsed {
-		if each.IsBinary || each.IsDelete {
-			continue
-		}
-		affectedMap[each.NewName] = make([]int, 0)
-		fragments := each.TextFragments
-		for _, eachF := range fragments {
-			left := int(eachF.NewPosition)
-
-			for i, eachLine := range eachF.Lines {
-				if eachLine.New() && eachLine.Op == gitdiff.OpAdd {
-					affectedMap[each.NewName] = append(affectedMap[each.NewName], left+i-1)
-				}
-			}
-		}
-	}
-	return affectedMap, nil
-}
-
 func parsePatchRaw(srcDir string, patchRaw []byte) (*ParseResult, error) {
 	srcDir, err := filepath.Abs(srcDir)
 	if err != nil {
 		return nil, err
 	}
 
-	affectedMap, err := Unified2Affected(patchRaw)
+	affectedMap, err := ext.Unified2Affected(patchRaw)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +95,7 @@ func parsePatch(srcDir string, patchFile string) (*ParseResult, error) {
 	return parsePatchRaw(srcDir, patch)
 }
 
-func affectedLines2Functions(srcDir string, m *AffectedLineMap) (*ParseResult, error) {
+func affectedLines2Functions(srcDir string, m *ext.AffectedLineMap) (*ParseResult, error) {
 	f, err := sibyl2.ExtractFunction(srcDir, sibyl2.DefaultConfig())
 	if err != nil {
 		return nil, err

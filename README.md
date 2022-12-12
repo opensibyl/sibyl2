@@ -1,21 +1,19 @@
 # sibyl 2
 
-> Parsing, analyzing source code across many languages, and extracting their metadata easily.
+> Take a quick snapshot of your codebase in seconds, with zero cost.
 
-跨语言、快速、简单地从你的源码中提取可序列化的元信息。
+![](https://opensibyl.github.io/doc/assets/images/intro-summary-0043f5cae91e9de62c619318afda4c39.png)
 
-## 这是什么
+## What's it?
 
-这个项目定位是底层基础组件，将源码逻辑化。
-简单来说就是，诸如哪个文件的哪个代码片段，对应到什么函数、类，实际意义是什么。
+sibyl2 is a static code analyzer, for extracting meta-data (functions/classes/parameters/lines ...) from raw source code. Inspired by [semantic](https://github.com/github/semantic) of GitHub.
 
-基于这一点，大多数上层工具都可以基于它而：
+- Easy to use
+- Fast enough
+- Extensible
+- Multiple languages in one (Go/Java/Python ...)
 
-- 不再需要兼容多语言
-- 不再需要苦恼如何从源码中提取扫描想要的信息
-- 不依赖编译流程
-
-before：
+It can translate raw source code:
 
 ```go
 func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.FunctionFileResult, error) {
@@ -23,11 +21,19 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 }
 ```
 
-after：
+to logical structure：
 
 ![](./docs/sample.svg)
 
-或其他格式：
+all you need is a one-line command:
+
+```bash
+./sibyl extract --src . --output hello.json
+```
+
+and export them with different formats.
+
+<details><summary>... JSON format for your custom operations</summary>
 
 ```json
 {
@@ -74,7 +80,9 @@ after：
 }
 ```
 
-与其他语言：
+</details>
+
+<details><summary>... And multiple languages supported</summary>
 
 ```java
 public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
@@ -117,21 +125,133 @@ after:
 }
 ```
 
-核心场景为研发过程、CI过程中进行高效的代码扫描与信息提取。你可以在 **毫秒级别-秒级别** 无痛为你不同语言的、整个代码仓生成一份完整的、同样格式的快照图，供其他人、工具后续使用与扩展。
+</details>
 
-更多请见文档。
+## Usage examples
 
-## 文档
+Developers can easily combine it with any other tools. We have already built some cmd tools in use.
 
-https://github.com/williamfzc/sibyl2/wiki/0.-%E5%85%B3%E4%BA%8E
+### Default Functions
 
-## refs
+TODO
+
+### Source Code History Visualization
+
+Source code history visualization, inspired by https://github.com/acaudwell/Gource
+
+One line command to see how your repository grow up, with no heavy dependencies like OpenGL, with logic level messages.
+
+```bash
+./sibyl history --src . --output hello.html
+```
+
+### Smart Git Diff
+
+Normal git diff has only text level messages.
+
+```bash
+./sibyl diff --from HEAD~1 --to HEAD --output hello1.json
+```
+
+And you can get a structural one with sibyl, which contains method level messages and callgraphs.
+
+```bash
+{
+  "fragments": [
+    {
+      "path": "pkg/server/admin_s.go",
+      "functions": [
+        {
+          "name": "HandleStatusUpload",
+          "receiver": "",
+          "parameters": [
+            {
+              "type": "*gin.Context",
+              "name": "c"
+            }
+          ],
+          "returns": null,
+          "span": {
+            "start": {
+              "row": 17,
+              "column": 0
+            },
+            "end": {
+              "row": 23,
+              "column": 1
+            }
+          },
+          "extras": {},
+          "path": "pkg/server/admin_s.go",
+          "language": "GOLANG",
+          "calls": null,
+          "reverseCalls": [
+            {
+              "name": "Execute",
+              "receiver": "",
+              "parameters": [
+                {
+                  "type": "ExecuteConfig",
+                  "name": "config"
+                }
+              ],
+              "returns": null,
+              "span": {
+                "start": {
+                  "row": 67,
+                  "column": 0
+                },
+                "end": {
+                  "row": 96,
+                  "column": 1
+                }
+              },
+              "extras": {},
+              "path": "pkg/server/app.go",
+              "language": "GOLANG"
+            }
+          ]
+        }
+      ]
+    },
+    ...
+```
+
+## Principle
+
+Many devtools required meta-data inside source code for further processing. For example, code coverage, call graph, etc.
+
+Without a cross-languages shared lib, we have to re-implement this extract layer repeatedly for each tool, each language.
+
+This repo aims at offering a general use shared lib for **source code meta-data**.
+
+## Performance
+
+TODO
+
+## Contribution
+
+This project split into 3 main parts:
+
+- /cmd: Pure command line tool for general usage
+- /pkg/server: All-in-one service for production
+- others: Shared api and core
+
+Workflow:
+
+- core: collect files and convert them to `Unit`.
+- extract: classify and process units into functions, symbols.
+- api: higher level analyze like callgraph
+
+Issues / PRs are welcome!
+
+## Refs
 
 - basic grammar: https://tree-sitter.github.io/tree-sitter/creating-parsers#the-grammar-dsl
 - language parser (for example, golang): https://github.com/tree-sitter/tree-sitter-go/blob/master/src/parser.c
 - symbol: https://github.com/github/semantic/blob/main/docs/examples.md#symbols
 - stack graphs: https://github.blog/2021-12-09-introducing-stack-graphs/
 
-## license
+## License
 
 Apache License Version 2.0, see [LICENSE](LICENSE)

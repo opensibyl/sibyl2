@@ -180,35 +180,36 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function,
 	}
 
 	// returns
-	// never nil
 	retParams := core.FindFirstByFieldInSubsWithDfs(unit, FieldGolangParameters)
-	switch retParams.Kind {
-	case KindGolangParameterList:
-		// multi params
-		for _, each := range core.FindAllByKindInSubsWithDfs(retParams, KindGolangParameterDecl) {
-			typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
-			paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
-			var paramNameContent string
-			if paramName == nil {
-				paramNameContent = ""
-			} else {
-				paramNameContent = paramName.Content
+	if retParams != nil {
+		switch retParams.Kind {
+		case KindGolangParameterList:
+			// multi params
+			for _, each := range core.FindAllByKindInSubsWithDfs(retParams, KindGolangParameterDecl) {
+				typeName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangType)
+				paramName := core.FindFirstByFieldInSubsWithDfs(each, FieldGolangName)
+				var paramNameContent string
+				if paramName == nil {
+					paramNameContent = ""
+				} else {
+					paramNameContent = paramName.Content
+				}
+				valueUnit := &ValueUnit{
+					Type: typeName.Content,
+					Name: paramNameContent,
+				}
+				funcUnit.Returns = append(funcUnit.Returns, valueUnit)
 			}
+		case KindGolangTypeIdentifier:
+			// only one param, and anonymous
 			valueUnit := &ValueUnit{
-				Type: typeName.Content,
-				Name: paramNameContent,
+				Type: retParams.Content,
+				Name: "",
 			}
 			funcUnit.Returns = append(funcUnit.Returns, valueUnit)
+		default:
+			// no returns
 		}
-	case KindGolangTypeIdentifier:
-		// only one param, and anonymous
-		valueUnit := &ValueUnit{
-			Type: retParams.Content,
-			Name: "",
-		}
-		funcUnit.Returns = append(funcUnit.Returns, valueUnit)
-	default:
-		// no returns
 	}
 
 	// extras

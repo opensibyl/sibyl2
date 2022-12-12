@@ -129,7 +129,7 @@ after:
 
 ## Usage examples
 
-Developers can easily combine it with any other tools. We have already built some cmd tools in use.
+Developers can easily combine it with any other tools. We have already built some cmd tools in use. You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
 
 ### Default Functions
 
@@ -207,11 +207,13 @@ Source code history visualization, inspired by https://github.com/acaudwell/Gour
 One line command to see how your repository grow up, with no heavy dependencies like OpenGL, with logic level messages.
 
 ```bash
-./sibyl history --src . --output hello.html
+./sibyl history --src . --output hello.html --full
 ```
 
-https://user-images.githubusercontent.com/13421694/207055872-b5baa398-6f77-493e-9b35-14ea826a523b.mp4
+https://user-images.githubusercontent.com/13421694/207089314-21b0d48d-00d1-4de5-951c-415fed74c78f.mp4
 
+> You can remove the `full` flag for better performance.
+	
 ### Smart Git Diff
 
 Normal git diff has only text level messages.

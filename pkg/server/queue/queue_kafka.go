@@ -116,12 +116,12 @@ func newKafkaQueue(config object.ExecuteConfig, ctx context.Context) *KafkaQueue
 	funcReader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: addr,
 		Topic:   config.KafkaFuncTopic,
-		GroupID: "sibyl-consumer-func",
+		GroupID: config.KafkaFuncConsumerGroup,
 	})
 	funcCtxReader := kafka.NewReader(kafka.ReaderConfig{
 		Brokers: addr,
 		Topic:   config.KafkaFuncCtxTopic,
-		GroupID: "sibyl-consumer-funcctx",
+		GroupID: config.KafkaFuncCtxConsumerGroup,
 	})
 
 	return &KafkaQueue{

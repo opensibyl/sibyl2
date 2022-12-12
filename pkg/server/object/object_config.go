@@ -11,10 +11,12 @@ type ExecuteConfig struct {
 	WorkerCount     int `json:"workerCount"`
 	WorkerQueueSize int `json:"workerQueueSize"`
 	// queue
-	QueueType         QueueType `json:"queueType"`
-	KafkaAddrs        string    `json:"kafkaAddrs"`
-	KafkaFuncTopic    string    `json:"kafkaFuncTopic"`
-	KafkaFuncCtxTopic string    `json:"kafkaFuncCtxTopic"`
+	QueueType                 QueueType `json:"queueType"`
+	KafkaAddrs                string    `json:"kafkaAddrs"`
+	KafkaFuncTopic            string    `json:"kafkaFuncTopic"`
+	KafkaFuncConsumerGroup    string    `json:"kafkaFuncConsumerGroup"`
+	KafkaFuncCtxTopic         string    `json:"kafkaFuncCtxTopic"`
+	KafkaFuncCtxConsumerGroup string    `json:"kafkaFuncCtxConsumerGroup"`
 }
 
 func DefaultExecuteConfig() ExecuteConfig {
@@ -26,9 +28,11 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"neo4j",
 		64,
 		1024,
-		QueueTypeMemory,
-		"localhost:9092,localhost:9093,localhost:9094",
+		QueueTypeKafka,
+		"10.177.65.230:9092",
 		"sibyl-upload-func",
+		"sibyl-consumer-func",
 		"sibyl-upload-funcctx",
+		"sibyl-consumer-funcctx",
 	}
 }

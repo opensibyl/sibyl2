@@ -16,6 +16,19 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/server/worker"
 )
 
+/*
+server mode: everything
+worker mode:
+- no http api
+- read only queue
+- full worker threads
+
+proxy mode:
+- full http api
+- write only queue
+- no worker threads
+*/
+
 // @title swagger doc for sibyl2 server
 func Execute(config object.ExecuteConfig) {
 	ctx, cancel := context.WithCancel(context.Background())

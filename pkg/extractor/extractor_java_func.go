@@ -6,8 +6,15 @@ import (
 	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
-// JavaFunctionExtras todo: add class info here
+// JavaFunctionExtras
 type JavaFunctionExtras struct {
+	Annotations []string       `json:"annotations"`
+	ClassInfo   *JavaClassInfo `json:"classInfo"`
+}
+
+type JavaClassInfo struct {
+	PackageName string   `json:"packageName"`
+	ClassName   string   `json:"className"`
 	Annotations []string `json:"annotations"`
 }
 
@@ -108,6 +115,25 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 
 	// extras
 	extras := &JavaFunctionExtras{}
+	classInfo := &JavaClassInfo{
+		PackageName: pkgName,
+		ClassName:   clazzName,
+		Annotations: nil,
+	}
+	extras.ClassInfo = classInfo
+
+	// class annotations
+	classModifiers := core.FindFirstByKindInSubsWithBfs(unit, KindJavaModifiers)
+	if classModifiers != nil {
+		classAnnotations := core.FindAllByKindsInSubs(classModifiers, KindJavaMarkerAnnotation, KindJavaAnnotation)
+		if len(classAnnotations) != 0 {
+			for _, each := range classAnnotations {
+				classInfo.Annotations = append(classInfo.Annotations, each.Content)
+			}
+		}
+	}
+	// todo: inherit
+
 	modifiers := core.FindFirstByKindInSubsWithBfs(unit, KindJavaModifiers)
 	if modifiers != nil {
 		annotations := core.FindAllByKindsInSubs(modifiers, KindJavaMarkerAnnotation, KindJavaAnnotation)

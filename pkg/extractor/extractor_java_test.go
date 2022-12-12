@@ -13,6 +13,8 @@ import com.williamfzc.sibyl.core.listener.Java8Parser;
 import com.williamfzc.sibyl.core.listener.java8.base.Java8MethodLayerListener;
 import com.williamfzc.sibyl.core.model.method.Method;
 
+@ClassAnnotationA(argA="yes")
+@ClassAnnotationB
 public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
     @Override
 	@abcde
@@ -61,9 +63,13 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		core.Log.Debugf("each: %s %s %s", each.Name, each.Extras, each.BodySpan.String())
 		// check base info
 		if each.Name == "enterMethodDeclarationWithoutMethodBody" {
-			if each.BodySpan.String() != "12:71,15:5" {
+			if each.BodySpan.String() != "14:71,17:5" {
 				panic(nil)
 			}
+		}
+
+		if each.Extras.(*JavaFunctionExtras).ClassInfo.Annotations == nil {
+			panic(err)
 		}
 	}
 }

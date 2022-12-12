@@ -133,7 +133,72 @@ Developers can easily combine it with any other tools. We have already built som
 
 ### Default Functions
 
-TODO
+```
+./sibyl extract --src . --output hello.json
+```
+
+You will see:
+
+```
+$ ./sibyl extract --src . --output hello.json
+{"level":"info","ts":1670138890.5306911,"caller":"sibyl2/extract_fs.go:92","msg":"no specific lang found, do the guess in: /Users/fengzhangchi/github_workspace/sibyl2"}
+{"level":"info","ts":1670138890.5596569,"caller":"sibyl2/extract_fs.go:97","msg":"I think it is: GOLANG"}
+{"level":"info","ts":1670138890.5836658,"caller":"core/runner.go:22","msg":"valid file count: 55"}
+{"level":"info","ts":1670138890.6657321,"caller":"sibyl2/extract_fs.go:76","msg":"cost: 135 ms"}
+{"level":"info","ts":1670138890.669896,"caller":"extract/cmd_extract.go:60","msg":"file has been saved to: hello.json"}
+```
+
+<details>
+<summary> ... Result will be generated in seconds. </summary>
+
+```json title="hello.json"
+[
+  {
+    "path": "analyze.go",
+    "language": "GOLANG",
+    "type": "func",
+    "units": [
+      {
+        "name": "AnalyzeFuncGraph",
+        "receiver": "",
+        "parameters": [
+          {
+            "type": "[]*extractor.FunctionFileResult",
+            "name": "funcFiles"
+          },
+          {
+            "type": "[]*extractor.SymbolFileResult",
+            "name": "symbolFiles"
+          }
+        ],
+        "returns": [
+          {
+            "type": "*FuncGraph",
+            "name": ""
+          },
+          {
+            "type": "error",
+            "name": ""
+          }
+        ],
+        "span": {
+          "start": {
+            "row": 11,
+            "column": 0
+          },
+          "end": {
+            "row": 80,
+            "column": 1
+          }
+        },
+        "extras": {}
+      }
+    ]
+  },
+  ...
+]
+```
+</details>
 
 ### Source Code History Visualization
 
@@ -144,6 +209,8 @@ One line command to see how your repository grow up, with no heavy dependencies 
 ```bash
 ./sibyl history --src . --output hello.html
 ```
+
+https://user-images.githubusercontent.com/13421694/207055872-b5baa398-6f77-493e-9b35-14ea826a523b.mp4
 
 ### Smart Git Diff
 
@@ -217,6 +284,10 @@ And you can get a structural one with sibyl, which contains method level message
     ...
 ```
 
+![intro-google](https://user-images.githubusercontent.com/13421694/207057947-894c1fb9-8ce4-4f7b-b5d3-88d220003e82.png)
+
+You can easily build some `smart test` tools above it.
+
 ## Principle
 
 Many devtools required meta-data inside source code for further processing. For example, code coverage, call graph, etc.
@@ -227,7 +298,9 @@ This repo aims at offering a general use shared lib for **source code meta-data*
 
 ## Performance
 
-TODO
+We have tested it on some famous repos, like [guava](https://github.com/google/guava). And that's why we can say it is "fast enough".
+
+See https://github.com/williamfzc/sibyl2/actions/workflows/perf.yml for details.
 
 ## Contribution
 

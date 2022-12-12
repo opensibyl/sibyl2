@@ -30,6 +30,7 @@ how it works:
 
 var sourceDir string
 var outputFile string
+var full bool
 
 func NewHistoryCmd() *cobra.Command {
 	historyCmd := &cobra.Command{
@@ -38,7 +39,7 @@ func NewHistoryCmd() *cobra.Command {
 		Long:   `test`,
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
-			err := handle(sourceDir, outputFile)
+			err := handle(sourceDir, outputFile, full)
 			if err != nil {
 				core.Log.Errorf("error when handle: %v", err)
 				panic(err)
@@ -48,6 +49,7 @@ func NewHistoryCmd() *cobra.Command {
 
 	historyCmd.PersistentFlags().StringVar(&sourceDir, "src", ".", "src dir path")
 	historyCmd.PersistentFlags().StringVar(&outputFile, "output", "./output.html", "output.html")
+	historyCmd.PersistentFlags().BoolVar(&full, "full", false, "generate full graph all the time")
 
 	return historyCmd
 }

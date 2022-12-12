@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
 
 	"github.com/awalterschulze/gographviz"
@@ -76,7 +75,7 @@ func reverse(s interface{}) {
 	})
 }
 
-func handle(gitDir string, output string) error {
+func handle(gitDir string, output string, full bool) error {
 	gitDir, err := filepath.Abs(gitDir)
 	if err != nil {
 		return err
@@ -206,7 +205,7 @@ func handle(gitDir string, output string) error {
 	for _, eachCommit := range commits {
 		m := storage[eachCommit]
 
-		frame, err := commit2GraphBuf(eachCommit, m, diffStorage[eachCommit])
+		frame, err := commit2GraphBuf(eachCommit, m, diffStorage[eachCommit], full)
 		if err != nil {
 			return err
 		}
@@ -232,7 +231,7 @@ func handle(gitDir string, output string) error {
 	return nil
 }
 
-func commit2GraphBuf(root *object.Commit, m map[string][]*extractor.Function, diffm map[string][]*extractor.Function) (string, error) {
+func commit2GraphBuf(root *object.Commit, m map[string][]*extractor.Function, diffm map[string][]*extractor.Function, full bool) (string, error) {
 	graph := gographviz.NewEscape()
 	graph.SetStrict(true)
 	graph.SetDir(true)
@@ -257,10 +256,20 @@ func commit2GraphBuf(root *object.Commit, m map[string][]*extractor.Function, di
 	sort.Strings(files)
 
 	for _, k := range files {
+		// build paths
+		parts := strings.Split(k, "/")
+		curFileName := parts[0]
+		graph.AddEdge(hash, curFileName, true, nil)
+		for _, eachPart := range parts[1:] {
+			newPart := fmt.Sprintf("%s/%s", curFileName, eachPart)
+			graph.AddEdge(curFileName, newPart, true, nil)
+			graph.AddNode(defaultName, curFileName, nil)
+			curFileName = newPart
+		}
+
 		funcColorMap := make(map[string]interface{})
-		safeFileName := strconv.Quote(k)
 		if difflist, ok := diffm[k]; ok {
-			graph.AddNode(defaultName, safeFileName, map[string]string{
+			graph.AddNode(defaultName, curFileName, map[string]string{
 				"style":     "filled",
 				"fillcolor": "#9cff3c",
 			})
@@ -270,12 +279,11 @@ func commit2GraphBuf(root *object.Commit, m map[string][]*extractor.Function, di
 			}
 
 		} else {
-			graph.AddNode(defaultName, safeFileName, nil)
+			graph.AddNode(defaultName, curFileName, nil)
 		}
-		graph.AddEdge(hash, safeFileName, true, nil)
 
 		// for perf, no need to add no-edited nodes
-		if len(funcColorMap) > 0 {
+		if full || len(funcColorMap) > 0 {
 			for _, eachFunc := range m[k] {
 				// graphviz parse needed
 				funcName := strings.ReplaceAll(eachFunc.GetSignature(), ":", "")
@@ -290,7 +298,7 @@ func commit2GraphBuf(root *object.Commit, m map[string][]*extractor.Function, di
 				} else {
 					graph.AddNode(defaultName, funcName, nil)
 				}
-				graph.AddEdge(safeFileName, funcName, true, nil)
+				graph.AddEdge(curFileName, funcName, true, nil)
 			}
 		}
 	}

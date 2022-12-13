@@ -303,9 +303,9 @@ For example, Google 's unittest speed up:
 	
 About how we use in real DevOps workflow. 
 It offered a shared "code snapshot" layer for different any other tools.
-Documentation is on the way.
+See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
 
-<img width="722" alt="image" src="https://user-images.githubusercontent.com/13421694/207063178-a04b30ab-f046-4136-bb17-8625bf69652a.png">
+**Documentation is on the way.**
 
 ## Principle
 

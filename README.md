@@ -137,7 +137,7 @@ after:
 
 Developers can easily combine it with any other tools. We have already built some cmd tools in use. You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
 
-### Default Functions
+### Basic Functions
 
 ```
 ./sibyl extract --src . --output hello.json
@@ -228,7 +228,7 @@ Normal git diff has only text level messages.
 ./sibyl diff --from HEAD~1 --to HEAD --output hello1.json
 ```
 
-And you can get a structural one with sibyl, which contains method level messages and callgraphs.
+<details><summary>And you can get a structural one with sibyl, which contains method level messages and callgraphs.</summary>
 
 ```bash
 {
@@ -292,13 +292,18 @@ And you can get a structural one with sibyl, which contains method level message
     ...
 ```
 
+</details>
+
+You can easily build some `smart test` tools above it. 
+For example, Google 's unittest speed up:
+
 ![intro-google](https://user-images.githubusercontent.com/13421694/207057947-894c1fb9-8ce4-4f7b-b5d3-88d220003e82.png)
 
-You can easily build some `smart test` tools above it.
+### PaaS (WIP)
 	
-### PaaS
-	
-About how we use in real production. Documentation is on the way.
+About how we use in real DevOps workflow. 
+It offered a shared "code snapshot" layer for different any other tools.
+Documentation is on the way.
 
 <img width="722" alt="image" src="https://user-images.githubusercontent.com/13421694/207063178-a04b30ab-f046-4136-bb17-8625bf69652a.png">
 

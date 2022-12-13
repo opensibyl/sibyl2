@@ -123,7 +123,7 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 	extras.ClassInfo = classInfo
 
 	// class annotations
-	classModifiers := core.FindFirstByKindInSubsWithBfs(unit, KindJavaModifiers)
+	classModifiers := core.FindFirstByKindInSubsWithBfs(clazzDecl, KindJavaModifiers)
 	if classModifiers != nil {
 		classAnnotations := core.FindAllByKindsInSubs(classModifiers, KindJavaMarkerAnnotation, KindJavaAnnotation)
 		if len(classAnnotations) != 0 {

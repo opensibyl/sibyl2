@@ -4,8 +4,8 @@ import (
 	"sync"
 
 	"github.com/dominikbraun/graph"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 type AdjacencyMapType = map[string]map[string]graph.Edge[string]

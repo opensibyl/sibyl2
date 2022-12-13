@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 var goCode = `

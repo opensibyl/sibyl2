@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/mitchellh/mapstructure"
-	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 type ValueUnit struct {

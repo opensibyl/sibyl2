@@ -1,9 +1,9 @@
 package server
 
 import (
+	"github.com/opensibyl/sibyl2/pkg/server"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/spf13/cobra"
-	"github.com/williamfzc/sibyl2/pkg/server"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 var serverBackendUrl string

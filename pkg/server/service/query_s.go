@@ -7,10 +7,10 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/server/binding"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
-	"github.com/williamfzc/sibyl2/pkg/server/queue"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/server/binding"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2/pkg/server/queue"
 )
 
 var sharedContext context.Context

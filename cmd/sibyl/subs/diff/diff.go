@@ -4,9 +4,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/ext"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/ext"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 type FunctionWithWeight struct {

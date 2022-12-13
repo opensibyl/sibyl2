@@ -3,8 +3,8 @@ package sibyl2
 import (
 	"testing"
 
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 var javaCode = `

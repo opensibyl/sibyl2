@@ -5,8 +5,8 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 func HandleRepoFuncUpload(c *gin.Context) {

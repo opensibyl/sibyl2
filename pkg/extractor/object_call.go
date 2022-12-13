@@ -2,7 +2,8 @@ package extractor
 
 import (
 	"fmt"
-	"github.com/williamfzc/sibyl2/pkg/core"
+
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 /*

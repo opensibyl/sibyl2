@@ -7,8 +7,8 @@ import (
 	"os/exec"
 	"time"
 
+	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/spf13/cobra"
-	"github.com/williamfzc/sibyl2/pkg/core"
 )
 
 var diffSrc string

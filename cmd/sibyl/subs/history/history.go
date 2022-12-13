@@ -11,10 +11,10 @@ import (
 	"github.com/awalterschulze/gographviz"
 	"github.com/go-git/go-git/v5"
 	"github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/ext"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/ext"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 const D3Template = `

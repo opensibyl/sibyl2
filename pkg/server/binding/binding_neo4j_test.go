@@ -6,9 +6,9 @@ import (
 	"testing"
 
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 // set it true to run these tests

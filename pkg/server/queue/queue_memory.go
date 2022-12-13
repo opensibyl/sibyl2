@@ -1,6 +1,6 @@
 package queue
 
-import "github.com/williamfzc/sibyl2/pkg/server/object"
+import "github.com/opensibyl/sibyl2/pkg/server/object"
 
 type MemoryQueue struct {
 	funcPushList    []chan<- *object.FunctionUploadUnit

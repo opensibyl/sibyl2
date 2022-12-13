@@ -8,10 +8,10 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 var wc = &object.WorkspaceConfig{

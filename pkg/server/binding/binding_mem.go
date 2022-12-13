@@ -5,9 +5,9 @@ import (
 	"errors"
 	"sync"
 
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 type InMemoryStorage struct {

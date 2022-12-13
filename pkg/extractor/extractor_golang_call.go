@@ -2,7 +2,8 @@ package extractor
 
 import (
 	"errors"
-	"github.com/williamfzc/sibyl2/pkg/core"
+
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 func (extractor *GolangExtractor) IsCall(unit *core.Unit) bool {

@@ -1,9 +1,10 @@
 package sibyl2
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"testing"
+
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 func TestExtract(t *testing.T) {

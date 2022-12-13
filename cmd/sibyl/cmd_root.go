@@ -3,12 +3,12 @@ package main
 import (
 	"log"
 
+	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/diff"
+	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/extract"
+	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/history"
+	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/server"
+	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
 	"github.com/spf13/cobra"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/diff"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/extract"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/history"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/server"
-	"github.com/williamfzc/sibyl2/cmd/sibyl/subs/upload"
 )
 
 var rootCmd = &cobra.Command{

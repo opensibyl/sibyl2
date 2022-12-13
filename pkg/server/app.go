@@ -6,14 +6,14 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/opensibyl/sibyl2/pkg/server/binding"
+	_ "github.com/opensibyl/sibyl2/pkg/server/docs"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2/pkg/server/queue"
+	"github.com/opensibyl/sibyl2/pkg/server/service"
+	"github.com/opensibyl/sibyl2/pkg/server/worker"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
-	"github.com/williamfzc/sibyl2/pkg/server/binding"
-	_ "github.com/williamfzc/sibyl2/pkg/server/docs"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
-	"github.com/williamfzc/sibyl2/pkg/server/queue"
-	"github.com/williamfzc/sibyl2/pkg/server/service"
-	"github.com/williamfzc/sibyl2/pkg/server/worker"
 )
 
 /*

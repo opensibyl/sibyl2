@@ -9,6 +9,7 @@ import (
 var serverBackendUrl string
 var serverUser string
 var serverPwd string
+var serverQueueType string
 var serverUploadWorkerCount int
 var serverUploadQueueSize int
 
@@ -35,6 +36,7 @@ func NewServerCmd() *cobra.Command {
 			if serverUploadQueueSize != 0 {
 				config.WorkerQueueSize = serverUploadQueueSize
 			}
+			config.QueueType = serverQueueType
 
 			server.Execute(config)
 		},
@@ -42,6 +44,7 @@ func NewServerCmd() *cobra.Command {
 	serverCmd.PersistentFlags().StringVar(&serverBackendUrl, "uri", "", "neo4j backend url")
 	serverCmd.PersistentFlags().StringVar(&serverUser, "user", "", "neo4j user")
 	serverCmd.PersistentFlags().StringVar(&serverPwd, "pwd", "", "neo4j password")
+	serverCmd.PersistentFlags().StringVar(&serverQueueType, "queueType", object.QueueTypeMemory, "queue type")
 	serverCmd.PersistentFlags().IntVar(&serverUploadWorkerCount, "workers", 0, "upload worker count")
 	serverCmd.PersistentFlags().IntVar(&serverUploadQueueSize, "queueSize", 0, "upload worker count")
 

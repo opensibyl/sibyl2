@@ -28,7 +28,7 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"neo4j",
 		64,
 		1024,
-		QueueTypeKafka,
+		QueueTypeMemory,
 		"10.177.65.230:9092",
 		"sibyl-upload-func",
 		"sibyl-consumer-func",

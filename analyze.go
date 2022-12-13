@@ -123,7 +123,8 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			// which makes the final graph very, very large
 			// and at the most time these methods will not be analyzed
 			if len(refs) > refLimit {
-				core.Log.Warnf("func %s exceed the ref limit %d, now %d", eachFunc.GetIndexName(), refLimit, len(refs))
+				// happen very easily in big repo, suppress it
+				//core.Log.Warnf("func %s exceed the ref limit %d, now %d", eachFunc.GetIndexName(), refLimit, len(refs))
 				continue
 			}
 

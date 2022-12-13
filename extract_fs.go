@@ -3,11 +3,12 @@ package sibyl2
 import (
 	"errors"
 	"fmt"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 func ExtractSymbol(targetFile string, config *ExtractConfig) ([]*extractor.SymbolFileResult, error) {

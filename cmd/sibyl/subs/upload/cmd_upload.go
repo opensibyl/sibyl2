@@ -12,11 +12,11 @@ import (
 
 	"github.com/go-git/go-git/v5"
 	"github.com/hashicorp/go-retryablehttp"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/spf13/cobra"
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 var uploadSrc string

@@ -1,4 +1,4 @@
-module github.com/williamfzc/sibyl2
+module github.com/opensibyl/sibyl2
 
 go 1.19
 

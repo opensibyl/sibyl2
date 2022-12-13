@@ -1,7 +1,7 @@
 package extractor
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 // https://github.com/tree-sitter/tree-sitter-java/tree/master/src/node-types.json

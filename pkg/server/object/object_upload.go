@@ -3,8 +3,8 @@ package object
 import (
 	"encoding/json"
 
-	"github.com/williamfzc/sibyl2"
-	"github.com/williamfzc/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 type FunctionWithSignature struct {

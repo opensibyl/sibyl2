@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/williamfzc/sibyl2/pkg/server/worker"
+	"github.com/opensibyl/sibyl2/pkg/server/worker"
 )
 
 type UploadStats struct {

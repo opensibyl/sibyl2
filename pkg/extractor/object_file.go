@@ -3,7 +3,7 @@ package extractor
 import (
 	"path/filepath"
 
-	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 type BaseFileResult[T DataType] struct {

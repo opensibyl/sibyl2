@@ -1,8 +1,9 @@
 package extractor
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"strings"
+
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 func (extractor *GolangExtractor) IsSymbol(unit *core.Unit) bool {

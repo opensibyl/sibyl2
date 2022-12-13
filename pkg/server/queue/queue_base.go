@@ -3,7 +3,7 @@ package queue
 import (
 	"context"
 
-	"github.com/williamfzc/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 type Queue interface {

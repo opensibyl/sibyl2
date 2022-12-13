@@ -3,7 +3,7 @@ package extractor
 import (
 	"errors"
 
-	"github.com/williamfzc/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 // https://github.com/tree-sitter/tree-sitter-python/blob/master/src/node-types.json

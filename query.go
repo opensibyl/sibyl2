@@ -1,6 +1,6 @@
 package sibyl2
 
-import "github.com/williamfzc/sibyl2/pkg/extractor"
+import "github.com/opensibyl/sibyl2/pkg/extractor"
 
 func QueryUnitsByLines[T extractor.DataType](result *extractor.BaseFileResult[T], lines ...int) []T {
 	var ret []T

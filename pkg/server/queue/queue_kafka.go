@@ -5,9 +5,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/segmentio/kafka-go"
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
 )
 
 type KafkaQueue struct {

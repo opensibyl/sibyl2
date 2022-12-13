@@ -1,8 +1,9 @@
 package sibyl2
 
 import (
-	"github.com/williamfzc/sibyl2/pkg/core"
 	"testing"
+
+	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
 func TestQuery(t *testing.T) {

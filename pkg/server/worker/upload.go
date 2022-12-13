@@ -3,10 +3,10 @@ package worker
 import (
 	"context"
 
-	"github.com/williamfzc/sibyl2/pkg/core"
-	"github.com/williamfzc/sibyl2/pkg/server/binding"
-	"github.com/williamfzc/sibyl2/pkg/server/object"
-	"github.com/williamfzc/sibyl2/pkg/server/queue"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/server/binding"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/opensibyl/sibyl2/pkg/server/queue"
 )
 
 var funcUnitQueue chan *object.FunctionUploadUnit

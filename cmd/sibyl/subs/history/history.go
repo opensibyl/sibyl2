@@ -17,7 +17,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
-const D3Template = `
+const d3Template = `
 <!DOCTYPE html>
 <meta charset="utf-8">
 <body>
@@ -57,6 +57,9 @@ function render() {
 var dots = [DOT_REPLACEMENT];
 </script>
 `
+
+// 1MB
+const fileSizeLimit = 1_000_000
 
 type Storage = map[*object.Commit]map[string][]*extractor.Function
 
@@ -103,6 +106,7 @@ func handle(gitDir string, output string, full bool) error {
 		return nil
 	})
 	reverse(commits)
+	core.Log.Infof("start point: %s, end point: %s", commits[0].Hash.String(), commits[len(commits)-1].Hash.String())
 
 	// init storage
 	storage := make(map[*object.Commit]map[string][]*extractor.Function)
@@ -220,7 +224,7 @@ func handle(gitDir string, output string, full bool) error {
 		toFill = append(toFill, eachStr)
 	}
 	finalContent := strings.Join(toFill, ",")
-	finalHtml := strings.Replace(D3Template, "DOT_REPLACEMENT", finalContent, 1)
+	finalHtml := strings.Replace(d3Template, "DOT_REPLACEMENT", finalContent, 1)
 	err = os.WriteFile(output, []byte(finalHtml), 0644)
 	if err != nil {
 		return err
@@ -318,6 +322,10 @@ func extractFromTree(lang core.LangType, tree *object.Tree, filter func(string) 
 		}
 		// lang filter
 		if !lang.MatchName(fileName) {
+			return nil
+		}
+		// ignore large source file
+		if file.Size > fileSizeLimit {
 			return nil
 		}
 

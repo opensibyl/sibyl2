@@ -4,7 +4,7 @@
 [![ImageBuild](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml)
 [![goreleaser](https://github.com/opensibyl/sibyl2/actions/workflows/release.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/release.yml)
 [![perftest](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml)
-[![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/main/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)
+[![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/master/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)
 
 > Take a quick snapshot of your codebase in seconds, with zero cost.
 

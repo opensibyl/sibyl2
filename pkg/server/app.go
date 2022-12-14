@@ -35,6 +35,7 @@ func Execute(config object.ExecuteConfig) {
 	defer cancel()
 
 	sharedDriver := binding.InitDriver(config, ctx)
+	defer sharedDriver.DeferDriver()
 	mq := queue.InitQueue(config, ctx)
 	defer mq.Defer()
 

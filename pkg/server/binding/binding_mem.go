@@ -104,6 +104,11 @@ func (m *memDriver) InitDriver(_ context.Context) error {
 	return nil
 }
 
+func (m *memDriver) DeferDriver() error {
+	// do nothing
+	return nil
+}
+
 func (m *memDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, _ context.Context) error {
 	m.l.Lock()
 	defer m.l.Unlock()

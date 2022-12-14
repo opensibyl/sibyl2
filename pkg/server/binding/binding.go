@@ -59,6 +59,7 @@ create func links:
 type driverBase interface {
 	GetType() object.DriverType
 	InitDriver(ctx context.Context) error
+	DeferDriver() error
 }
 
 type driverCreate interface {

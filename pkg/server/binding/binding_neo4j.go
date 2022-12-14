@@ -92,6 +92,10 @@ func (d *neo4jDriver) InitDriver(ctx context.Context) error {
 	return nil
 }
 
+func (d *neo4jDriver) DeferDriver() error {
+	return nil
+}
+
 func (d *neo4jDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	if err := wc.Verify(); err != nil {
 		return err

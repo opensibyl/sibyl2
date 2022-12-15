@@ -1,5 +1,7 @@
 package object
 
+import "encoding/json"
+
 type ExecuteConfig struct {
 	Port int `json:"port"`
 	// binding
@@ -37,4 +39,12 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"sibyl-upload-funcctx",
 		"sibyl-consumer-funcctx",
 	}
+}
+
+func (config *ExecuteConfig) ToJson() (string, error) {
+	bytes, err := json.Marshal(config)
+	if err != nil {
+		return "", nil
+	}
+	return string(bytes), nil
 }

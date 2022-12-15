@@ -32,7 +32,7 @@ proxy mode:
 
 // @title swagger doc for sibyl2 server
 func Execute(config object.ExecuteConfig) {
-	core.Log.Infof("execute with config: %v", config)
+	core.Log.Infof(config.ToJson())
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

@@ -5,6 +5,7 @@
 [![goreleaser](https://github.com/opensibyl/sibyl2/actions/workflows/release.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/release.yml)
 [![perftest](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml)
 [![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/main/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)
+[![CodeFactor](https://www.codefactor.io/repository/github/williamfzc/sibyl2/badge)](https://www.codefactor.io/repository/github/williamfzc/sibyl2)
 
 > Take a quick snapshot of your codebase in seconds, with zero cost.
 

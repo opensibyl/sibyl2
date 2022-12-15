@@ -13,13 +13,13 @@ COPY ./go.sum ./
 COPY ./Makefile ./
 RUN go mod download && \
     go install github.com/swaggo/swag/cmd/swag@v1.8.7 && \
-    apk add --update make gcc g++
+    apk add --no-cache --update make gcc g++
 
 COPY . .
 RUN make
 
 ## Deploy
-FROM alpine
+FROM alpine:3
 
 RUN apk add --no-cache libstdc++
 

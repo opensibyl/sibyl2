@@ -6,10 +6,11 @@ import (
 
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 func TestWc(t *testing.T) {
-	d := newBadgerDriver()
+	d := initBadgerDriver(object.DefaultExecuteConfig())
 	ctx := context.TODO()
 	err := d.InitDriver(ctx)
 	if err != nil {
@@ -37,7 +38,7 @@ func TestWc(t *testing.T) {
 }
 
 func TestReadWrite(t *testing.T) {
-	d := newBadgerDriver()
+	d := initBadgerDriver(object.DefaultExecuteConfig())
 	ctx := context.TODO()
 	err := d.InitDriver(ctx)
 	if err != nil {

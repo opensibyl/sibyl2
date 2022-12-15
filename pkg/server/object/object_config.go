@@ -7,6 +7,7 @@ type ExecuteConfig struct {
 	Neo4jUri      string     `json:"neo4JUri"`
 	Neo4jUserName string     `json:"neo4JUserName"`
 	Neo4jPassword string     `json:"neo4JPassword"`
+	BadgerPath    string     `json:"badgerPath"`
 	// worker
 	WorkerCount     int `json:"workerCount"`
 	WorkerQueueSize int `json:"workerQueueSize"`
@@ -22,10 +23,11 @@ type ExecuteConfig struct {
 func DefaultExecuteConfig() ExecuteConfig {
 	return ExecuteConfig{
 		9876,
-		DtInMemory,
+		DtBadger,
 		"bolt://localhost:7687",
 		"neo4j",
 		"neo4j",
+		"./.sibyl2Storage",
 		64,
 		1024,
 		QueueTypeMemory,

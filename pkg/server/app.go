@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	_ "github.com/opensibyl/sibyl2/pkg/server/docs"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
@@ -31,6 +32,7 @@ proxy mode:
 
 // @title swagger doc for sibyl2 server
 func Execute(config object.ExecuteConfig) {
+	core.Log.Infof("execute with config: %v", config)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 

@@ -81,8 +81,8 @@ func (f *Function) ToJson() ([]byte, error) {
 	return raw, nil
 }
 
-// FromMap reverse ToMap
-func FromMap(exported map[string]any) (*Function, error) {
+// Map2Func reverse ToMap
+func Map2Func(exported map[string]any) (*Function, error) {
 	ret := &Function{}
 	err := mapstructure.Decode(exported, ret)
 	if err != nil {
@@ -91,13 +91,13 @@ func FromMap(exported map[string]any) (*Function, error) {
 	return ret, nil
 }
 
-func FromJson(exported []byte) (*Function, error) {
+func Json2Func(exported []byte) (*Function, error) {
 	var m map[string]any
 	err := json.Unmarshal(exported, &m)
 	if err != nil {
 		return nil, err
 	}
-	return FromMap(m)
+	return Map2Func(m)
 }
 
 func (f *Function) GetIndexName() string {

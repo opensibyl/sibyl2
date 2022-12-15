@@ -150,9 +150,8 @@ func (q *Query) First() *Unit {
 
 	if q.IsDfs {
 		return q.dfsFirst(q.target)
-	} else {
-		return q.bfsFirst(q.target)
 	}
+	return q.bfsFirst(q.target)
 }
 
 func (q *Query) match(unit *Unit) bool {
@@ -238,9 +237,8 @@ func (q *Query) All() []*Unit {
 
 	if q.IsDfs {
 		return q.dfsAll(q.target)
-	} else {
-		return q.bfsAll(q.target)
 	}
+	return q.bfsAll(q.target)
 }
 
 func (q *Query) parentAll(unit *Unit) []*Unit {

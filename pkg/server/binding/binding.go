@@ -59,6 +59,7 @@ create func links:
 type driverBase interface {
 	GetType() object.DriverType
 	InitDriver(ctx context.Context) error
+	DeferDriver() error
 }
 
 type driverCreate interface {
@@ -117,14 +118,22 @@ func WorkspaceConfigFromKey(key string) (*object.WorkspaceConfig, error) {
 
 func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
 	var driver Driver
+
+	// create driver obj, do some settings
 	switch config.DbType {
 	case object.DtInMemory:
-		driver = initMemDriver()
+		// now in memory driver handled by badger
+		driver = initBadgerDriver(config)
 	case object.DtNeo4j:
 		driver = initNeo4jDriver(config)
+	case object.DtBadger:
+		driver = initBadgerDriver(config)
 	default:
+		// todo: remove mem driver?
 		driver = initMemDriver()
 	}
+
+	// init driver instance (maybe pre connection, etc.)
 	err := driver.InitDriver(ctx)
 	if err != nil {
 		panic(err)

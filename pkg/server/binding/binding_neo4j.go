@@ -92,6 +92,10 @@ func (d *neo4jDriver) InitDriver(ctx context.Context) error {
 	return nil
 }
 
+func (d *neo4jDriver) DeferDriver() error {
+	return nil
+}
+
 func (d *neo4jDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	if err := wc.Verify(); err != nil {
 		return err
@@ -179,7 +183,7 @@ func (d *neo4jDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx
 			// special handlers for neo4j :)
 			rawMap = funcMapAdapter(rawMap)
 
-			f, err := extractor.FromMap(rawMap)
+			f, err := extractor.Map2Func(rawMap)
 			if err != nil {
 				return nil, err
 			}
@@ -225,7 +229,7 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sign
 			// special handlers for neo4j :)
 			rawMap = funcMapAdapter(rawMap)
 
-			f, err := extractor.FromMap(rawMap)
+			f, err := extractor.Map2Func(rawMap)
 			if err != nil {
 				return nil, err
 			}
@@ -310,11 +314,11 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 			srcMap = funcMapAdapter(srcMap)
 			targetMap = funcMapAdapter(targetMap)
 
-			f, err := extractor.FromMap(rawMap)
+			f, err := extractor.Map2Func(rawMap)
 			if err != nil {
 				return nil, err
 			}
-			srcf, err := extractor.FromMap(srcMap)
+			srcf, err := extractor.Map2Func(srcMap)
 			if err != nil {
 				return nil, err
 			}
@@ -323,7 +327,7 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 				Path:     srcFile["lang"].(string),
 				Language: core.LangType(srcFile["path"].(string)),
 			}
-			targetf, err := extractor.FromMap(targetMap)
+			targetf, err := extractor.Map2Func(targetMap)
 			if err != nil {
 				return nil, err
 			}

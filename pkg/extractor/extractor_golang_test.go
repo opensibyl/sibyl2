@@ -64,7 +64,7 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 			panic(err)
 		}
 
-		back, err := FromJson(normal)
+		back, err := Json2Func(normal)
 		if err != nil {
 			panic(err)
 		}

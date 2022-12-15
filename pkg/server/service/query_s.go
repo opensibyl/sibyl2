@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/opensibyl/sibyl2/pkg/server/queue"
@@ -158,11 +159,12 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 		return
 	}
 
-	var ctxs []*sibyl2.FunctionContext
+	ctxs := make([]*sibyl2.FunctionContext, 0)
 	for _, each := range ret {
 		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, sharedContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, err)
+			core.Log.Errorf("err when read with sign: %v", err)
 			return
 		}
 		ctxs = append(ctxs, funcCtx)

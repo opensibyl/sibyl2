@@ -123,6 +123,8 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
 		driver = initMemDriver()
 	case object.DtNeo4j:
 		driver = initNeo4jDriver(config)
+	case object.DtBadger:
+		driver = initBadgerDriver(config)
 	default:
 		driver = initMemDriver()
 	}

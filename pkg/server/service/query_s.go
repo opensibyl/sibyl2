@@ -20,7 +20,7 @@ var sharedQueue queue.Queue
 
 // @Summary repo query
 // @Produce json
-// @Success 200
+// @Success 200 {array} string
 // @Router  /api/v1/repo [get]
 func HandleRepoQuery(c *gin.Context) {
 	repos, err := sharedDriver.ReadRepos(sharedContext)

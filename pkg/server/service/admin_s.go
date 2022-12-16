@@ -12,6 +12,7 @@ type UploadStats struct {
 	FuncCtxUnitTodo int `json:"funcCtxUnitTodo"`
 }
 
+// @BasePath /
 // @Summary upload status query
 // @Produce json
 // @Success 200

@@ -30,7 +30,13 @@ proxy mode:
 - no worker threads
 */
 
-// @title swagger doc for sibyl2 server
+// @title openapi for sibyl2 server
+// @version         1.0
+// @termsOfService  http://swagger.io/terms/
+// @contact.name   williamfzc
+// @contact.url    https://github.com/williamfzc
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 func Execute(config object.ExecuteConfig) {
 	core.Log.Infof(config.ToJson())
 	ctx, cancel := context.WithCancel(context.Background())

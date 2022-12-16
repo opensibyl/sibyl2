@@ -32,5 +32,6 @@ EXPOSE 9876
 RUN adduser -D sibyl
 USER sibyl
 ENV GIN_MODE=release
+VOLUME /app/sibyl/.sibyl2storage
 
 ENTRYPOINT ["/app/sibyl", "server"]

@@ -9,18 +9,21 @@
 
 > Take a quick snapshot of your codebase in seconds, with zero cost.
 
-![](https://opensibyl.github.io/doc/assets/images/intro-summary-0043f5cae91e9de62c619318afda4c39.png)
+## Overview
 
-## What's it?
-
-sibyl2 is a static code analyzer, for extracting meta-data (functions/classes/parameters/lines ...) from raw source code. Inspired by [semantic](https://github.com/github/semantic) of GitHub.
+sibyl2 is a static code analyzer, for extracting, managing and offering codebase snapshot. Inspired
+by [semantic](https://github.com/github/semantic) of GitHub.
 
 - Easy to use
 - Fast enough
 - Extensible
 - Multiple languages in one (Go/Java/Python ...)
 
-It can translate raw source code:
+## What's `Codebase Snapshot`?
+
+![](https://opensibyl.github.io/doc/assets/images/intro-summary-0043f5cae91e9de62c619318afda4c39.png)
+
+Raw source code:
 
 ```go
 func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.FunctionFileResult, error) {
@@ -28,117 +31,79 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 }
 ```
 
-to logical structure：
+Code snapshot is the logical metadata of your code:
 
 ![](./docs/sample.svg)
 
-all you need is a one-line command:
+## Purpose & Principles
+
+See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
+
+## Examples of Usage
+
+### One-file-installation
+
+For now, we are aiming at offering an out-of-box service.
+Users can access all the features with a simple binary file, without any extra dependencies and scripts.
+
+You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
+
+Or directly download with `wget`:
 
 ```bash
-./sibyl extract --src . --output hello.json
+wget https://github.com/opensibyl/sibyl2/releases/download/v0.8.0/sibyl2_0.8.0_linux_amd64
 ```
 
-and export them with different formats.
+### Use as a service (recommend)
 
-<details><summary>... JSON format for your custom operations</summary>
+#### Deploy
 
-```json
-{
-  "path": "extract.go",
-  "language": "GOLANG",
-  "type": "func",
-  "units": [
-    {
-      "name": "ExtractFunction",
-      "receiver": "",
-      "parameters": [
-        {
-          "type": "string",
-          "name": "targetFile"
-        },
-        {
-          "type": "*ExtractConfig",
-          "name": "config"
-        }
-      ],
-      "returns": [
-        {
-          "type": "[]*extractor.FunctionFileResult",
-          "name": ""
-        },
-        {
-          "type": "error",
-          "name": ""
-        }
-      ],
-      "span": {
-        "start": {
-          "row": 18,
-          "column": 0
-        },
-        "end": {
-          "row": 46,
-          "column": 1
-        }
-      },
-      "extras": null
-    }
-  ]
-}
+```bash
+./sibyl server
 ```
 
-</details>
+That's it. 
+Server will run on port `:9876`.
+Data will be persisted in `./sibyl2Storage`.
 
-<details><summary>... And multiple languages supported</summary>
+#### Upload
 
-```java
-public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
-    @Override
-    public void enterMethodDeclarationWithoutMethodBody(
-            Java8Parser.MethodDeclarationWithoutMethodBodyContext ctx) {
-        super.enterMethodDeclarationWithoutMethodBody(ctx);
-        this.storage.save(curMethodStack.peekLast());
-    }
-}
+![](https://opensibyl.github.io/doc/assets/images/intro-upload-1bb4fa2ce8ed43e6fc5f31c1ab3cc90b.gif)
+
+```bash
+./sibyl upload --src . --url http://127.0.0.1:9876
 ```
 
-after:
+You can upload from different machines.
 
-```json
-{
-	"name": "enterMethodDeclarationWithoutMethodBody",
-	"receiver": "com.williamfzc.sibyl.core.listener.java8.Java8SnapshotListener",
-	"parameters": [{
-		"type": "Java8Parser.MethodDeclarationWithoutMethodBodyContext",
-		"name": "ctx"
-	}],
-	"returns": [{
-		"type": "void",
-		"name": ""
-	}],
-	"span": {
-		"start": {
-			"row": 8,
-			"column": 4
-		},
-		"end": {
-			"row": 13,
-			"column": 5
-		}
-	},
-	"extras": {
-		"annotations": ["@Override"]
-	}
-}
-```
+#### Access
 
-</details>
+After uploading, you can access your data via http api.
 
-## Usage examples
+![](https://opensibyl.github.io/doc/assets/images/usage-swagger-82e6fbaf8ae27f8cf697eb77cad56210.png)
 
-Developers can easily combine it with any other tools. We have already built some cmd tools in use. You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
+Tree-like storage:
 
-### Basic Functions
+- repo
+    - rev1
+        - file
+            - function
+    - rev2
+        - file
+            - function
+
+Try with swagger: http://127.0.0.1:9876/swagger/index.html#/
+
+#### Access with sdk
+
+Easily combine with other systems:
+
+- golang: https://github.com/opensibyl/sibyl-go-client
+- java: https://github.com/opensibyl/sibyl-java-client
+
+### Use as a commandline tool
+
+#### Basic Functions
 
 ```
 ./sibyl extract --src . --output hello.json
@@ -205,9 +170,10 @@ $ ./sibyl extract --src . --output hello.json
   ...
 ]
 ```
+
 </details>
 
-### Source Code History Visualization
+#### Source Code History Visualization
 
 Source code history visualization, inspired by https://github.com/acaudwell/Gource
 
@@ -220,8 +186,8 @@ One line command to see how your repository grow up, with no heavy dependencies 
 https://user-images.githubusercontent.com/13421694/207089314-21b0d48d-00d1-4de5-951c-415fed74c78f.mp4
 
 > You can remove the `full` flag for better performance.
-	
-### Smart Git Diff
+
+#### Smart Git Diff
 
 Normal git diff has only text level messages.
 
@@ -295,30 +261,15 @@ Normal git diff has only text level messages.
 
 </details>
 
-You can easily build some `smart test` tools above it. 
+You can easily build some `smart test` tools above it.
 For example, Google 's unittest speed up:
 
 ![intro-google](https://user-images.githubusercontent.com/13421694/207057947-894c1fb9-8ce4-4f7b-b5d3-88d220003e82.png)
 
-### PaaS (WIP)
-	
-About how we use in real DevOps workflow. 
-It offered a shared "code snapshot" layer for different any other tools.
-See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
-
-**Documentation is on the way.**
-
-## Principle
-
-Many devtools required meta-data inside source code for further processing. For example, code coverage, call graph, etc.
-
-Without a cross-languages shared lib, we have to re-implement this extract layer repeatedly for each tool, each language.
-
-This repo aims at offering a general use shared lib for **source code meta-data**.
-
 ## Performance
 
-We have tested it on some famous repos, like [guava](https://github.com/google/guava). And that's why we can say it is "fast enough".
+We have tested it on some famous repos, like [guava](https://github.com/google/guava). And that's why we can say it is "
+fast enough".
 
 See https://github.com/williamfzc/sibyl2/actions/workflows/perf.yml for details.
 

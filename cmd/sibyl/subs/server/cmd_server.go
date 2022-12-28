@@ -1,17 +1,17 @@
 package server
 
 import (
+	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var serverBackendUrl string
-var serverUser string
-var serverPwd string
-var serverQueueType string
-var serverUploadWorkerCount int
-var serverUploadQueueSize int
+const (
+	configPath = "."
+	configFile = "sibyl-server-config.json"
+)
 
 func NewServerCmd() *cobra.Command {
 	var serverCmd = &cobra.Command{
@@ -20,33 +20,42 @@ func NewServerCmd() *cobra.Command {
 		Long:  `sibyl server cmd`,
 		Run: func(cmd *cobra.Command, args []string) {
 			config := object.DefaultExecuteConfig()
-			if serverBackendUrl != "" {
-				config.DbType = object.DtNeo4j
-				config.Neo4jUri = serverBackendUrl
+
+			// read from config
+			viper.AddConfigPath(configPath)
+			viper.SetConfigFile(configFile)
+
+			core.Log.Infof("trying to read config from: %s/%s", configPath, configFile)
+			err := viper.ReadInConfig()
+			if err != nil {
+				core.Log.Warnf("no config file found, use default")
+			} else {
+				core.Log.Infof("found config file")
+				err = viper.Unmarshal(&config)
+
+				if err != nil {
+					core.Log.Errorf("failed to parse config")
+					panic(err)
+				}
 			}
-			if serverUser != "" {
-				config.Neo4jUserName = serverUser
+
+			// save it back
+			usedConfigMap, err := config.ToMap()
+			if err != nil {
+				panic(err)
 			}
-			if serverPwd != "" {
-				config.Neo4jPassword = serverPwd
+			err = viper.MergeConfigMap(usedConfigMap)
+			if err != nil {
+				panic(err)
 			}
-			if serverUploadWorkerCount != 0 {
-				config.WorkerCount = serverUploadWorkerCount
+			err = viper.WriteConfigAs(viper.ConfigFileUsed())
+			if err != nil {
+				core.Log.Warnf("failed to write config back")
 			}
-			if serverUploadQueueSize != 0 {
-				config.WorkerQueueSize = serverUploadQueueSize
-			}
-			config.QueueType = serverQueueType
 
 			server.Execute(config)
 		},
 	}
-	serverCmd.PersistentFlags().StringVar(&serverBackendUrl, "uri", "", "neo4j backend url")
-	serverCmd.PersistentFlags().StringVar(&serverUser, "user", "", "neo4j user")
-	serverCmd.PersistentFlags().StringVar(&serverPwd, "pwd", "", "neo4j password")
-	serverCmd.PersistentFlags().StringVar(&serverQueueType, "queueType", object.QueueTypeMemory, "queue type")
-	serverCmd.PersistentFlags().IntVar(&serverUploadWorkerCount, "workers", 0, "upload worker count")
-	serverCmd.PersistentFlags().IntVar(&serverUploadQueueSize, "queueSize", 0, "upload worker count")
 
 	return serverCmd
 }

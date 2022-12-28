@@ -48,3 +48,16 @@ func (config *ExecuteConfig) ToJson() (string, error) {
 	}
 	return string(bytes), nil
 }
+
+func (config *ExecuteConfig) ToMap() (map[string]any, error) {
+	b, err := json.Marshal(config)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]interface{}
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}

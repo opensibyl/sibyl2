@@ -38,7 +38,13 @@ proxy mode:
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 func Execute(config object.ExecuteConfig) {
-	core.Log.Infof(config.ToJson())
+	configStr, err := config.ToJson()
+	if err != nil {
+		core.Log.Errorf("parse config to string failed: %v", err)
+		return
+	}
+
+	core.Log.Infof("started with config: %s", configStr)
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -67,8 +73,8 @@ func Execute(config object.ExecuteConfig) {
 	engine.Handle(http.MethodGet, "/ping", service.HandlePing)
 	engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
-	err := engine.Run(fmt.Sprintf(":%d", config.Port))
+	err = engine.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {
-		fmt.Printf("failed to start repoctor_receiver: %s", err.Error())
+		core.Log.Errorf("failed to start repoctor_receiver: %s", err.Error())
 	}
 }

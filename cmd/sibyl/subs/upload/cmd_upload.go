@@ -17,14 +17,13 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var uploadSrc string
-var uploadLangType string
-var uploadUrl string
-var uploadWithCtx bool
-var uploadBatchLimit int
-var uploadDryRun bool
+const (
+	configPath = "."
+	configFile = "sibyl-upload-config.json"
+)
 
 var httpClient = retryablehttp.NewClient()
 
@@ -36,72 +35,165 @@ func init() {
 }
 
 func NewUploadCmd() *cobra.Command {
+	var uploadSrc string
+	var uploadLangType string
+	var uploadUrl string
+	var uploadWithCtx bool
+	var uploadBatchLimit int
+	var uploadDryRun bool
+
 	uploadCmd := &cobra.Command{
 		Use:    "upload",
 		Short:  "test",
 		Long:   `test`,
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
-			uploadSrc, err := filepath.Abs(uploadSrc)
-			if err != nil {
-				panic(err)
-			}
-			repo, err := loadRepo(uploadSrc)
-			if err != nil {
-				panic(err)
-			}
-			head, err := repo.Head()
-			curRepo := filepath.Base(uploadSrc)
-			curRev := head.Hash().String()
+			config := defaultConfig()
 
-			wc := &object.WorkspaceConfig{
-				RepoId:  curRepo,
-				RevHash: curRev,
-			}
-			f, err := sibyl2.ExtractFunction(uploadSrc, sibyl2.DefaultConfig())
+			// read from config
+			viper.AddConfigPath(configPath)
+			viper.SetConfigFile(configFile)
+
+			core.Log.Infof("trying to read config from: %s/%s", configPath, configFile)
+			err := viper.ReadInConfig()
 			if err != nil {
-				panic(err)
-			}
+				core.Log.Warnf("no config file found, use default")
+			} else {
+				core.Log.Infof("found config file")
+				err = viper.Unmarshal(&config)
 
-			s, err := sibyl2.ExtractSymbol(uploadSrc, sibyl2.DefaultConfig())
-			if err != nil {
-				panic(err)
-			}
-
-			fullUrl := fmt.Sprintf("%s/api/v1/func", uploadUrl)
-			ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", uploadUrl)
-			core.Log.Infof("upload backend: %s", fullUrl)
-			if !uploadDryRun {
-				uploadFunctions(fullUrl, wc, f)
-			}
-			core.Log.Infof("upload functions finished")
-
-			// building edges in neo4j can be very slow
-			// by default disabled
-			if uploadWithCtx {
-				core.Log.Infof("start calculating func graph")
-				g, err := sibyl2.AnalyzeFuncGraph(f, s)
 				if err != nil {
+					core.Log.Errorf("failed to parse config")
 					panic(err)
 				}
-				core.Log.Infof("graph ready")
-				if !uploadDryRun {
-					uploadGraph(ctxUrl, wc, f, g)
-				}
-				core.Log.Infof("upload graph finished")
 			}
 
-			core.Log.Infof("upload finished")
+			// read from cmd
+			config.Src = uploadSrc
+			config.Lang = uploadLangType
+			config.Url = uploadUrl
+			config.WithCtx = uploadWithCtx
+			config.Batch = uploadBatchLimit
+			config.Dry = uploadDryRun
+
+			// execute
+			execWithConfig(config)
+
+			// save it back
+			usedConfigMap, err := config.ToMap()
+			if err != nil {
+				panic(err)
+			}
+			err = viper.MergeConfigMap(usedConfigMap)
+			if err != nil {
+				panic(err)
+			}
+			err = viper.WriteConfigAs(viper.ConfigFileUsed())
+			if err != nil {
+				core.Log.Warnf("failed to write config back")
+			}
 		},
 	}
-	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", ".", "src dir path")
-	uploadCmd.PersistentFlags().StringVar(&uploadLangType, "lang", "", "lang type of your source code")
-	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", "http://127.0.0.1:9876", "backend url")
-	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", false, "with func context")
-	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", 50, "with func context")
-	uploadCmd.PersistentFlags().BoolVar(&uploadDryRun, "dry", false, "dry run without upload")
+
+	config := defaultConfig()
+	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", config.Src, "src dir path")
+	uploadCmd.PersistentFlags().StringVar(&uploadLangType, "lang", config.Lang, "lang type of your source code")
+	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", config.Url, "backend url")
+	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", config.WithCtx, "with func context")
+	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", config.Batch, "with func context")
+	uploadCmd.PersistentFlags().BoolVar(&uploadDryRun, "dry", config.Dry, "dry run without upload")
 
 	return uploadCmd
+}
+
+func execWithConfig(c *uploadConfig) {
+	uploadSrc, err := filepath.Abs(c.Src)
+	if err != nil {
+		panic(err)
+	}
+	repo, err := loadRepo(uploadSrc)
+	if err != nil {
+		panic(err)
+	}
+	head, err := repo.Head()
+	curRepo := filepath.Base(uploadSrc)
+	curRev := head.Hash().String()
+
+	wc := &object.WorkspaceConfig{
+		RepoId:  curRepo,
+		RevHash: curRev,
+	}
+	f, err := sibyl2.ExtractFunction(uploadSrc, sibyl2.DefaultConfig())
+	if err != nil {
+		panic(err)
+	}
+
+	s, err := sibyl2.ExtractSymbol(uploadSrc, sibyl2.DefaultConfig())
+	if err != nil {
+		panic(err)
+	}
+
+	fullUrl := fmt.Sprintf("%s/api/v1/func", c.Url)
+	ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", c.Url)
+	core.Log.Infof("upload backend: %s", fullUrl)
+	if !c.Dry {
+		uploadFunctions(fullUrl, wc, f, c.Batch)
+	}
+	core.Log.Infof("upload functions finished")
+
+	// building edges in neo4j can be very slow
+	// by default disabled
+	if c.WithCtx {
+		core.Log.Infof("start calculating func graph")
+		g, err := sibyl2.AnalyzeFuncGraph(f, s)
+		if err != nil {
+			panic(err)
+		}
+		core.Log.Infof("graph ready")
+		if !c.Dry {
+			uploadGraph(ctxUrl, wc, f, g, c.Batch)
+		}
+		core.Log.Infof("upload graph finished")
+	}
+
+	core.Log.Infof("upload finished")
+}
+
+type uploadConfig struct {
+	Src          string `json:"src"`
+	Lang         string `json:"lang"`
+	Url          string `json:"url"`
+	WithCtx      bool   `json:"withCtx"`
+	Batch        int    `json:"batch"`
+	Dry          bool   `json:"dry"`
+	IncludeRegex string `json:"includeRegex"`
+	ExcludeRegex string `json:"excludeRegex"`
+}
+
+func (config *uploadConfig) ToMap() (map[string]any, error) {
+	b, err := json.Marshal(config)
+	if err != nil {
+		return nil, err
+	}
+	var m map[string]interface{}
+	err = json.Unmarshal(b, &m)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func defaultConfig() *uploadConfig {
+	return &uploadConfig{
+		Src:          ".",
+		Lang:         "",
+		Url:          "http://127.0.0.1:9876",
+		WithCtx:      false,
+		Batch:        50,
+		Dry:          false,
+		IncludeRegex: "",
+		ExcludeRegex: "",
+	}
 }
 
 func loadRepo(gitDir string) (*git.Repository, error) {
@@ -112,7 +204,7 @@ func loadRepo(gitDir string) (*git.Repository, error) {
 	return repo, nil
 }
 
-func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.FunctionFileResult) {
+func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.FunctionFileResult, batch int) {
 	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
 
 	// pack
@@ -126,7 +218,6 @@ func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.Func
 	}
 	// submit
 	ptr := 0
-	batch := uploadBatchLimit
 	for ptr < len(fullUnits) {
 		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
 
@@ -171,10 +262,9 @@ func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
 	wg.Wait()
 }
 
-func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph) {
+func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph, batch int) {
 	var wg sync.WaitGroup
 	ptr := 0
-	batch := uploadBatchLimit
 	for ptr < len(functions) {
 		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
 

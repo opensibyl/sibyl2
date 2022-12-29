@@ -128,6 +128,9 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
 		driver = initNeo4jDriver(config)
 	case object.DtBadger:
 		driver = initBadgerDriver(config)
+	case object.DtTikv:
+		driver = initTikvDriver(config)
+
 	default:
 		// todo: remove mem driver?
 		driver = initMemDriver()

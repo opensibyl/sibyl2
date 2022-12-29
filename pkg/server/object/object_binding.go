@@ -11,6 +11,7 @@ type DriverType string
 const DtNeo4j DriverType = "NEO4J"
 const DtInMemory DriverType = "IN_MEMORY"
 const DtBadger DriverType = "BADGER"
+const DtTikv DriverType = "TIKV"
 const FlagWcKeySplit = "|,,|"
 
 /*

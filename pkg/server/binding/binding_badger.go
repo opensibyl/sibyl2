@@ -105,6 +105,7 @@ func (d *badgerDriver) InitDriver(_ context.Context) error {
 	case object.DtInMemory:
 		dbInst, err = badger.Open(badger.DefaultOptions("").WithInMemory(true))
 	case object.DtBadger:
+		core.Log.Infof("trying to open: %s", d.config.BadgerPath)
 		dbInst, err = badger.Open(badger.DefaultOptions(d.config.BadgerPath))
 	default:
 		core.Log.Errorf("db type %v invalid", d.config.DbType)

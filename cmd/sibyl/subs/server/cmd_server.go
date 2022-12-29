@@ -11,6 +11,7 @@ import (
 const (
 	configPath = "."
 	configFile = "sibyl-server-config.json"
+	configType = "json"
 )
 
 func NewServerCmd() *cobra.Command {
@@ -24,6 +25,7 @@ func NewServerCmd() *cobra.Command {
 			// read from config
 			viper.AddConfigPath(configPath)
 			viper.SetConfigFile(configFile)
+			viper.SetConfigType(configType)
 
 			core.Log.Infof("trying to read config from: %s/%s", configPath, configFile)
 			err := viper.ReadInConfig()
@@ -40,6 +42,10 @@ func NewServerCmd() *cobra.Command {
 			}
 
 			// save it back
+			// viper has a bug here .. unmarshal is case-insensitively
+			// https://github.com/spf13/viper/issues/1014
+			// so does json:
+			// https://stackoverflow.com/questions/49006073/json-unmarshal-struct-case-sensitively
 			usedConfigMap, err := config.ToMap()
 			if err != nil {
 				panic(err)

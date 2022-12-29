@@ -48,7 +48,5 @@ func TestServer(t *testing.T) {
 	if len(files) == 0 {
 		panic(nil)
 	}
-	for _, each := range files {
-		core.Log.Debugf("file: %v\n", each)
-	}
+	core.Log.Infof("file count: %d", len(files))
 }

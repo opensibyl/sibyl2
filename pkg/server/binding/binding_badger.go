@@ -3,7 +3,6 @@ package binding
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -13,88 +12,9 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
-/*
-storage:
-- rev|<hash>:
-- rev_<hash>_file|<hash>:
-- rev_<hash>_file_<hash>_func|<hash>: func details map
-- rev_<hash>_file_<hash>_funcctx|<hash>: func ctx details map
-
-mean:
-- |: type def end
-- _: connection
-*/
-
 type badgerDriver struct {
 	db     *badger.DB
 	config object.ExecuteConfig
-}
-
-const revPrefix = "rev|"
-
-type revKey struct {
-	hash string
-}
-
-func (r *revKey) String() string {
-	return revPrefix + r.hash
-}
-
-func (r *revKey) ToScanPrefix() string {
-	return "rev_" + r.hash + "_"
-}
-
-func toRevKey(revHash string) *revKey {
-	return &revKey{revHash}
-}
-
-func parseRevKey(raw string) *revKey {
-	return &revKey{strings.TrimPrefix(raw, revPrefix)}
-}
-
-type fileKey struct {
-	revHash  string
-	fileHash string
-}
-
-func (f *fileKey) String() string {
-	return fmt.Sprintf("rev_%s_file|%s", f.revHash, f.fileHash)
-}
-
-func (f *fileKey) ToScanPrefix() string {
-	return fmt.Sprintf("rev_%s_file_%s_", f.revHash, f.fileHash)
-}
-
-func toFileKey(revHash string, fileHash string) *fileKey {
-	return &fileKey{revHash, fileHash}
-}
-
-type funcKey struct {
-	revHash  string
-	fileHash string
-	funcHash string
-}
-
-func toFuncKey(revHash string, fileHash string, funcHash string) *funcKey {
-	return &funcKey{revHash, fileHash, funcHash}
-}
-
-func (f *funcKey) String() string {
-	return fmt.Sprintf("rev_%s_file_%s_func|%s", f.revHash, f.fileHash, f.funcHash)
-}
-
-type funcCtxKey struct {
-	revHash  string
-	fileHash string
-	funcHash string
-}
-
-func toFuncCtxKey(revHash string, fileHash string, funcHash string) *funcCtxKey {
-	return &funcCtxKey{revHash, fileHash, funcHash}
-}
-
-func (f *funcCtxKey) String() string {
-	return fmt.Sprintf("rev_%s_file_%s_funcctx|%s", f.revHash, f.fileHash, f.funcHash)
 }
 
 func (d *badgerDriver) InitDriver(_ context.Context) error {
@@ -138,7 +58,7 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 		}
 
 		for _, eachFunc := range f.Units {
-			eachFuncKey := toFuncKey(fk.revHash, fk.fileHash, eachFunc.GetSignature())
+			eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
 			eachFuncV, err := eachFunc.ToJson()
 			if err != nil {
 				continue
@@ -172,7 +92,7 @@ func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.F
 			return err
 		}
 
-		eachFuncKey := toFuncCtxKey(fk.revHash, fk.fileHash, f.GetSignature())
+		eachFuncKey := toFuncCtxKey(fk.RevHash, fk.FileHash, f.GetSignature())
 		eachFuncV, err := f.ToJson()
 		if err != nil {
 			return err
@@ -196,7 +116,7 @@ func (d *badgerDriver) CreateWorkspace(wc *object.WorkspaceConfig, _ context.Con
 		return err
 	}
 	err = d.db.Update(func(txn *badger.Txn) error {
-		byteKey := []byte(toRevKey(key).String())
+		byteKey := []byte(ToRevKey(key).String())
 		err = txn.Set(byteKey, nil)
 		if err != nil {
 			return err
@@ -237,7 +157,7 @@ func (d *badgerDriver) ReadRepos(_ context.Context) ([]string, error) {
 	}
 	ret := make([]string, 0)
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
 		if err != nil {
 			return nil, err
 		}
@@ -253,7 +173,7 @@ func (d *badgerDriver) ReadRevs(repoId string, _ context.Context) ([]string, err
 	}
 	ret := make([]string, 0)
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
 		if err != nil {
 			return nil, err
 		}
@@ -269,7 +189,7 @@ func (d *badgerDriver) ReadFiles(wc *object.WorkspaceConfig, _ context.Context) 
 	if err != nil {
 		return nil, err
 	}
-	rk := toRevKey(key)
+	rk := ToRevKey(key)
 	searchResult := make([]string, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
@@ -332,7 +252,7 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 	if err != nil {
 		return nil, err
 	}
-	rk := toRevKey(key)
+	rk := ToRevKey(key)
 	var ret *sibyl2.FunctionWithPath
 	err = d.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
@@ -387,7 +307,7 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 	if err != nil {
 		return nil, err
 	}
-	rk := toRevKey(key)
+	rk := ToRevKey(key)
 	var ret *sibyl2.FunctionContext
 	err = d.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
@@ -443,7 +363,7 @@ func (d *badgerDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.C
 	if err != nil {
 		return err
 	}
-	rk := toRevKey(key)
+	rk := ToRevKey(key)
 	itself := []byte(rk.String())
 	sons := []byte(rk.ToScanPrefix())
 

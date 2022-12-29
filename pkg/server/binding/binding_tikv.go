@@ -58,7 +58,7 @@ func (t *TiKVDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Con
 	if err != nil {
 		return err
 	}
-	byteKey := []byte(toRevKey(key).String())
+	byteKey := []byte(ToRevKey(key).String())
 	txn, err := t.client.Begin()
 
 	// tikv does not allow set nil value
@@ -101,7 +101,7 @@ func (t *TiKVDriver) ReadRepos(_ context.Context) ([]string, error) {
 	}
 	ret := make([]string, 0)
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
 		if err != nil {
 			return nil, err
 		}
@@ -117,7 +117,7 @@ func (t *TiKVDriver) ReadRevs(repoId string, ctx context.Context) ([]string, err
 	}
 	ret := make([]string, 0)
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
 		if err != nil {
 			return nil, err
 		}

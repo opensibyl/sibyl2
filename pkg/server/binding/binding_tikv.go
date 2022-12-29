@@ -39,6 +39,7 @@ func (t *TiKVDriver) DeferDriver() error {
 	if err := t.client.Close(); err != nil {
 		return err
 	}
+	t.client = nil
 	return nil
 }
 
@@ -59,7 +60,9 @@ func (t *TiKVDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Con
 	}
 	byteKey := []byte(toRevKey(key).String())
 	txn, err := t.client.Begin()
-	err = txn.Set(byteKey, nil)
+
+	// tikv does not allow set nil value
+	err = txn.Set(byteKey, byteKey)
 	if err != nil {
 		return err
 	}

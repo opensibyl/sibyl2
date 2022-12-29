@@ -100,10 +100,6 @@ func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
 	return &neo4jDriver{dwc}, nil
 }
 
-func NewInMemoryDriver() (Driver, error) {
-	return newMemDriver(), nil
-}
-
 func WorkspaceConfigFromKey(key string) (*object.WorkspaceConfig, error) {
 	parts := strings.Split(key, object.FlagWcKeySplit)
 	if len(parts) < 2 {
@@ -116,7 +112,7 @@ func WorkspaceConfigFromKey(key string) (*object.WorkspaceConfig, error) {
 	return ret, nil
 }
 
-func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
+func InitDriver(config object.ExecuteConfig, ctx context.Context) (Driver, error) {
 	var driver Driver
 
 	// create driver obj, do some settings
@@ -132,14 +128,13 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) Driver {
 		driver = initTikvDriver(config)
 
 	default:
-		// todo: remove mem driver?
-		driver = initMemDriver()
+		return nil, errors.New("invalid driver: " + string(config.DbType))
 	}
 
 	// init driver instance (maybe pre connection, etc.)
 	err := driver.InitDriver(ctx)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return driver
+	return driver, nil
 }

@@ -48,7 +48,12 @@ func Execute(config object.ExecuteConfig) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	sharedDriver := binding.InitDriver(config, ctx)
+	sharedDriver, err := binding.InitDriver(config, ctx)
+	if err != nil {
+		core.Log.Errorf("failed to create binding: %v", err)
+		return
+	}
+
 	defer sharedDriver.DeferDriver()
 	mq := queue.InitQueue(config, ctx)
 	defer mq.Defer()

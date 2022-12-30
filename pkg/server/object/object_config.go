@@ -48,7 +48,7 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"bolt://localhost:7687",
 		"neo4j",
 		"neo4j",
-		"./.sibyl2Storage",
+		"./sibyl2-badger-storage",
 		"127.0.0.1:2379",
 		64,
 		// each message = 4k, takes nearly 2gb mem

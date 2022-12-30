@@ -14,11 +14,13 @@ const (
 	StGateway ServerType = "GATEWAY"
 )
 
-type ExecuteConfig struct {
+type ServerConfigPart struct {
 	// server
 	Port int        `mapstructure:"port"`
 	Mode ServerType `mapstructure:"mode"`
+}
 
+type BindingConfigPart struct {
 	// binding
 	DbType        DriverType `mapstructure:"dbType"`
 	Neo4jUri      string     `mapstructure:"neo4JUri"`
@@ -26,11 +28,15 @@ type ExecuteConfig struct {
 	Neo4jPassword string     `mapstructure:"neo4JPassword"`
 	BadgerPath    string     `mapstructure:"badgerPath"`
 	TikvAddrs     string     `mapstructure:"tikvAddrs"`
+}
 
+type WorkerConfigPart struct {
 	// worker
 	WorkerCount     int `mapstructure:"workerCount"`
 	WorkerQueueSize int `mapstructure:"workerQueueSize"`
+}
 
+type QueueConfigPart struct {
 	// queue
 	QueueType                 QueueType `mapstructure:"queueType"`
 	KafkaAddrs                string    `mapstructure:"kafkaAddrs"`
@@ -40,25 +46,40 @@ type ExecuteConfig struct {
 	KafkaFuncCtxConsumerGroup string    `mapstructure:"kafkaFuncCtxConsumerGroup"`
 }
 
+type ExecuteConfig struct {
+	*ServerConfigPart  `mapstructure:"server"`
+	*BindingConfigPart `mapstructure:"binding"`
+	*WorkerConfigPart  `mapstructure:"worker"`
+	*QueueConfigPart   `mapstructure:"queue"`
+}
+
 func DefaultExecuteConfig() ExecuteConfig {
 	return ExecuteConfig{
-		9876,
-		StAll,
-		DtBadger,
-		"bolt://localhost:7687",
-		"neo4j",
-		"neo4j",
-		"./sibyl2-badger-storage",
-		"127.0.0.1:2379",
-		64,
-		// each message = 4k, takes nearly 2gb mem
-		512_000,
-		QueueTypeMemory,
-		"10.177.65.230:9092",
-		"sibyl-upload-func",
-		"sibyl-consumer-func",
-		"sibyl-upload-funcctx",
-		"sibyl-consumer-funcctx",
+		ServerConfigPart: &ServerConfigPart{
+			9876,
+			StAll,
+		},
+		BindingConfigPart: &BindingConfigPart{
+			DtBadger,
+			"bolt://localhost:7687",
+			"neo4j",
+			"neo4j",
+			"./sibyl2-badger-storage",
+			"127.0.0.1:2379",
+		},
+		WorkerConfigPart: &WorkerConfigPart{
+			64,
+			// each message = 4k, takes nearly 2gb mem
+			512_000,
+		},
+		QueueConfigPart: &QueueConfigPart{
+			QueueTypeMemory,
+			"10.177.65.230:9092",
+			"sibyl-upload-func",
+			"sibyl-consumer-func",
+			"sibyl-upload-funcctx",
+			"sibyl-consumer-funcctx",
+		},
 	}
 }
 

@@ -49,6 +49,7 @@ func Execute(config object.ExecuteConfig) {
 	*/
 	needWorker := config.Mode == object.StAll || config.Mode == object.StWorker
 	needGateway := config.Mode == object.StAll || config.Mode == object.StGateway
+	core.Log.Infof("current mode: %s, worker: %v, gateway: %v", config.Mode, needWorker, needGateway)
 
 	// middleware start up
 	// data driver is always required for query

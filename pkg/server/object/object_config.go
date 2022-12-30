@@ -1,29 +1,34 @@
 package object
 
-import "encoding/json"
+import (
+	"encoding/json"
+
+	"github.com/mitchellh/mapstructure"
+)
 
 type ExecuteConfig struct {
 	// server
-	Port int `json:"port"`
+	Port int `mapstructure:"port"`
 
 	// binding
-	DbType        DriverType `json:"dbType"`
-	Neo4jUri      string     `json:"neo4JUri"`
-	Neo4jUserName string     `json:"neo4JUserName"`
-	Neo4jPassword string     `json:"neo4JPassword"`
-	BadgerPath    string     `json:"badgerPath"`
+	DbType        DriverType `mapstructure:"dbType"`
+	Neo4jUri      string     `mapstructure:"neo4JUri"`
+	Neo4jUserName string     `mapstructure:"neo4JUserName"`
+	Neo4jPassword string     `mapstructure:"neo4JPassword"`
+	BadgerPath    string     `mapstructure:"badgerPath"`
+	TikvAddrs     string     `mapstructure:"tikvAddrs"`
 
 	// worker
-	WorkerCount     int `json:"workerCount"`
-	WorkerQueueSize int `json:"workerQueueSize"`
+	WorkerCount     int `mapstructure:"workerCount"`
+	WorkerQueueSize int `mapstructure:"workerQueueSize"`
 
 	// queue
-	QueueType                 QueueType `json:"queueType"`
-	KafkaAddrs                string    `json:"kafkaAddrs"`
-	KafkaFuncTopic            string    `json:"kafkaFuncTopic"`
-	KafkaFuncConsumerGroup    string    `json:"kafkaFuncConsumerGroup"`
-	KafkaFuncCtxTopic         string    `json:"kafkaFuncCtxTopic"`
-	KafkaFuncCtxConsumerGroup string    `json:"kafkaFuncCtxConsumerGroup"`
+	QueueType                 QueueType `mapstructure:"queueType"`
+	KafkaAddrs                string    `mapstructure:"kafkaAddrs"`
+	KafkaFuncTopic            string    `mapstructure:"kafkaFuncTopic"`
+	KafkaFuncConsumerGroup    string    `mapstructure:"kafkaFuncConsumerGroup"`
+	KafkaFuncCtxTopic         string    `mapstructure:"kafkaFuncCtxTopic"`
+	KafkaFuncCtxConsumerGroup string    `mapstructure:"kafkaFuncCtxConsumerGroup"`
 }
 
 func DefaultExecuteConfig() ExecuteConfig {
@@ -34,6 +39,7 @@ func DefaultExecuteConfig() ExecuteConfig {
 		"neo4j",
 		"neo4j",
 		"./.sibyl2Storage",
+		"127.0.0.1:2379",
 		64,
 		// each message = 4k, takes nearly 2gb mem
 		512_000,
@@ -47,7 +53,11 @@ func DefaultExecuteConfig() ExecuteConfig {
 }
 
 func (config *ExecuteConfig) ToJson() (string, error) {
-	bytes, err := json.Marshal(config)
+	m, err := config.ToMap()
+	if err != nil {
+		return "", err
+	}
+	bytes, err := json.Marshal(m)
 	if err != nil {
 		return "", nil
 	}
@@ -55,12 +65,8 @@ func (config *ExecuteConfig) ToJson() (string, error) {
 }
 
 func (config *ExecuteConfig) ToMap() (map[string]any, error) {
-	b, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
-	}
 	var m map[string]interface{}
-	err = json.Unmarshal(b, &m)
+	err := mapstructure.Decode(config, &m)
 	if err != nil {
 		return nil, err
 	}

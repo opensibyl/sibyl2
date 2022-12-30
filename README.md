@@ -2,7 +2,6 @@
 
 [![Go](https://github.com/opensibyl/sibyl2/actions/workflows/ci.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/ci.yml)
 [![ImageBuild](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml)
-[![goreleaser](https://github.com/opensibyl/sibyl2/actions/workflows/release.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/release.yml)
 [![perftest](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml)
 [![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/master/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)
 [![CodeFactor](https://www.codefactor.io/repository/github/opensibyl/sibyl2/badge)](https://www.codefactor.io/repository/github/opensibyl/sibyl2)

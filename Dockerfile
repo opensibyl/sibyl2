@@ -23,18 +23,15 @@ FROM alpine:3
 
 RUN apk add --no-cache libstdc++
 
-WORKDIR /
-
-COPY --from=build /app/sibyl /app/sibyl
-
-EXPOSE 9876
-
 RUN adduser -D sibyl
 USER sibyl
+WORKDIR /home/sibyl
 
+COPY --from=build /app/sibyl /home/sibyl/
+EXPOSE 9876
 ENV GIN_MODE=release
 
-RUN mkdir /app/sibyl/sibyl2-badger-storage
-VOLUME /app/sibyl/sibyl2-badger-storage
+RUN mkdir sibyl2-badger-storage
+VOLUME /home/sibyl/sibyl2-badger-storage
 
-ENTRYPOINT ["/app/sibyl", "server"]
+ENTRYPOINT ["./sibyl", "server"]

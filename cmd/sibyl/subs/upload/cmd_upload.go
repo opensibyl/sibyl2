@@ -20,11 +20,6 @@ import (
 	"github.com/spf13/viper"
 )
 
-const (
-	configPath = "."
-	configFile = "sibyl-upload-config.json"
-)
-
 var httpClient = retryablehttp.NewClient()
 
 func init() {
@@ -128,22 +123,22 @@ func execWithConfig(c *uploadConfig) {
 		panic(err)
 	}
 
-	s, err := sibyl2.ExtractSymbol(uploadSrc, sibyl2.DefaultConfig())
-	if err != nil {
-		panic(err)
-	}
-
 	fullUrl := fmt.Sprintf("%s/api/v1/func", c.Url)
 	ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", c.Url)
 	core.Log.Infof("upload backend: %s", fullUrl)
 	if !c.Dry {
 		uploadFunctions(fullUrl, wc, f, c.Batch)
 	}
-	core.Log.Infof("upload functions finished")
+	core.Log.Infof("upload functions finished, file count: %d", len(f))
 
-	// building edges in neo4j can be very slow
+	// building edges can be expensive
 	// by default disabled
 	if c.WithCtx {
+		s, err := sibyl2.ExtractSymbol(uploadSrc, sibyl2.DefaultConfig())
+		if err != nil {
+			panic(err)
+		}
+
 		core.Log.Infof("start calculating func graph")
 		g, err := sibyl2.AnalyzeFuncGraph(f, s)
 		if err != nil {
@@ -157,43 +152,6 @@ func execWithConfig(c *uploadConfig) {
 	}
 
 	core.Log.Infof("upload finished")
-}
-
-type uploadConfig struct {
-	Src          string `json:"src"`
-	Lang         string `json:"lang"`
-	Url          string `json:"url"`
-	WithCtx      bool   `json:"withCtx"`
-	Batch        int    `json:"batch"`
-	Dry          bool   `json:"dry"`
-	IncludeRegex string `json:"includeRegex"`
-	ExcludeRegex string `json:"excludeRegex"`
-}
-
-func (config *uploadConfig) ToMap() (map[string]any, error) {
-	b, err := json.Marshal(config)
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]interface{}
-	err = json.Unmarshal(b, &m)
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func defaultConfig() *uploadConfig {
-	return &uploadConfig{
-		Src:          ".",
-		Lang:         "",
-		Url:          "http://127.0.0.1:9876",
-		WithCtx:      false,
-		Batch:        50,
-		Dry:          false,
-		IncludeRegex: "",
-		ExcludeRegex: "",
-	}
 }
 
 func loadRepo(gitDir string) (*git.Repository, error) {

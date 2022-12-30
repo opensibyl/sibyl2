@@ -28,17 +28,20 @@ jobs:
         run: |
           # java
           git clone --depth=1 https://github.com/spring-projects/spring-boot.git
-          git clone --depth=1 https://github.com/google/guava.git
           # golang
           git clone --depth=1 https://github.com/gin-gonic/gin.git
-          git clone --depth=1 https://github.com/moby/moby.git
+          # python
+          git clone --depth=1 https://github.com/psf/requests
 
       - name: Test Java
         run: |
           ./sibyl upload --src ./spring-boot --withCtx --dry
-          ./sibyl upload --src ./guava --withCtx --dry
 
       - name: Test Golang
         run: |
           ./sibyl upload --src ./gin --withCtx --dry
-          ./sibyl upload --src ./moby --withCtx --dry
+
+      - name: Test Python
+        run: |
+          # with ctx is not ready
+          ./sibyl upload --src ./requests --dry

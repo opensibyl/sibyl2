@@ -16,7 +16,8 @@ type UploadStats struct {
 // @Summary upload status query
 // @Produce json
 // @Success 200
-// @Router  /api/v1/monitor/upload [get]
+// @Router  /ops/monitor/upload [get]
+// @Tags OPS
 func HandleStatusUpload(c *gin.Context) {
 	stat := &UploadStats{
 		FuncUnitTodo:    worker.GetFuncQueueTodoCount(),
@@ -29,7 +30,8 @@ func HandleStatusUpload(c *gin.Context) {
 // @Summary  ping example
 // @Produce  json
 // @Success  200
-// @Router   /ping [get]
+// @Router   /ops/ping [get]
+// @Tags OPS
 func HandlePing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",

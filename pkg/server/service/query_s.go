@@ -22,6 +22,7 @@ var sharedQueue queue.Queue
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/repo [get]
+// @Tags MAIN
 func HandleRepoQuery(c *gin.Context) {
 	repos, err := sharedDriver.ReadRepos(sharedContext)
 	if err != nil {
@@ -36,6 +37,7 @@ func HandleRepoQuery(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/rev [get]
+// @Tags MAIN
 func HandleRevQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
@@ -52,6 +54,7 @@ func HandleRevQuery(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/file [get]
+// @Tags MAIN
 func HandleFileQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -79,6 +82,7 @@ func HandleFileQuery(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} object.FunctionWithSignature
 // @Router  /api/v1/func [get]
+// @Tags MAIN
 func HandleFunctionsQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -142,6 +146,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContext
 // @Router  /api/v1/funcctx [get]
+// @Tags MAIN
 func HandleFunctionCtxQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

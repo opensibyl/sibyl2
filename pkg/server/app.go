@@ -17,19 +17,6 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-/*
-server mode: everything
-worker mode:
-- no http api
-- read only queue
-- full worker threads
-
-proxy mode:
-- full http api
-- write only queue
-- no worker threads
-*/
-
 // @title openapi for sibyl2 server
 // @version         1.0
 // @termsOfService  http://swagger.io/terms/
@@ -48,35 +35,60 @@ func Execute(config object.ExecuteConfig) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	/*
+		server mode: everything
+		worker mode:
+		- no http api
+		- read only queue
+		- full worker threads
+
+		gateway mode:
+		- full http api
+		- write only queue
+		- no worker threads
+	*/
+	needWorker := config.Mode == object.StAll || config.Mode == object.StWorker
+	needGateway := config.Mode == object.StAll || config.Mode == object.StGateway
+
+	// middleware start up
+	// data driver is always required for query
 	sharedDriver, err := binding.InitDriver(config, ctx)
 	if err != nil {
 		core.Log.Errorf("failed to create binding: %v", err)
 		return
 	}
-
 	defer sharedDriver.DeferDriver()
+	// queue is always required for submit
 	mq := queue.InitQueue(config, ctx)
 	defer mq.Defer()
-
 	service.InitService(config, ctx, sharedDriver, mq)
-	worker.InitWorker(config, ctx, sharedDriver, mq)
 
+	// worker start up
+	if needWorker {
+		worker.InitWorker(config, ctx, sharedDriver, mq)
+	}
+
+	// webserver start up
 	engine := gin.Default()
-
 	v1group := engine.Group("/api/v1")
-	// query
-	v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
-	v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
-	v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
-	v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
-	v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
-	// upload
-	v1group.Handle(http.MethodPost, "/func", service.HandleRepoFuncUpload)
-	v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
-	// admin
-	v1group.Handle(http.MethodGet, "/monitor/upload", service.HandleStatusUpload)
-	engine.Handle(http.MethodGet, "/ping", service.HandlePing)
-	engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	// for CRUD
+	if needGateway {
+		// query
+		v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
+		v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
+		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
+		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
+		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
+		// upload
+		v1group.Handle(http.MethodPost, "/func", service.HandleRepoFuncUpload)
+		v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
+		// swagger
+		engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
+	// for ops
+	engine.Handle(http.MethodGet, "/ops/ping", service.HandlePing)
+	engine.Handle(http.MethodGet, "/ops/monitor/upload", service.HandleStatusUpload)
 
 	err = engine.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {

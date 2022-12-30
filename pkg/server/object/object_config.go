@@ -6,9 +6,18 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+type ServerType = string
+
+const (
+	StAll     ServerType = "ALL"
+	StWorker  ServerType = "WORKER"
+	StGateway ServerType = "GATEWAY"
+)
+
 type ExecuteConfig struct {
 	// server
-	Port int `mapstructure:"port"`
+	Port int        `mapstructure:"port"`
+	Mode ServerType `mapstructure:"mode"`
 
 	// binding
 	DbType        DriverType `mapstructure:"dbType"`
@@ -34,6 +43,7 @@ type ExecuteConfig struct {
 func DefaultExecuteConfig() ExecuteConfig {
 	return ExecuteConfig{
 		9876,
+		StAll,
 		DtBadger,
 		"bolt://localhost:7687",
 		"neo4j",

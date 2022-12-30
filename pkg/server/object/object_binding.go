@@ -6,13 +6,16 @@ import (
 	"github.com/pkg/errors"
 )
 
-type DriverType string
+type DriverType = string
 
-const DtNeo4j DriverType = "NEO4J"
-const DtInMemory DriverType = "IN_MEMORY"
-const DtBadger DriverType = "BADGER"
-const DtTikv DriverType = "TIKV"
-const FlagWcKeySplit = "|,,|"
+const (
+	DtNeo4j    DriverType = "NEO4J"
+	DtInMemory DriverType = "INMEM"
+	DtBadger   DriverType = "BADGER"
+	DtTikv     DriverType = "TIKV"
+
+	FlagWcKeySplit = "|,,|"
+)
 
 /*
 WorkspaceConfig

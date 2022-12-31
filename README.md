@@ -1,12 +1,17 @@
 # sibyl 2
 
-[![Go](https://github.com/opensibyl/sibyl2/actions/workflows/ci.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/ci.yml)
-[![ImageBuild](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml)
-[![perftest](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml)
-[![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/master/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)
-[![CodeFactor](https://www.codefactor.io/repository/github/opensibyl/sibyl2/badge)](https://www.codefactor.io/repository/github/opensibyl/sibyl2)
-
 > Take a quick snapshot of your codebase in seconds, with zero cost.
+
+## Status
+
+| Name           | Badge                                                                                                                                                                 |
+|----------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Latest Version | ![GitHub release (latest by date)](https://img.shields.io/github/v/release/opensibyl/sibyl2)                                                                          |
+| Unit Tests     | [![Go](https://github.com/opensibyl/sibyl2/actions/workflows/ci.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/ci.yml)                         |
+| Docker Image   | [![ImageBuild](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml) |
+| Perf Tests     | [![perftest](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml)               |
+| Code Coverage  | [![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/master/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)                   |
+| Code Style     | [![CodeFactor](https://www.codefactor.io/repository/github/opensibyl/sibyl2/badge)](https://www.codefactor.io/repository/github/opensibyl/sibyl2)                     |
 
 ## Overview
 
@@ -47,10 +52,10 @@ Users can access all the features with a simple binary file, without any extra d
 
 You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
 
-Or directly download with `wget`:
+Or directly download with `wget` (replace `x.y.z` to the latest version: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/opensibyl/sibyl2)    ):
 
 ```bash
-wget https://github.com/opensibyl/sibyl2/releases/download/v0.8.0/sibyl2_0.8.0_linux_amd64
+wget https://github.com/opensibyl/sibyl2/releases/download/v<x.y.z>/sibyl2_<x.y.z>_linux_amd64
 ```
 
 ### Use as a service (recommend)
@@ -61,7 +66,7 @@ wget https://github.com/opensibyl/sibyl2/releases/download/v0.8.0/sibyl2_0.8.0_l
 ./sibyl server
 ```
 
-That's it. 
+That's it.
 Server will run on port `:9876`.
 Data will be persisted in `./sibyl2Storage`.
 

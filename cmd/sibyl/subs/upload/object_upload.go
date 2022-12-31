@@ -1,23 +1,34 @@
 package upload
 
 import (
+	"encoding/json"
+
 	"github.com/mitchellh/mapstructure"
 )
 
 const (
 	configPath = "."
 	configFile = "sibyl-upload-config.json"
+	configType = "json"
 )
 
-type uploadConfig struct {
+type SrcConfigPart struct {
 	Src          string `mapstructure:"src"`
 	Lang         string `mapstructure:"lang"`
-	Url          string `mapstructure:"url"`
 	WithCtx      bool   `mapstructure:"withCtx"`
-	Batch        int    `mapstructure:"batch"`
-	Dry          bool   `mapstructure:"dry"`
 	IncludeRegex string `mapstructure:"includeRegex"`
 	ExcludeRegex string `mapstructure:"excludeRegex"`
+}
+
+type ServerConfigPart struct {
+	Url   string `mapstructure:"url"`
+	Batch int    `mapstructure:"batch"`
+	Dry   bool   `mapstructure:"dry"`
+}
+
+type uploadConfig struct {
+	*SrcConfigPart    `mapstructure:"src"`
+	*ServerConfigPart `mapstructure:"server"`
 }
 
 func (config *uploadConfig) ToMap() (map[string]any, error) {
@@ -29,15 +40,27 @@ func (config *uploadConfig) ToMap() (map[string]any, error) {
 	return m, nil
 }
 
+func (config *uploadConfig) ToJson() ([]byte, error) {
+	toMap, err := config.ToMap()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(toMap)
+}
+
 func defaultConfig() *uploadConfig {
 	return &uploadConfig{
-		Src:          ".",
-		Lang:         "",
-		Url:          "http://127.0.0.1:9876",
-		WithCtx:      false,
-		Batch:        50,
-		Dry:          false,
-		IncludeRegex: "",
-		ExcludeRegex: "",
+		&SrcConfigPart{
+			Src:          ".",
+			Lang:         "",
+			WithCtx:      false,
+			IncludeRegex: "",
+			ExcludeRegex: "",
+		},
+		&ServerConfigPart{
+			Url:   "http://127.0.0.1:9876",
+			Batch: 50,
+			Dry:   false,
+		},
 	}
 }

@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"path/filepath"
+	"regexp"
 	"sync"
 	"time"
 
@@ -48,6 +49,7 @@ func NewUploadCmd() *cobra.Command {
 			// read from config
 			viper.AddConfigPath(configPath)
 			viper.SetConfigFile(configFile)
+			viper.SetConfigType(configType)
 
 			core.Log.Infof("trying to read config from: %s/%s", configPath, configFile)
 			err := viper.ReadInConfig()
@@ -55,7 +57,7 @@ func NewUploadCmd() *cobra.Command {
 				core.Log.Warnf("no config file found, use default")
 			} else {
 				core.Log.Infof("found config file")
-				err = viper.Unmarshal(&config)
+				err = viper.Unmarshal(config)
 
 				if err != nil {
 					core.Log.Errorf("failed to parse config")
@@ -102,6 +104,11 @@ func NewUploadCmd() *cobra.Command {
 }
 
 func execWithConfig(c *uploadConfig) {
+	configStr, err := c.ToJson()
+	if err != nil {
+		panic(err)
+	}
+	core.Log.Infof("upload with config: %s", configStr)
 	uploadSrc, err := filepath.Abs(c.Src)
 	if err != nil {
 		panic(err)
@@ -118,7 +125,14 @@ func execWithConfig(c *uploadConfig) {
 		RepoId:  curRepo,
 		RevHash: curRev,
 	}
-	f, err := sibyl2.ExtractFunction(uploadSrc, sibyl2.DefaultConfig())
+
+	filterFunc, err := createFileFilter(c)
+	if err != nil {
+		panic(err)
+	}
+	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
+		FileFilter: filterFunc,
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -134,7 +148,9 @@ func execWithConfig(c *uploadConfig) {
 	// building edges can be expensive
 	// by default disabled
 	if c.WithCtx {
-		s, err := sibyl2.ExtractSymbol(uploadSrc, sibyl2.DefaultConfig())
+		s, err := sibyl2.ExtractSymbol(uploadSrc, &sibyl2.ExtractConfig{
+			FileFilter: filterFunc,
+		})
 		if err != nil {
 			panic(err)
 		}
@@ -152,6 +168,50 @@ func execWithConfig(c *uploadConfig) {
 	}
 
 	core.Log.Infof("upload finished")
+}
+
+func createFileFilter(c *uploadConfig) (func(path string) bool, error) {
+	if c.IncludeRegex == "" && c.ExcludeRegex == "" {
+		// need no filter
+		return nil, nil
+	}
+
+	var include *regexp.Regexp
+	var exclude *regexp.Regexp
+	var err error
+	if c.IncludeRegex != "" {
+		include, err = regexp.Compile(c.IncludeRegex)
+		if err != nil {
+			core.Log.Errorf("failed to compile: %v", c.IncludeRegex)
+			return nil, err
+		}
+	}
+	if c.ExcludeRegex != "" {
+		exclude, err = regexp.Compile(c.ExcludeRegex)
+		if err != nil {
+			core.Log.Errorf("failed to compile: %v", c.IncludeRegex)
+			return nil, err
+		}
+	}
+
+	core.Log.Infof("create file filter, include: %s, exclude: %s", c.IncludeRegex, c.ExcludeRegex)
+	return func(path string) bool {
+		var shouldInclude bool
+		var shouldExclude bool
+		if include == nil {
+			shouldInclude = true
+		} else {
+			shouldInclude = include.MatchString(path)
+		}
+
+		if exclude == nil {
+			shouldExclude = false
+		} else {
+			shouldExclude = exclude.MatchString(path)
+		}
+
+		return shouldInclude && !shouldExclude
+	}, nil
 }
 
 func loadRepo(gitDir string) (*git.Repository, error) {

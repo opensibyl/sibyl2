@@ -1,16 +1,17 @@
-package extractor
+package golang
 
 import (
 	"errors"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 	"golang.org/x/exp/slices"
 )
 
 type GolangFuncExtras struct {
 }
 
-func (extractor *GolangExtractor) IsFunction(unit *core.Unit) bool {
+func (extractor *Extractor) IsFunction(unit *core.Unit) bool {
 	allowed := []core.KindRepr{
 		KindGolangMethodDecl,
 		KindGolangFuncDecl,
@@ -18,8 +19,8 @@ func (extractor *GolangExtractor) IsFunction(unit *core.Unit) bool {
 	return slices.Contains(allowed, unit.Kind)
 }
 
-func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*Function, error) {
-	var ret []*Function
+func (extractor *Extractor) ExtractFunctions(units []*core.Unit) ([]*object.Function, error) {
+	var ret []*object.Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
 			continue
@@ -34,7 +35,7 @@ func (extractor *GolangExtractor) ExtractFunctions(units []*core.Unit) ([]*Funct
 	return ret, nil
 }
 
-func (extractor *GolangExtractor) ExtractFunction(unit *core.Unit) (*Function, error) {
+func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, error) {
 	data, err := extractor.ExtractFunctions([]*core.Unit{unit})
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (extractor *GolangExtractor) ExtractFunction(unit *core.Unit) (*Function, e
 	return data[0], nil
 }
 
-func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*Function, error) {
+func (extractor *Extractor) unit2Function(unit *core.Unit) (*object.Function, error) {
 	switch unit.Kind {
 	case KindGolangFuncDecl:
 		return extractor.funcUnit2Function(unit)
@@ -57,10 +58,10 @@ func (extractor *GolangExtractor) unit2Function(unit *core.Unit) (*Function, err
 	}
 }
 
-func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Function, error) {
-	funcUnit := &Function{}
+func (extractor *Extractor) methodUnit2Function(unit *core.Unit) (*object.Function, error) {
+	funcUnit := &object.Function{}
 	funcUnit.Span = unit.Span
-	funcUnit.unit = unit
+	funcUnit.Unit = unit
 
 	// body scope
 	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
@@ -99,7 +100,7 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 			paramNameContent = paramName.Content
 		}
 
-		valueUnit := &ValueUnit{
+		valueUnit := &object.ValueUnit{
 			Type: typeName.Content,
 			Name: paramNameContent,
 		}
@@ -121,7 +122,7 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 			} else {
 				paramNameContent = paramName.Content
 			}
-			valueUnit := &ValueUnit{
+			valueUnit := &object.ValueUnit{
 				Type: typeName.Content,
 				Name: paramNameContent,
 			}
@@ -129,7 +130,7 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 		}
 	case KindGolangTypeIdentifier:
 		// only one param, and anonymous
-		valueUnit := &ValueUnit{
+		valueUnit := &object.ValueUnit{
 			Type: retParams.Content,
 			Name: "",
 		}
@@ -143,10 +144,10 @@ func (extractor *GolangExtractor) methodUnit2Function(unit *core.Unit) (*Functio
 	return funcUnit, nil
 }
 
-func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function, error) {
-	funcUnit := &Function{}
+func (extractor *Extractor) funcUnit2Function(unit *core.Unit) (*object.Function, error) {
+	funcUnit := &object.Function{}
 	funcUnit.Span = unit.Span
-	funcUnit.unit = unit
+	funcUnit.Unit = unit
 	// body scope
 	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
 	if funcBody != nil {
@@ -172,7 +173,7 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function,
 		} else {
 			paramNameContent = paramName.Content
 		}
-		valueUnit := &ValueUnit{
+		valueUnit := &object.ValueUnit{
 			Type: typeName.Content,
 			Name: paramNameContent,
 		}
@@ -194,7 +195,7 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function,
 				} else {
 					paramNameContent = paramName.Content
 				}
-				valueUnit := &ValueUnit{
+				valueUnit := &object.ValueUnit{
 					Type: typeName.Content,
 					Name: paramNameContent,
 				}
@@ -202,7 +203,7 @@ func (extractor *GolangExtractor) funcUnit2Function(unit *core.Unit) (*Function,
 			}
 		case KindGolangTypeIdentifier:
 			// only one param, and anonymous
-			valueUnit := &ValueUnit{
+			valueUnit := &object.ValueUnit{
 				Type: retParams.Content,
 				Name: "",
 			}

@@ -1,4 +1,4 @@
-package extractor
+package java
 
 import (
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -28,9 +28,9 @@ const (
 	FieldJavaArguments           core.KindRepr = "arguments"
 )
 
-type JavaExtractor struct {
+type Extractor struct {
 }
 
-func (extractor *JavaExtractor) GetLang() core.LangType {
+func (extractor *Extractor) GetLang() core.LangType {
 	return core.LangJava
 }

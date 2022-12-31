@@ -1,10 +1,12 @@
-package extractor
+package golang
 
 import (
+	"encoding/json"
 	"errors"
 	"testing"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
 var goCode = `
@@ -32,7 +34,7 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangGo)
+	extractor := &Extractor{}
 	funcs, err := extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)
@@ -53,7 +55,7 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangGo)
+	extractor := &Extractor{}
 	functions, err := extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)
@@ -64,12 +66,17 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 			panic(err)
 		}
 
-		back, err := Json2Func(normal)
+		var m map[string]any
+		err = json.Unmarshal(normal, &m)
 		if err != nil {
 			panic(err)
 		}
-		core.Log.Debugf("before func %v", each)
-		core.Log.Debugf("after func %v", back)
+		back, err := object.Map2Func(m)
+		if err != nil {
+			panic(err)
+		}
+		core.Log.Infof("before func %v", each)
+		core.Log.Infof("after func %v", back)
 		if each.Name != back.Name {
 			panic(errors.New("CONVERT FAILED"))
 		}

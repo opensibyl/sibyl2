@@ -2,6 +2,10 @@ package extractor
 
 import (
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/golang"
+	"github.com/opensibyl/sibyl2/pkg/extractor/java"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
+	"github.com/opensibyl/sibyl2/pkg/extractor/python"
 )
 
 /*
@@ -47,11 +51,18 @@ type CallSupport interface {
 func GetExtractor(lang core.LangType) Extractor {
 	switch lang {
 	case core.LangJava:
-		return &JavaExtractor{}
+		return &java.Extractor{}
 	case core.LangGo:
-		return &GolangExtractor{}
+		return &golang.Extractor{}
 	case core.LangPython:
-		return &PythonExtractor{}
+		return &python.Extractor{}
 	}
 	return nil
 }
+
+type ValueUnit = object.ValueUnit
+type Function = object.Function
+type Symbol = object.Symbol
+type Call = object.Call
+
+var Map2Func = object.Map2Func

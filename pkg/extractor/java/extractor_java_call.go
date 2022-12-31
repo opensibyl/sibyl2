@@ -1,20 +1,21 @@
-package extractor
+package java
 
 import (
 	"errors"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
-func (extractor *JavaExtractor) IsCall(unit *core.Unit) bool {
+func (extractor *Extractor) IsCall(unit *core.Unit) bool {
 	if unit.Kind == KindJavaMethodInvocation {
 		return true
 	}
 	return false
 }
 
-func (extractor *JavaExtractor) ExtractCalls(units []*core.Unit) ([]*Call, error) {
-	var ret []*Call
+func (extractor *Extractor) ExtractCalls(units []*core.Unit) ([]*object.Call, error) {
+	var ret []*object.Call
 	for _, eachUnit := range units {
 		if !extractor.IsCall(eachUnit) {
 			continue
@@ -30,9 +31,9 @@ func (extractor *JavaExtractor) ExtractCalls(units []*core.Unit) ([]*Call, error
 	return ret, nil
 }
 
-func (extractor *JavaExtractor) unit2Call(unit *core.Unit) (*Call, error) {
+func (extractor *Extractor) unit2Call(unit *core.Unit) (*object.Call, error) {
 	funcUnit := core.FindFirstByOneOfKindInParent(unit, KindJavaMethodDeclaration)
-	var srcFunc *Function
+	var srcFunc *object.Function
 	var err error
 	if funcUnit != nil {
 		srcFunc, err = extractor.ExtractFunction(funcUnit)
@@ -75,7 +76,7 @@ func (extractor *JavaExtractor) unit2Call(unit *core.Unit) (*Call, error) {
 		}
 	}
 
-	ret := &Call{
+	ret := &object.Call{
 		Src:       srcFunc.GetSignature(),
 		Caller:    caller,
 		Arguments: arguments,

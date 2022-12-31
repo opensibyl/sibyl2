@@ -1,4 +1,4 @@
-package extractor
+package object
 
 import (
 	"fmt"
@@ -46,8 +46,8 @@ type Symbol struct {
 	Span      core.Span `json:"span"`
 	FieldName string    `json:"fieldName"`
 
-	// ptr to origin unit
-	unit *core.Unit
+	// ptr to origin Unit
+	Unit *core.Unit `json:"-"`
 }
 
 func (s *Symbol) GetIndexName() string {
@@ -63,5 +63,5 @@ func (s *Symbol) GetSpan() *core.Span {
 }
 
 func (s *Symbol) GetUnit() *core.Unit {
-	return s.unit
+	return s.Unit
 }

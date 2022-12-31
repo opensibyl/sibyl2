@@ -1,4 +1,4 @@
-package extractor
+package python
 
 import (
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -13,13 +13,13 @@ const (
 	KindPythonBlock               core.KindRepr = "block"
 )
 
-type PythonExtractor struct {
+type Extractor struct {
 }
 
-type PythonFunctionExtras struct {
+type FunctionExtras struct {
 	Decorators []string `json:"decorators"`
 }
 
-func (extractor *PythonExtractor) GetLang() core.LangType {
+func (extractor *Extractor) GetLang() core.LangType {
 	return core.LangPython
 }

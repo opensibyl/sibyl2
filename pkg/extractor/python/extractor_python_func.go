@@ -1,12 +1,13 @@
-package extractor
+package python
 
 import (
 	"errors"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
-func (extractor *PythonExtractor) IsFunction(unit *core.Unit) bool {
+func (extractor *Extractor) IsFunction(unit *core.Unit) bool {
 	// python has only func type
 	if unit.Kind == KindPythonFunctionDefinition {
 		return true
@@ -14,8 +15,8 @@ func (extractor *PythonExtractor) IsFunction(unit *core.Unit) bool {
 	return false
 }
 
-func (extractor *PythonExtractor) ExtractFunctions(units []*core.Unit) ([]*Function, error) {
-	var ret []*Function
+func (extractor *Extractor) ExtractFunctions(units []*core.Unit) ([]*object.Function, error) {
+	var ret []*object.Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
 			continue
@@ -29,7 +30,7 @@ func (extractor *PythonExtractor) ExtractFunctions(units []*core.Unit) ([]*Funct
 	return ret, nil
 }
 
-func (extractor *PythonExtractor) ExtractFunction(unit *core.Unit) (*Function, error) {
+func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, error) {
 	data, err := extractor.ExtractFunctions([]*core.Unit{unit})
 	if err != nil {
 		return nil, err
@@ -40,10 +41,10 @@ func (extractor *PythonExtractor) ExtractFunction(unit *core.Unit) (*Function, e
 	return data[0], nil
 }
 
-func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, error) {
-	funcUnit := NewFunction()
+func (extractor *Extractor) unit2Function(unit *core.Unit) (*object.Function, error) {
+	funcUnit := object.NewFunction()
 	funcUnit.Span = unit.Span
-	funcUnit.unit = unit
+	funcUnit.Unit = unit
 	// body scope
 	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindPythonBlock)
 	if funcBody != nil {
@@ -56,7 +57,7 @@ func (extractor *PythonExtractor) unit2Function(unit *core.Unit) (*Function, err
 	}
 	funcUnit.Name = funcName.Content
 
-	extras := &PythonFunctionExtras{}
+	extras := &FunctionExtras{}
 	if unit.ParentUnit.Kind == KindPythonDecoratedDefinition {
 		decoratedUnit := unit.ParentUnit
 		decorators := core.FindAllByKindInSubs(decoratedUnit, KindPythonDecorator)

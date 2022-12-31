@@ -1,24 +1,25 @@
-package extractor
+package java
 
 import (
 	"errors"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
-// JavaFunctionExtras
-type JavaFunctionExtras struct {
-	Annotations []string       `json:"annotations"`
-	ClassInfo   *JavaClassInfo `json:"classInfo"`
+// FunctionExtras JavaFunctionExtras
+type FunctionExtras struct {
+	Annotations []string   `json:"annotations"`
+	ClassInfo   *ClassInfo `json:"classInfo"`
 }
 
-type JavaClassInfo struct {
+type ClassInfo struct {
 	PackageName string   `json:"packageName"`
 	ClassName   string   `json:"className"`
 	Annotations []string `json:"annotations"`
 }
 
-func (extractor *JavaExtractor) IsFunction(unit *core.Unit) bool {
+func (extractor *Extractor) IsFunction(unit *core.Unit) bool {
 	// no function in java
 	if unit.Kind == KindJavaMethodDeclaration {
 		return true
@@ -26,8 +27,8 @@ func (extractor *JavaExtractor) IsFunction(unit *core.Unit) bool {
 	return false
 }
 
-func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*Function, error) {
-	var ret []*Function
+func (extractor *Extractor) ExtractFunctions(units []*core.Unit) ([]*object.Function, error) {
+	var ret []*object.Function
 	for _, eachUnit := range units {
 		if !extractor.IsFunction(eachUnit) {
 			continue
@@ -41,7 +42,7 @@ func (extractor *JavaExtractor) ExtractFunctions(units []*core.Unit) ([]*Functio
 	return ret, nil
 }
 
-func (extractor *JavaExtractor) ExtractFunction(unit *core.Unit) (*Function, error) {
+func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, error) {
 	data, err := extractor.ExtractFunctions([]*core.Unit{unit})
 	if err != nil {
 		return nil, err
@@ -52,10 +53,10 @@ func (extractor *JavaExtractor) ExtractFunction(unit *core.Unit) (*Function, err
 	return data[0], nil
 }
 
-func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error) {
-	funcUnit := NewFunction()
+func (extractor *Extractor) unit2Function(unit *core.Unit) (*object.Function, error) {
+	funcUnit := object.NewFunction()
 	funcUnit.Span = unit.Span
-	funcUnit.unit = unit
+	funcUnit.Unit = unit
 	// body scope
 	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindJavaBlock)
 	if funcBody != nil {
@@ -92,7 +93,7 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 
 	// returns
 	retUnit := core.FindFirstByFieldInSubsWithDfs(unit, FieldJavaDimensions)
-	valueUnit := &ValueUnit{
+	valueUnit := &object.ValueUnit{
 		Type: retUnit.Content,
 		// java has no named return value
 		Name: "",
@@ -105,7 +106,7 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 		for _, each := range core.FindAllByKindInSubsWithDfs(parameters, KindJavaFormalParameter) {
 			typeName := core.FindFirstByFieldInSubsWithBfs(each, FieldJavaType)
 			paramName := core.FindFirstByFieldInSubsWithBfs(each, FieldJavaDimensions)
-			valueUnit = &ValueUnit{
+			valueUnit = &object.ValueUnit{
 				Type: typeName.Content,
 				Name: paramName.Content,
 			}
@@ -114,8 +115,8 @@ func (extractor *JavaExtractor) unit2Function(unit *core.Unit) (*Function, error
 	}
 
 	// extras
-	extras := &JavaFunctionExtras{}
-	classInfo := &JavaClassInfo{
+	extras := &FunctionExtras{}
+	classInfo := &ClassInfo{
 		PackageName: pkgName,
 		ClassName:   clazzName,
 		Annotations: nil,

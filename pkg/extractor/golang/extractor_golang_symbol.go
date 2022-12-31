@@ -1,12 +1,13 @@
-package extractor
+package golang
 
 import (
 	"strings"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
-func (extractor *JavaExtractor) IsSymbol(unit *core.Unit) bool {
+func (extractor *Extractor) IsSymbol(unit *core.Unit) bool {
 	// todo: use grammar.js instead
 	if strings.HasSuffix(unit.Kind, "identifier") {
 		return true
@@ -14,18 +15,18 @@ func (extractor *JavaExtractor) IsSymbol(unit *core.Unit) bool {
 	return false
 }
 
-func (extractor *JavaExtractor) ExtractSymbols(units []*core.Unit) ([]*Symbol, error) {
-	var ret []*Symbol
-	for _, eachUnit := range units {
+func (extractor *Extractor) ExtractSymbols(unit []*core.Unit) ([]*object.Symbol, error) {
+	var ret []*object.Symbol
+	for _, eachUnit := range unit {
 		if !extractor.IsSymbol(eachUnit) {
 			continue
 		}
-		symbol := &Symbol{
+		symbol := &object.Symbol{
 			Symbol:    eachUnit.Content,
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
 			FieldName: eachUnit.FieldName,
-			unit:      eachUnit,
+			Unit:      eachUnit,
 		}
 		ret = append(ret, symbol)
 	}

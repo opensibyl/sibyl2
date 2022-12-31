@@ -1,30 +1,32 @@
-package extractor
+package java
 
 import (
 	"strings"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
-func (extractor *PythonExtractor) IsSymbol(unit *core.Unit) bool {
+func (extractor *Extractor) IsSymbol(unit *core.Unit) bool {
+	// todo: use grammar.js instead
 	if strings.HasSuffix(unit.Kind, "identifier") {
 		return true
 	}
 	return false
 }
 
-func (extractor *PythonExtractor) ExtractSymbols(units []*core.Unit) ([]*Symbol, error) {
-	var ret []*Symbol
+func (extractor *Extractor) ExtractSymbols(units []*core.Unit) ([]*object.Symbol, error) {
+	var ret []*object.Symbol
 	for _, eachUnit := range units {
 		if !extractor.IsSymbol(eachUnit) {
 			continue
 		}
-		symbol := &Symbol{
+		symbol := &object.Symbol{
 			Symbol:    eachUnit.Content,
 			Kind:      eachUnit.Kind,
 			Span:      eachUnit.Span,
 			FieldName: eachUnit.FieldName,
-			unit:      eachUnit,
+			Unit:      eachUnit,
 		}
 		ret = append(ret, symbol)
 	}

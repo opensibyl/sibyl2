@@ -1,4 +1,4 @@
-package extractor
+package golang
 
 import (
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -22,9 +22,9 @@ const (
 	FieldGolangResult         core.KindRepr = "result"
 )
 
-type GolangExtractor struct {
+type Extractor struct {
 }
 
-func (extractor *GolangExtractor) GetLang() core.LangType {
+func (extractor *Extractor) GetLang() core.LangType {
 	return core.LangGo
 }

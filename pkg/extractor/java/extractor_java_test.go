@@ -1,4 +1,4 @@
-package extractor
+package java
 
 import (
 	"testing"
@@ -40,7 +40,7 @@ func TestJavaExtractor_ExtractSymbols(t *testing.T) {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangJava)
+	extractor := &Extractor{}
 	_, err = extractor.ExtractSymbols(units)
 	if err != nil {
 		panic(err)
@@ -54,7 +54,7 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangJava)
+	extractor := &Extractor{}
 	data, err := extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)
@@ -68,7 +68,7 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 			}
 		}
 
-		if each.Extras.(*JavaFunctionExtras).ClassInfo.Annotations == nil {
+		if each.Extras.(*FunctionExtras).ClassInfo.Annotations == nil {
 			panic(err)
 		}
 	}

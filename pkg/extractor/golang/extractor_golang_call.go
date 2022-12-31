@@ -1,20 +1,21 @@
-package extractor
+package golang
 
 import (
 	"errors"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
-func (extractor *GolangExtractor) IsCall(unit *core.Unit) bool {
+func (extractor *Extractor) IsCall(unit *core.Unit) bool {
 	if unit.Kind == KindGolangCallExpression {
 		return true
 	}
 	return false
 }
 
-func (extractor *GolangExtractor) ExtractCalls(units []*core.Unit) ([]*Call, error) {
-	var ret []*Call
+func (extractor *Extractor) ExtractCalls(units []*core.Unit) ([]*object.Call, error) {
+	var ret []*object.Call
 	for _, eachUnit := range units {
 		if !extractor.IsCall(eachUnit) {
 			continue
@@ -30,10 +31,10 @@ func (extractor *GolangExtractor) ExtractCalls(units []*core.Unit) ([]*Call, err
 	return ret, nil
 }
 
-func (extractor *GolangExtractor) unit2Call(unit *core.Unit) (*Call, error) {
+func (extractor *Extractor) unit2Call(unit *core.Unit) (*object.Call, error) {
 	// todo: what about nested call
 	funcUnit := core.FindFirstByOneOfKindInParent(unit, KindGolangFuncDecl, KindGolangMethodDecl)
-	var srcFunc *Function
+	var srcFunc *object.Function
 	var err error
 	if funcUnit != nil {
 		srcFunc, err = extractor.ExtractFunction(funcUnit)
@@ -58,7 +59,7 @@ func (extractor *GolangExtractor) unit2Call(unit *core.Unit) (*Call, error) {
 		}
 	}
 
-	ret := &Call{
+	ret := &object.Call{
 		Src:       srcFunc.GetSignature(),
 		Caller:    funcPart.Content,
 		Arguments: arguments,

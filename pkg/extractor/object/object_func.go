@@ -1,4 +1,4 @@
-package extractor
+package object
 
 import (
 	"encoding/json"
@@ -9,6 +9,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/core"
 )
 
+type FuncSignature = string
 type ValueUnit struct {
 	Type string `json:"type"`
 	Name string `json:"name"`
@@ -27,15 +28,23 @@ type Function struct {
 	// which contains language-specific contents
 	Extras interface{} `json:"extras"`
 
-	// ptr to origin unit
-	unit *core.Unit
+	// ptr to origin Unit
+	Unit *core.Unit `json:"-"`
 }
 
 func NewFunction() *Function {
 	return &Function{}
 }
 
-type FuncSignature = string
+// Map2Func reverse ToMap
+func Map2Func(exported map[string]any) (*Function, error) {
+	ret := &Function{}
+	err := mapstructure.Decode(exported, ret)
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
+}
 
 func (f *Function) GetSignature() FuncSignature {
 	prefix := fmt.Sprintf("%s::%s", f.Receiver, f.Name)
@@ -55,7 +64,7 @@ func (f *Function) GetSignature() FuncSignature {
 	return fmt.Sprintf("%s|%s|%s", prefix, paramPart, retPart)
 }
 
-// ToMap export a very simple map without any custom structs. It will lose ptr to origin unit.
+// ToMap export a very simple map without any custom structs. It will lose ptr to origin Unit.
 func (f *Function) ToMap() (map[string]any, error) {
 	b, err := json.Marshal(f)
 	if err != nil {
@@ -81,25 +90,6 @@ func (f *Function) ToJson() ([]byte, error) {
 	return raw, nil
 }
 
-// Map2Func reverse ToMap
-func Map2Func(exported map[string]any) (*Function, error) {
-	ret := &Function{}
-	err := mapstructure.Decode(exported, ret)
-	if err != nil {
-		return nil, err
-	}
-	return ret, nil
-}
-
-func Json2Func(exported []byte) (*Function, error) {
-	var m map[string]any
-	err := json.Unmarshal(exported, &m)
-	if err != nil {
-		return nil, err
-	}
-	return Map2Func(m)
-}
-
 func (f *Function) GetIndexName() string {
 	return f.Name
 }
@@ -113,5 +103,5 @@ func (f *Function) GetSpan() *core.Span {
 }
 
 func (f *Function) GetUnit() *core.Unit {
-	return f.unit
+	return f.Unit
 }

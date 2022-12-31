@@ -1,4 +1,4 @@
-package extractor
+package python
 
 import (
 	"testing"
@@ -30,7 +30,7 @@ func TestPythonExtractor_ExtractFunctions(t *testing.T) {
 		panic(err)
 	}
 
-	extractor := GetExtractor(core.LangPython)
+	extractor := &Extractor{}
 	functions, err := extractor.ExtractFunctions(units)
 	if err != nil {
 		panic(err)

@@ -26,7 +26,7 @@ func initTikvDriver(config object.ExecuteConfig) Driver {
 }
 
 func (t *TiKVDriver) GetType() object.DriverType {
-	return object.DtTikv
+	return object.DriverTypeTikv
 }
 
 func (t *TiKVDriver) InitDriver(_ context.Context) error {

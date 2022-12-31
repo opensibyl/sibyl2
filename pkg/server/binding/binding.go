@@ -117,14 +117,14 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) (Driver, error
 
 	// create driver obj, do some settings
 	switch config.DbType {
-	case object.DtInMemory:
+	case object.DriverTypeInMemory:
 		// now in memory driver handled by badger
 		driver = initBadgerDriver(config)
-	case object.DtNeo4j:
+	case object.DriverTypeNeo4j:
 		driver = initNeo4jDriver(config)
-	case object.DtBadger:
+	case object.DriverTypeBadger:
 		driver = initBadgerDriver(config)
-	case object.DtTikv:
+	case object.DriverTypeTikv:
 		driver = initTikvDriver(config)
 
 	default:

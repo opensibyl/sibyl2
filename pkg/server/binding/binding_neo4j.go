@@ -48,7 +48,7 @@ type neo4jDriver struct {
 }
 
 func (d *neo4jDriver) GetType() object.DriverType {
-	return object.DtNeo4j
+	return object.DriverTypeNeo4j
 }
 
 func (d *neo4jDriver) InitDriver(ctx context.Context) error {

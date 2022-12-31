@@ -22,9 +22,9 @@ func (d *badgerDriver) InitDriver(_ context.Context) error {
 	var err error
 
 	switch d.config.DbType {
-	case object.DtInMemory:
+	case object.DriverTypeInMemory:
 		dbInst, err = badger.Open(badger.DefaultOptions("").WithInMemory(true))
-	case object.DtBadger:
+	case object.DriverTypeBadger:
 		core.Log.Infof("trying to open: %s", d.config.BadgerPath)
 		dbInst, err = badger.Open(badger.DefaultOptions(d.config.BadgerPath))
 	default:
@@ -375,7 +375,7 @@ func (d *badgerDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.C
 }
 
 func (d *badgerDriver) GetType() object.DriverType {
-	return object.DtBadger
+	return object.DriverTypeBadger
 }
 
 func initBadgerDriver(config object.ExecuteConfig) Driver {

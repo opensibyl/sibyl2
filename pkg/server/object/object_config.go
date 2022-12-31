@@ -9,9 +9,9 @@ import (
 type ServerType = string
 
 const (
-	StAll     ServerType = "ALL"
-	StWorker  ServerType = "WORKER"
-	StGateway ServerType = "GATEWAY"
+	ServerTypeAll     ServerType = "ALL"
+	ServerTypeWorker  ServerType = "WORKER"
+	ServerTypeGateway ServerType = "GATEWAY"
 )
 
 type ServerConfigPart struct {
@@ -57,10 +57,10 @@ func DefaultExecuteConfig() ExecuteConfig {
 	return ExecuteConfig{
 		ServerConfigPart: &ServerConfigPart{
 			9876,
-			StAll,
+			ServerTypeAll,
 		},
 		BindingConfigPart: &BindingConfigPart{
-			DtBadger,
+			DriverTypeBadger,
 			"bolt://localhost:7687",
 			"neo4j",
 			"neo4j",

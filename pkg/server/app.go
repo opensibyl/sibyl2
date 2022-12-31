@@ -47,8 +47,8 @@ func Execute(config object.ExecuteConfig) {
 		- write only queue
 		- no worker threads
 	*/
-	needWorker := config.Mode == object.StAll || config.Mode == object.StWorker
-	needGateway := config.Mode == object.StAll || config.Mode == object.StGateway
+	needWorker := config.Mode == object.ServerTypeAll || config.Mode == object.ServerTypeWorker
+	needGateway := config.Mode == object.ServerTypeAll || config.Mode == object.ServerTypeGateway
 	core.Log.Infof("current mode: %s, worker: %v, gateway: %v", config.Mode, needWorker, needGateway)
 
 	// middleware start up

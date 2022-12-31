@@ -9,10 +9,10 @@ import (
 type DriverType = string
 
 const (
-	DtNeo4j    DriverType = "NEO4J"
-	DtInMemory DriverType = "INMEM"
-	DtBadger   DriverType = "BADGER"
-	DtTikv     DriverType = "TIKV"
+	DriverTypeNeo4j    DriverType = "NEO4J"
+	DriverTypeInMemory DriverType = "INMEM"
+	DriverTypeBadger   DriverType = "BADGER"
+	DriverTypeTikv     DriverType = "TIKV"
 
 	FlagWcKeySplit = "|,,|"
 )

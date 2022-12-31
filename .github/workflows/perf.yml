@@ -43,5 +43,4 @@ jobs:
 
       - name: Test Python
         run: |
-          # with ctx is not ready
-          ./sibyl upload --src ./requests --dry
+          ./sibyl upload --src ./requests --withCtx --dry

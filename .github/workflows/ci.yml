@@ -2,9 +2,9 @@ name: Go
 
 on:
   push:
-    branches: [ "master" ]
+    branches: '*'
   pull_request:
-    branches: [ "master" ]
+    branches: '*'
 
 jobs:
 
@@ -19,23 +19,23 @@ jobs:
           # test only
           NEO4J_AUTH: neo4j/williamfzc
     steps:
-    - uses: actions/checkout@v3
-      with:
-        # at least support HEAD~1 for testing
-        fetch-depth: 2
+      - uses: actions/checkout@v3
+        with:
+          # at least support HEAD~1 for testing
+          fetch-depth: 2
 
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.18
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: 1.18
 
-    - name: Build
-      run: |
-        go install github.com/swaggo/swag/cmd/swag@v1.8.7
-        make
+      - name: Build
+        run: |
+          go install github.com/swaggo/swag/cmd/swag@v1.8.7
+          make
 
-    - name: Test
-      run: go test -v ./... -coverprofile=coverage.txt
+      - name: Test
+        run: go test -v ./... -coverprofile=coverage.txt
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3

@@ -35,7 +35,7 @@ jobs:
           make
 
       - name: Test
-        run: go test -v ./... -coverprofile=coverage.txt
+        run: go test -v ./... -coverprofile=coverage.txt -coverpkg=./...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

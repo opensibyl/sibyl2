@@ -54,7 +54,7 @@ func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.
 	return nil
 }
 
-func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.ClazzWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -69,9 +69,9 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx 
 		prefix := []byte(prefixStr)
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			f := &sibyl2.ClazzWithPath{}
+			c := &sibyl2.ClazzWithPath{}
 			err := it.Item().Value(func(val []byte) error {
-				err := json.Unmarshal(val, f)
+				err := json.Unmarshal(val, c)
 				if err != nil {
 					return err
 				}
@@ -80,7 +80,9 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx 
 			if err != nil {
 				return err
 			}
-			searchResult = append(searchResult, f)
+
+			c.Path = path
+			searchResult = append(searchResult, c)
 		}
 		return nil
 	})
@@ -310,6 +312,8 @@ func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ 
 			if err != nil {
 				return err
 			}
+
+			f.Path = path
 			searchResult = append(searchResult, f)
 		}
 		return nil

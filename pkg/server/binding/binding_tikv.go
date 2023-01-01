@@ -77,12 +77,13 @@ func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 	defer iter.Close()
 
 	for iter.Valid() {
-		f := &sibyl2.ClazzWithPath{}
-		err := json.Unmarshal(iter.Value(), f)
+		c := &sibyl2.ClazzWithPath{}
+		err := json.Unmarshal(iter.Value(), c)
 		if err != nil {
 			return nil, err
 		}
-		searchResult = append(searchResult, f)
+		c.Path = path
+		searchResult = append(searchResult, c)
 		err = iter.Next()
 		if err != nil {
 			return nil, err
@@ -325,6 +326,7 @@ func (t *TiKVDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx 
 		if err != nil {
 			return nil, err
 		}
+		f.Path = path
 		searchResult = append(searchResult, f)
 		err = iter.Next()
 		if err != nil {

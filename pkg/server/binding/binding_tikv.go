@@ -19,6 +19,34 @@ type TiKVDriver struct {
 	addresses []string
 }
 
+func initTikvDriver(config object.ExecuteConfig) Driver {
+	addresses := strings.Split(config.TikvAddrs, ",")
+	return &TiKVDriver{
+		addresses: addresses,
+	}
+}
+
+func (t *TiKVDriver) GetType() object.DriverType {
+	return object.DriverTypeTikv
+}
+
+func (t *TiKVDriver) InitDriver(_ context.Context) error {
+	client, err := txnkv.NewClient(t.addresses)
+	if err != nil {
+		return err
+	}
+	t.client = client
+	return nil
+}
+
+func (t *TiKVDriver) DeferDriver() error {
+	if err := t.client.Close(); err != nil {
+		return err
+	}
+	t.client = nil
+	return nil
+}
+
 func (t *TiKVDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
@@ -57,67 +85,6 @@ func (t *TiKVDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.Cl
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
-	key, err := wc.Key()
-	if err != nil {
-		return nil, err
-	}
-	fk := toFileKey(key, path)
-
-	searchResult := make([]*sibyl2.ClazzWithPath, 0)
-
-	prefixStr := fk.ToScanPrefix() + "clazz|"
-	prefix := []byte(prefixStr)
-
-	txn := t.client.GetSnapshot(math.MaxUint64)
-	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
-	defer iter.Close()
-
-	for iter.Valid() {
-		c := &sibyl2.ClazzWithPath{}
-		err := json.Unmarshal(iter.Value(), c)
-		if err != nil {
-			return nil, err
-		}
-		c.Path = path
-		searchResult = append(searchResult, c)
-		err = iter.Next()
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return searchResult, nil
-}
-
-func initTikvDriver(config object.ExecuteConfig) Driver {
-	addresses := strings.Split(config.TikvAddrs, ",")
-	return &TiKVDriver{
-		addresses: addresses,
-	}
-}
-
-func (t *TiKVDriver) GetType() object.DriverType {
-	return object.DriverTypeTikv
-}
-
-func (t *TiKVDriver) InitDriver(_ context.Context) error {
-	client, err := txnkv.NewClient(t.addresses)
-	if err != nil {
-		return err
-	}
-	t.client = client
-	return nil
-}
-
-func (t *TiKVDriver) DeferDriver() error {
-	if err := t.client.Close(); err != nil {
-		return err
-	}
-	t.client = nil
 	return nil
 }
 
@@ -304,6 +271,39 @@ func (t *TiKVDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) 
 	return searchResult, nil
 }
 
+func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+	fk := toFileKey(key, path)
+
+	searchResult := make([]*sibyl2.ClazzWithPath, 0)
+
+	prefixStr := fk.ToScanPrefix() + "clazz|"
+	prefix := []byte(prefixStr)
+
+	txn := t.client.GetSnapshot(math.MaxUint64)
+	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	defer iter.Close()
+
+	for iter.Valid() {
+		c := &sibyl2.ClazzWithPath{}
+		err := json.Unmarshal(iter.Value(), c)
+		if err != nil {
+			return nil, err
+		}
+		c.Path = path
+		searchResult = append(searchResult, c)
+		err = iter.Next()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return searchResult, nil
+}
+
 func (t *TiKVDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
@@ -421,17 +421,17 @@ func (t *TiKVDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 }
 
 func (t *TiKVDriver) UpdateRevProperties(wc *object.WorkspaceConfig, k string, v any, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 
 func (t *TiKVDriver) UpdateFileProperties(wc *object.WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 
 func (t *TiKVDriver) UpdateFuncProperties(wc *object.WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 

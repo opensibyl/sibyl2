@@ -18,6 +18,31 @@ type badgerDriver struct {
 	config object.ExecuteConfig
 }
 
+func (d *badgerDriver) InitDriver(_ context.Context) error {
+	var dbInst *badger.DB
+	var err error
+
+	switch d.config.DbType {
+	case object.DriverTypeInMemory:
+		dbInst, err = badger.Open(badger.DefaultOptions("").WithInMemory(true))
+	case object.DriverTypeBadger:
+		core.Log.Infof("trying to open: %s", d.config.BadgerPath)
+		dbInst, err = badger.Open(badger.DefaultOptions(d.config.BadgerPath))
+	default:
+		core.Log.Errorf("db type %v invalid", d.config.DbType)
+	}
+	if err != nil {
+		return err
+	}
+	d.db = dbInst
+
+	return nil
+}
+
+func (d *badgerDriver) DeferDriver() error {
+	return d.db.Close()
+}
+
 func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
@@ -52,69 +77,6 @@ func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.
 		return err
 	}
 	return nil
-}
-
-func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.ClazzWithPath, error) {
-	key, err := wc.Key()
-	if err != nil {
-		return nil, err
-	}
-	fk := toFileKey(key, path)
-
-	searchResult := make([]*sibyl2.ClazzWithPath, 0)
-	err = d.db.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.DefaultIteratorOptions)
-		defer it.Close()
-		prefixStr := fk.ToScanPrefix() + "clazz|"
-		prefix := []byte(prefixStr)
-
-		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			c := &sibyl2.ClazzWithPath{}
-			err := it.Item().Value(func(val []byte) error {
-				err := json.Unmarshal(val, c)
-				if err != nil {
-					return err
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
-
-			c.Path = path
-			searchResult = append(searchResult, c)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, err
-	}
-	return searchResult, nil
-}
-
-func (d *badgerDriver) InitDriver(_ context.Context) error {
-	var dbInst *badger.DB
-	var err error
-
-	switch d.config.DbType {
-	case object.DriverTypeInMemory:
-		dbInst, err = badger.Open(badger.DefaultOptions("").WithInMemory(true))
-	case object.DriverTypeBadger:
-		core.Log.Infof("trying to open: %s", d.config.BadgerPath)
-		dbInst, err = badger.Open(badger.DefaultOptions(d.config.BadgerPath))
-	default:
-		core.Log.Errorf("db type %v invalid", d.config.DbType)
-	}
-	if err != nil {
-		return err
-	}
-	d.db = dbInst
-
-	return nil
-}
-
-func (d *badgerDriver) DeferDriver() error {
-	return d.db.Close()
 }
 
 func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, _ context.Context) error {
@@ -287,6 +249,44 @@ func (d *badgerDriver) ReadFiles(wc *object.WorkspaceConfig, _ context.Context) 
 	return searchResult, nil
 }
 
+func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+	fk := toFileKey(key, path)
+
+	searchResult := make([]*sibyl2.ClazzWithPath, 0)
+	err = d.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		prefixStr := fk.ToScanPrefix() + "clazz|"
+		prefix := []byte(prefixStr)
+
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			c := &sibyl2.ClazzWithPath{}
+			err := it.Item().Value(func(val []byte) error {
+				err := json.Unmarshal(val, c)
+				if err != nil {
+					return err
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+
+			c.Path = path
+			searchResult = append(searchResult, c)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return searchResult, nil
+}
+
 func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
@@ -421,17 +421,17 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 }
 
 func (d *badgerDriver) UpdateRevProperties(wc *object.WorkspaceConfig, k string, v any, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 
 func (d *badgerDriver) UpdateFileProperties(wc *object.WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 
 func (d *badgerDriver) UpdateFuncProperties(wc *object.WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 

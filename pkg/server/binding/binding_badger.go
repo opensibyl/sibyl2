@@ -3,6 +3,7 @@ package binding
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -417,17 +418,17 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 
 func (d *badgerDriver) UpdateRevProperties(wc *object.WorkspaceConfig, k string, v any, ctx context.Context) error {
 	//TODO implement me
-	panic("implement me")
+	return errors.New("implement me")
 }
 
 func (d *badgerDriver) UpdateFileProperties(wc *object.WorkspaceConfig, path string, k string, v any, ctx context.Context) error {
 	//TODO implement me
-	panic("implement me")
+	return errors.New("implement me")
 }
 
 func (d *badgerDriver) UpdateFuncProperties(wc *object.WorkspaceConfig, signature string, k string, v any, ctx context.Context) error {
 	//TODO implement me
-	panic("implement me")
+	return errors.New("implement me")
 }
 
 func (d *badgerDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {

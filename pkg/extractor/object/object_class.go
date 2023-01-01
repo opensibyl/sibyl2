@@ -13,8 +13,6 @@ type Clazz struct {
 	Module string `json:"module"`
 	// this span will include header and content
 	Span core.Span `json:"span"`
-	// which includes only body
-	BodySpan core.Span `json:"bodySpan"`
 
 	// which contains language-specific contents
 	Extras interface{} `json:"extras"`

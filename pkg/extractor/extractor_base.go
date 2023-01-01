@@ -21,6 +21,7 @@ type Extractor interface {
 	SymbolSupport
 	FunctionSupport
 	CallSupport
+	ClassSupport
 }
 
 type ExtractType = string
@@ -30,6 +31,7 @@ const (
 	TypeExtractFunction ExtractType = "func"
 	TypeExtractSymbol   ExtractType = "symbol"
 	TypeExtractCall     ExtractType = "call"
+	TypeExtractClazz    ExtractType = "class"
 )
 
 type SymbolSupport interface {
@@ -41,6 +43,12 @@ type FunctionSupport interface {
 	IsFunction(*core.Unit) bool
 	ExtractFunctions([]*core.Unit) ([]*Function, error)
 	ExtractFunction(*core.Unit) (*Function, error)
+}
+
+type ClassSupport interface {
+	IsClass(*core.Unit) bool
+	ExtractClasses([]*core.Unit) ([]*Clazz, error)
+	ExtractClass(*core.Unit) (*Clazz, error)
 }
 
 type CallSupport interface {
@@ -64,5 +72,6 @@ type ValueUnit = object.ValueUnit
 type Function = object.Function
 type Symbol = object.Symbol
 type Call = object.Call
+type Clazz = object.Clazz
 
 var Map2Func = object.Map2Func

@@ -64,3 +64,15 @@ func TestExtractFile(t *testing.T) {
 		core.Log.Debugf("path: %v, %v", each.Path, each.Units)
 	}
 }
+
+func TestExtractClazz(t *testing.T) {
+	fileResult, err := ExtractClazz("./extract.go", &ExtractConfig{
+		LangType: core.LangGo,
+	})
+	if err != nil {
+		panic(err)
+	}
+	for _, each := range fileResult {
+		core.Log.Infof("path: %v, %v", each.Path, each.Units)
+	}
+}

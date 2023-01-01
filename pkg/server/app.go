@@ -81,9 +81,11 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
 		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
 		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
+		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzQuery)
 		// upload
-		v1group.Handle(http.MethodPost, "/func", service.HandleRepoFuncUpload)
+		v1group.Handle(http.MethodPost, "/func", service.HandleFunctionUpload)
 		v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
+		v1group.Handle(http.MethodPost, "/clazz", service.HandleClazzUpload)
 		// swagger
 		engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}

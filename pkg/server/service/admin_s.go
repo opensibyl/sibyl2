@@ -10,6 +10,7 @@ import (
 type UploadStats struct {
 	FuncUnitTodo    int `json:"funcUnitTodo"`
 	FuncCtxUnitTodo int `json:"funcCtxUnitTodo"`
+	ClazzUnitTodo   int `json:"clazzUnitTodo"`
 }
 
 // @BasePath /
@@ -22,6 +23,7 @@ func HandleStatusUpload(c *gin.Context) {
 	stat := &UploadStats{
 		FuncUnitTodo:    worker.GetFuncQueueTodoCount(),
 		FuncCtxUnitTodo: worker.GetFuncCtxQueueTodoCount(),
+		ClazzUnitTodo:   worker.GetClazzQueueTodoCount(),
 	}
 	c.JSON(http.StatusOK, stat)
 }

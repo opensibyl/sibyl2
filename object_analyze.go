@@ -28,6 +28,12 @@ type FunctionContext struct {
 	ReverseCalls []*FunctionWithPath `json:"reverseCalls"`
 }
 
+type ClazzWithPath struct {
+	*extractor.Clazz
+	Path     string        `json:"path"`
+	Language core.LangType `json:"language"`
+}
+
 func (f *FunctionContext) ToGraph() *FuncGraphType {
 	markSelf := graph.VertexAttribute("fillcolor", "red")
 	markDirect := graph.VertexAttribute("fillcolor", "yellow")

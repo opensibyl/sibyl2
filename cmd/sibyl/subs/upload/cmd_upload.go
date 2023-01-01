@@ -35,6 +35,7 @@ func NewUploadCmd() *cobra.Command {
 	var uploadLangType string
 	var uploadUrl string
 	var uploadWithCtx bool
+	var uploadWithClass bool
 	var uploadBatchLimit int
 	var uploadDryRun bool
 
@@ -70,6 +71,7 @@ func NewUploadCmd() *cobra.Command {
 			config.Lang = uploadLangType
 			config.Url = uploadUrl
 			config.WithCtx = uploadWithCtx
+			config.WithClass = uploadWithClass
 			config.Batch = uploadBatchLimit
 			config.Dry = uploadDryRun
 
@@ -97,6 +99,7 @@ func NewUploadCmd() *cobra.Command {
 	uploadCmd.PersistentFlags().StringVar(&uploadLangType, "lang", config.Lang, "lang type of your source code")
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", config.Url, "backend url")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", config.WithCtx, "with func context")
+	uploadCmd.PersistentFlags().BoolVar(&uploadWithClass, "withClass", config.WithClass, "with class")
 	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", config.Batch, "with func context")
 	uploadCmd.PersistentFlags().BoolVar(&uploadDryRun, "dry", config.Dry, "dry run without upload")
 
@@ -137,11 +140,13 @@ func execWithConfig(c *uploadConfig) {
 		panic(err)
 	}
 
-	fullUrl := fmt.Sprintf("%s/api/v1/func", c.Url)
-	ctxUrl := fmt.Sprintf("%s/api/v1/funcctx", c.Url)
-	core.Log.Infof("upload backend: %s", fullUrl)
+	funcUrl := fmt.Sprintf("%s/api/v1/func", c.Url)
+	funcCtxUrl := fmt.Sprintf("%s/api/v1/funcctx", c.Url)
+	clazzUrl := fmt.Sprintf("%s/api/v1/clazz", c.Url)
+
+	core.Log.Infof("upload backend: %s", funcUrl)
 	if !c.Dry {
-		uploadFunctions(fullUrl, wc, f, c.Batch)
+		uploadFunctions(funcUrl, wc, f, c.Batch)
 	}
 	core.Log.Infof("upload functions finished, file count: %d", len(f))
 
@@ -162,9 +167,22 @@ func execWithConfig(c *uploadConfig) {
 		}
 		core.Log.Infof("graph ready")
 		if !c.Dry {
-			uploadGraph(ctxUrl, wc, f, g, c.Batch)
+			uploadGraph(funcCtxUrl, wc, f, g, c.Batch)
 		}
 		core.Log.Infof("upload graph finished")
+	}
+
+	if c.WithClass {
+		s, err := sibyl2.ExtractClazz(uploadSrc, &sibyl2.ExtractConfig{
+			FileFilter: filterFunc,
+		})
+		if err != nil {
+			panic(err)
+		}
+		core.Log.Infof("classes ready")
+		if !c.Dry {
+			uploadClazz(clazzUrl, wc, s, c.Batch)
+		}
 	}
 
 	core.Log.Infof("upload finished")
@@ -332,4 +350,62 @@ func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, ctxs []*siby
 	if resp.StatusCode != http.StatusOK {
 		core.Log.Errorf("upload resp: %v", string(data))
 	}
+}
+
+func uploadClazz(url string, wc *object.WorkspaceConfig, classes []*extractor.ClazzFileResult, batch int) {
+	core.Log.Infof("uploading %v with files %d ...", wc, len(classes))
+
+	// pack
+	fullUnits := make([]*object.ClazzUploadUnit, 0, len(classes))
+	for _, each := range classes {
+		unit := &object.ClazzUploadUnit{
+			WorkspaceConfig: wc,
+			ClazzFileResult: each,
+		}
+		fullUnits = append(fullUnits, unit)
+	}
+	// submit
+	ptr := 0
+	for ptr < len(fullUnits) {
+		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
+
+		newPtr := ptr + batch
+		if newPtr < len(fullUnits) {
+			uploadClazzUnits(url, fullUnits[ptr:ptr+batch])
+		} else {
+			uploadClazzUnits(url, fullUnits[ptr:])
+		}
+
+		ptr = newPtr
+	}
+}
+
+func uploadClazzUnits(url string, units []*object.ClazzUploadUnit) {
+	var wg sync.WaitGroup
+	for _, unit := range units {
+		if unit == nil {
+			continue
+		}
+		wg.Add(1)
+		go func(u *object.ClazzUploadUnit, waitGroup *sync.WaitGroup) {
+			defer waitGroup.Done()
+
+			jsonStr, err := json.Marshal(u)
+			if err != nil {
+				panic(err)
+			}
+			resp, err := httpClient.Post(
+				url,
+				"application/json",
+				bytes.NewBuffer(jsonStr))
+			if err != nil {
+				panic(err)
+			}
+			data, err := io.ReadAll(resp.Body)
+			if resp.StatusCode != http.StatusOK {
+				core.Log.Errorf("upload failed: %v", string(data))
+			}
+		}(unit, &wg)
+	}
+	wg.Wait()
 }

@@ -8,7 +8,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type GolangFuncExtras struct {
+type FuncExtras struct {
 }
 
 func (extractor *Extractor) IsFunction(unit *core.Unit) bool {
@@ -139,7 +139,7 @@ func (extractor *Extractor) methodUnit2Function(unit *core.Unit) (*object.Functi
 		// no returns
 	}
 	// extras
-	funcUnit.Extras = &GolangFuncExtras{}
+	funcUnit.Extras = &FuncExtras{}
 
 	return funcUnit, nil
 }
@@ -214,7 +214,7 @@ func (extractor *Extractor) funcUnit2Function(unit *core.Unit) (*object.Function
 	}
 
 	// extras
-	funcUnit.Extras = &GolangFuncExtras{}
+	funcUnit.Extras = &FuncExtras{}
 
 	return funcUnit, nil
 }

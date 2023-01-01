@@ -71,6 +71,36 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 	return final, nil
 }
 
+func ExtractClazz(targetFile string, config *ExtractConfig) ([]*extractor.ClazzFileResult, error) {
+	config.ExtractType = extractor.TypeExtractClazz
+	results, err := Extract(targetFile, config)
+	if err != nil {
+		return nil, err
+	}
+
+	var final []*extractor.ClazzFileResult
+	for _, each := range results {
+		var newUnits = make([]*extractor.Clazz, len(each.Units))
+		for i, v := range each.Units {
+			// should not error
+			if clazz, ok := v.(*extractor.Clazz); ok {
+				newUnits[i] = clazz
+			} else {
+				return nil, errors.New(fmt.Sprintf("failed to cast %v to function", v))
+			}
+		}
+
+		newEach := &extractor.ClazzFileResult{
+			Path:     each.Path,
+			Language: each.Language,
+			Type:     each.Type,
+			Units:    newUnits,
+		}
+		final = append(final, newEach)
+	}
+	return final, nil
+}
+
 func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult, error) {
 	startTime := time.Now()
 	defer func() {
@@ -135,6 +165,12 @@ func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult,
 				return nil, err
 			}
 			fileResult.Units = extractor.DataTypeOf(calls)
+		case extractor.TypeExtractClazz:
+			classes, err := langExtractor.ExtractClasses(eachFileUnit.Units)
+			if err != nil {
+				return nil, err
+			}
+			fileResult.Units = extractor.DataTypeOf(classes)
 		default:
 			return nil, errors.New("no specific extract type")
 		}

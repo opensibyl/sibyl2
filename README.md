@@ -43,6 +43,14 @@ Code snapshot is the logical metadata of your code:
 
 See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
 
+## Languages support
+
+| Languages | Function | Function Context | Class   |
+|-----------|----------|------------------|---------|
+| Golang    | Yes      | Yes              | Yes     |
+| Java      | Yes      | Yes              | Yes     |
+| Python    | Yes      | Yes              | Not yet |
+
 ## Examples of Usage
 
 ### One-file-installation
@@ -52,7 +60,8 @@ Users can access all the features with a simple binary file, without any extra d
 
 You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
 
-Or directly download with `wget` (replace `x.y.z` to the latest version: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/opensibyl/sibyl2)    ):
+Or directly download with `wget` (replace `x.y.z` to the latest
+version: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/opensibyl/sibyl2)    ):
 
 ```bash
 wget https://github.com/opensibyl/sibyl2/releases/download/v<x.y.z>/sibyl2_<x.y.z>_linux_amd64

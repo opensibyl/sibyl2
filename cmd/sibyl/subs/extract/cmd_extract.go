@@ -23,6 +23,7 @@ var allowExtractType = []string{
 	extractor.TypeExtractSymbol,
 	extractor.TypeExtractFunction,
 	extractor.TypeExtractCall,
+	extractor.TypeExtractClazz,
 }
 
 func NewExtractCmd() *cobra.Command {

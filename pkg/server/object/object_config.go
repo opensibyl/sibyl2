@@ -44,6 +44,8 @@ type QueueConfigPart struct {
 	KafkaFuncConsumerGroup    string    `mapstructure:"kafkaFuncConsumerGroup"`
 	KafkaFuncCtxTopic         string    `mapstructure:"kafkaFuncCtxTopic"`
 	KafkaFuncCtxConsumerGroup string    `mapstructure:"kafkaFuncCtxConsumerGroup"`
+	KafkaClazzTopic           string    `mapstructure:"kafkaClazzTopic"`
+	KafkaClazzConsumerGroup   string    `mapstructure:"kafkaClazzConsumerGroup"`
 }
 
 type ExecuteConfig struct {
@@ -79,6 +81,8 @@ func DefaultExecuteConfig() ExecuteConfig {
 			"sibyl-consumer-func",
 			"sibyl-upload-funcctx",
 			"sibyl-consumer-funcctx",
+			"sibyl-upload-clazz",
+			"sibyl-consumer-clazz",
 		},
 	}
 }

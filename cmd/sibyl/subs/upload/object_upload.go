@@ -16,6 +16,7 @@ type SrcConfigPart struct {
 	Src          string `mapstructure:"src"`
 	Lang         string `mapstructure:"lang"`
 	WithCtx      bool   `mapstructure:"withCtx"`
+	WithClass    bool   `mapstructure:"withClass"`
 	IncludeRegex string `mapstructure:"includeRegex"`
 	ExcludeRegex string `mapstructure:"excludeRegex"`
 }

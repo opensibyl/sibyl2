@@ -11,8 +11,10 @@ type Queue interface {
 	Defer() error
 	SubmitFunc(unit *object.FunctionUploadUnit) (err error)
 	SubmitFuncCtx(unit *object.FunctionContextUploadUnit) (err error)
+	SubmitClazz(unit *object.ClazzUploadUnit) (err error)
 	WatchFunc(chan<- *object.FunctionUploadUnit)
 	WatchFuncCtx(chan<- *object.FunctionContextUploadUnit)
+	WatchClazz(chan<- *object.ClazzUploadUnit)
 }
 
 func InitQueue(config object.ExecuteConfig, ctx context.Context) Queue {

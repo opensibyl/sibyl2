@@ -3,6 +3,7 @@ package golang
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -10,7 +11,10 @@ import (
 )
 
 var goCode = `
+package abc
+
 type Parser struct {
+	*Headless
 	engine *sitter.Parser
 }
 
@@ -43,8 +47,9 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 	// check its base info
 	target := funcs[0]
 	core.Log.Debugf("target: %s, span: %s", target.Name, target.BodySpan.String())
-	if target.BodySpan.String() != "5:46,7:1" {
-		panic(nil)
+	location := "8:46,10:1"
+	if target.BodySpan.String() != location {
+		panic(fmt.Sprintf("%s != %s", target.BodySpan.String(), location))
 	}
 }
 
@@ -80,5 +85,22 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 		if each.Name != back.Name {
 			panic(errors.New("CONVERT FAILED"))
 		}
+	}
+}
+
+func TestExtractor_ExtractClasses(t *testing.T) {
+	parser := core.NewParser(core.LangGo)
+	units, err := parser.Parse([]byte(goCode))
+	if err != nil {
+		panic(err)
+	}
+
+	extractor := &Extractor{}
+	data, err := extractor.ExtractClasses(units)
+	for _, eachType := range data {
+		core.Log.Infof("clazz: %v", eachType.GetSignature())
+
+		fields := eachType.Extras.(*ClassExtras).Fields
+		core.Log.Infof("fields: %v, %v", fields[0].Type, fields[0].Name)
 	}
 }

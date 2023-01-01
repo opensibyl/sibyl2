@@ -13,12 +13,11 @@ var tikvDriver Driver
 
 func init() {
 	config := object.DefaultExecuteConfig()
-	config.TikvAddrs = "10.177.1.175:2379"
+	config.TikvAddrs = "127.0.0.1:2379"
 	tikvDriver = initTikvDriver(config)
 }
 
 func TestTikv(t *testing.T) {
-	t.Skip("always skip in ci")
 	ctx := context.Background()
 	err := tikvDriver.InitDriver(ctx)
 	if err != nil {

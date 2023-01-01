@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"testing"
+	"time"
 
 	openapi "github.com/opensibyl/sibyl-go-client"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
@@ -21,8 +22,9 @@ func TestServer(t *testing.T) {
 
 	// do the upload first
 	uploadCmd := upload.NewUploadCmd()
-	uploadCmd.SetArgs([]string{"--src", "../../../..", "--withCtx"})
+	uploadCmd.SetArgs([]string{"--src", "../../../..", "--withCtx", "--withClass"})
 	uploadCmd.Execute()
+	time.Sleep(1 * time.Second)
 
 	configuration := openapi.NewConfiguration()
 	configuration.Scheme = "http"

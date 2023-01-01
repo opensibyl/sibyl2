@@ -26,7 +26,7 @@ func (extractor *Extractor) ExtractFunctions(units []*core.Unit) ([]*object.Func
 			continue
 		}
 
-		eachFunc, err := extractor.unit2Function(eachUnit)
+		eachFunc, err := extractor.ExtractFunction(eachUnit)
 		if err != nil {
 			return nil, err
 		}
@@ -36,17 +36,6 @@ func (extractor *Extractor) ExtractFunctions(units []*core.Unit) ([]*object.Func
 }
 
 func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, error) {
-	data, err := extractor.ExtractFunctions([]*core.Unit{unit})
-	if err != nil {
-		return nil, err
-	}
-	if len(data) == 0 {
-		return nil, errors.New("unit not a func: " + unit.Content)
-	}
-	return data[0], nil
-}
-
-func (extractor *Extractor) unit2Function(unit *core.Unit) (*object.Function, error) {
 	switch unit.Kind {
 	case KindGolangFuncDecl:
 		return extractor.funcUnit2Function(unit)

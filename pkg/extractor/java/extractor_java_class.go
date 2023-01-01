@@ -31,7 +31,7 @@ func (extractor *Extractor) ExtractClasses(units []*core.Unit) ([]*object.Clazz,
 		if !extractor.IsClass(eachUnit) {
 			continue
 		}
-		eachClazz, err := extractor.unit2Clazz(eachUnit)
+		eachClazz, err := extractor.ExtractClass(eachUnit)
 		if err != nil {
 			return nil, err
 		}
@@ -41,17 +41,6 @@ func (extractor *Extractor) ExtractClasses(units []*core.Unit) ([]*object.Clazz,
 }
 
 func (extractor *Extractor) ExtractClass(unit *core.Unit) (*object.Clazz, error) {
-	data, err := extractor.ExtractClasses([]*core.Unit{unit})
-	if err != nil {
-		return nil, err
-	}
-	if len(data) == 0 {
-		return nil, errors.New("unit not a class: " + unit.Content)
-	}
-	return data[0], nil
-}
-
-func (extractor *Extractor) unit2Clazz(unit *core.Unit) (*object.Clazz, error) {
 	clazz := object.NewClazz()
 	clazz.Span = unit.Span
 

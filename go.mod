@@ -12,7 +12,7 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/neo4j/neo4j-go-driver/v5 v5.2.0
-	github.com/opensibyl/sibyl-go-client v0.0.0-20221216163029-57186087615c
+	github.com/opensibyl/sibyl-go-client v0.0.0-20230101123412-9ed1823a3b96
 	github.com/pkg/errors v0.9.1
 	github.com/segmentio/kafka-go v0.4.38
 	github.com/smacker/go-tree-sitter v0.0.0-20221031025734-03a9c97d8039

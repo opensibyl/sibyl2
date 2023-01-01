@@ -70,6 +70,20 @@ func (f *funcKey) String() string {
 	return fmt.Sprintf("rev_%s_file_%s_func|%s", f.revHash, f.fileHash, f.funcHash)
 }
 
+type clazzKey struct {
+	revHash   string
+	fileHash  string
+	clazzHash string
+}
+
+func toClazzKey(revHash string, fileHash string, clazzHash string) *clazzKey {
+	return &clazzKey{revHash, fileHash, clazzHash}
+}
+
+func (c *clazzKey) String() string {
+	return fmt.Sprintf("rev_%s_file_%s_clazz|%s", c.revHash, c.fileHash, c.clazzHash)
+}
+
 type funcCtxKey struct {
 	revHash  string
 	fileHash string

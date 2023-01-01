@@ -22,6 +22,11 @@ type FunctionContextUploadUnit struct {
 	FunctionContexts []*sibyl2.FunctionContext `json:"functionContext"`
 }
 
+type ClazzUploadUnit struct {
+	WorkspaceConfig *WorkspaceConfig           `json:"workspace"`
+	ClazzFileResult *extractor.ClazzFileResult `json:"clazzFileResult"`
+}
+
 func SerializeUploadUnit(u interface{}) ([]byte, error) {
 	return json.Marshal(u)
 }
@@ -37,6 +42,15 @@ func DeserializeFuncUploadUnit(data []byte) (*FunctionUploadUnit, error) {
 
 func DeserializeFuncCtxUploadUnit(data []byte) (*FunctionContextUploadUnit, error) {
 	u := &FunctionContextUploadUnit{}
+	err := json.Unmarshal(data, u)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
+}
+
+func DeserializeClazzUploadUnit(data []byte) (*ClazzUploadUnit, error) {
+	u := &ClazzUploadUnit{}
 	err := json.Unmarshal(data, u)
 	if err != nil {
 		return nil, err

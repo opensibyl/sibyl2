@@ -11,6 +11,7 @@ import (
 
 var funcUnitQueue chan *object.FunctionUploadUnit
 var funcCtxUnitQueue chan *object.FunctionContextUploadUnit
+var clazzUnitQueue chan *object.ClazzUploadUnit
 
 // default neo4j db may be very slow in I/O
 var workerCount int
@@ -28,9 +29,11 @@ func InitWorker(config object.ExecuteConfig, context context.Context, driver bin
 
 	funcUnitQueue = make(chan *object.FunctionUploadUnit, workerQueueSize)
 	funcCtxUnitQueue = make(chan *object.FunctionContextUploadUnit, workerQueueSize)
+	clazzUnitQueue = make(chan *object.ClazzUploadUnit, workerQueueSize)
 
 	q.WatchFunc(funcUnitQueue)
 	q.WatchFuncCtx(funcCtxUnitQueue)
+	q.WatchClazz(clazzUnitQueue)
 
 	initWorkers(context, driver)
 }
@@ -41,6 +44,10 @@ func GetFuncQueueTodoCount() int {
 
 func GetFuncCtxQueueTodoCount() int {
 	return len(funcCtxUnitQueue)
+}
+
+func GetClazzQueueTodoCount() int {
+	return len(clazzUnitQueue)
 }
 
 func initWorkers(ctx context.Context, driver binding.Driver) {
@@ -78,6 +85,16 @@ func startWorker(ctx context.Context, driver binding.Driver) {
 					core.Log.Warnf("err when create ctx for: %v", each.GetSignature())
 					funcCtxUnitQueue <- result
 				}
+			}
+
+		case result := <-clazzUnitQueue:
+			// failure allowed
+			// todo: waste 1 txn
+			_ = driver.CreateWorkspace(result.WorkspaceConfig, ctx)
+
+			err := driver.CreateClazzFile(result.WorkspaceConfig, result.ClazzFileResult, ctx)
+			if err != nil {
+				core.Log.Errorf("error when upload class: %v\n", err)
 			}
 
 		case <-ctx.Done():

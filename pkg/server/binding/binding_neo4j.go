@@ -3,6 +3,7 @@ package binding
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"reflect"
 	"strings"
@@ -45,6 +46,16 @@ MATCH (:Rev {id: $repo_id, hash: $rev_hash})
 
 type neo4jDriver struct {
 	neo4j.DriverWithContext
+}
+
+func (d *neo4jDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
+	//TODO implement me
+	return errors.New("implement me")
+}
+
+func (d *neo4jDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	//TODO implement me
+	return nil, errors.New("implement me")
 }
 
 func (d *neo4jDriver) GetType() object.DriverType {

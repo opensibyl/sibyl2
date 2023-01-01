@@ -18,6 +18,79 @@ type TiKVDriver struct {
 	addresses []string
 }
 
+func (t *TiKVDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
+	key, err := wc.Key()
+	if err != nil {
+		return err
+	}
+
+	fk := toFileKey(key, c.Path)
+	byteKey := []byte(fk.String())
+
+	txn, err := t.client.Begin()
+	if err != nil {
+		return err
+	}
+
+	// tikv does not allow set nil value
+	// todo: in the future, value will be replaced with file desc info (something like author/size
+	err = txn.Set(byteKey, byteKey)
+	if err != nil {
+		return err
+	}
+
+	for _, eachClazz := range c.Units {
+		eachClazzKey := toClazzKey(fk.RevHash, fk.FileHash, eachClazz.GetSignature())
+		eachClazzValue, err := eachClazz.ToJson()
+		if err != nil {
+			continue
+		}
+		err = txn.Set([]byte(eachClazzKey.String()), eachClazzValue)
+		if err != nil {
+			return err
+		}
+	}
+
+	// TiKV uses the optimistic transaction model by default
+	err = txn.Commit(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+	fk := toFileKey(key, path)
+
+	searchResult := make([]*sibyl2.ClazzWithPath, 0)
+
+	prefixStr := fk.ToScanPrefix() + "clazz|"
+	prefix := []byte(prefixStr)
+
+	txn := t.client.GetSnapshot(math.MaxUint64)
+	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	defer iter.Close()
+
+	for iter.Valid() {
+		f := &sibyl2.ClazzWithPath{}
+		err := json.Unmarshal(iter.Value(), f)
+		if err != nil {
+			return nil, err
+		}
+		searchResult = append(searchResult, f)
+		err = iter.Next()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return searchResult, nil
+}
+
 func initTikvDriver(config object.ExecuteConfig) Driver {
 	addresses := strings.Split(config.TikvAddrs, ",")
 	return &TiKVDriver{
@@ -238,8 +311,9 @@ func (t *TiKVDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx 
 
 	searchResult := make([]*sibyl2.FunctionWithPath, 0)
 
-	prefixStr := fk.ToScanPrefix()
+	prefixStr := fk.ToScanPrefix() + "func|"
 	prefix := []byte(prefixStr)
+
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
 	defer iter.Close()

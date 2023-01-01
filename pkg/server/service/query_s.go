@@ -177,6 +177,45 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ctxs)
 }
 
+// @Summary class query
+// @Param   repo  query string true  "repo"
+// @Param   rev   query string true  "rev"
+// @Param   file  query string true  "file"
+// @Produce json
+// @Success 200 {array} sibyl2.ClazzWithPath
+// @Router  /api/v1/clazz [get]
+// @Tags MAIN
+func HandleClazzQuery(c *gin.Context) {
+	repo := c.Query("repo")
+	rev := c.Query("rev")
+	file := c.Query("file")
+
+	ret, err := handleClazzQuery(repo, rev, file)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, ret)
+}
+
+func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWithPath, error) {
+	wc := &object.WorkspaceConfig{
+		RepoId:  repo,
+		RevHash: rev,
+	}
+	if err := wc.Verify(); err != nil {
+		return nil, err
+	}
+	var functions []*sibyl2.ClazzWithPath
+	var err error
+	functions, err = sharedDriver.ReadClasses(wc, file, sharedContext)
+
+	if err != nil {
+		return nil, err
+	}
+	return functions, nil
+}
+
 func InitService(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver, q queue.Queue) {
 	sharedContext = ctx
 	sharedDriver = driver

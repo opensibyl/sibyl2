@@ -73,3 +73,17 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		}
 	}
 }
+
+func TestExtractor_ExtractClasses(t *testing.T) {
+	parser := core.NewParser(core.LangJava)
+	units, err := parser.Parse([]byte(javaCode))
+	if err != nil {
+		panic(err)
+	}
+
+	extractor := &Extractor{}
+	data, err := extractor.ExtractClasses(units)
+	for _, each := range data {
+		core.Log.Infof("find class: %v", each.GetSignature())
+	}
+}

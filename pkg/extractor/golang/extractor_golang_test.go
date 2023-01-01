@@ -10,6 +10,8 @@ import (
 )
 
 var goCode = `
+package abc
+
 type Parser struct {
 	engine *sitter.Parser
 }
@@ -80,5 +82,22 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 		if each.Name != back.Name {
 			panic(errors.New("CONVERT FAILED"))
 		}
+	}
+}
+
+func TestExtractor_ExtractClasses(t *testing.T) {
+	parser := core.NewParser(core.LangGo)
+	units, err := parser.Parse([]byte(goCode))
+	if err != nil {
+		panic(err)
+	}
+
+	extractor := &Extractor{}
+	data, err := extractor.ExtractClasses(units)
+	for _, eachType := range data {
+		core.Log.Infof("clazz: %v", eachType.GetSignature())
+
+		fields := eachType.Extras.(*ClassExtras).Fields
+		core.Log.Infof("fields: %v, %v", fields[0].Type, fields[0].Name)
 	}
 }

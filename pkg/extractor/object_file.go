@@ -17,6 +17,7 @@ type FileResult = BaseFileResult[DataType]
 type SymbolFileResult = BaseFileResult[*Symbol]
 type FunctionFileResult = BaseFileResult[*Function]
 type CallFileResult = BaseFileResult[*Call]
+type ClazzFileResult = BaseFileResult[*Clazz]
 
 func PathStandardize(results []*FileResult, basedir string) error {
 	for _, each := range results {

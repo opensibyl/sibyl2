@@ -3,6 +3,7 @@ package golang
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"testing"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -13,6 +14,7 @@ var goCode = `
 package abc
 
 type Parser struct {
+	*Headless
 	engine *sitter.Parser
 }
 
@@ -45,8 +47,9 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 	// check its base info
 	target := funcs[0]
 	core.Log.Debugf("target: %s, span: %s", target.Name, target.BodySpan.String())
-	if target.BodySpan.String() != "5:46,7:1" {
-		panic(nil)
+	location := "8:46,10:1"
+	if target.BodySpan.String() != location {
+		panic(fmt.Sprintf("%s != %s", target.BodySpan.String(), location))
 	}
 }
 

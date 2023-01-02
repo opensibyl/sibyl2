@@ -215,9 +215,3 @@ func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWith
 	}
 	return functions, nil
 }
-
-func InitService(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver, q queue.Queue) {
-	sharedContext = ctx
-	sharedDriver = driver
-	sharedQueue = q
-}

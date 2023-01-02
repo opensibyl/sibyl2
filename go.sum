@@ -376,6 +376,8 @@ github.com/opensibyl/sibyl-go-client v0.0.0-20221216163029-57186087615c h1:tJuMI
 github.com/opensibyl/sibyl-go-client v0.0.0-20221216163029-57186087615c/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
 github.com/opensibyl/sibyl-go-client v0.0.0-20230101123412-9ed1823a3b96 h1:hlSgSzBqmrtA9TuIrc9h3IofZQdxTYFZiYp/UmhQPfU=
 github.com/opensibyl/sibyl-go-client v0.0.0-20230101123412-9ed1823a3b96/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
+github.com/opensibyl/sibyl-go-client v0.0.0-20230102090724-406cb724dd30 h1:F8MEDCOt3gKFiPx1mPw/bzHx4fDjtTpoQs4k8zlsBcY=
+github.com/opensibyl/sibyl-go-client v0.0.0-20230102090724-406cb724dd30/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=

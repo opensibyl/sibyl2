@@ -9,7 +9,57 @@ import (
 	openapi "github.com/opensibyl/sibyl-go-client"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/stretchr/testify/assert"
 )
+
+const unifiedDiff = `
+diff --git a/pkg/server/service/ops_s.go b/pkg/server/service/admin_s.go
+similarity index 100%
+rename from pkg/server/service/ops_s.go
+rename to pkg/server/service/admin_s.go
+diff --git a/pkg/server/service/main_query_s.go b/pkg/server/service/query_s.go
+similarity index 97%
+rename from pkg/server/service/main_query_s.go
+rename to pkg/server/service/query_s.go
+index 06cb032..1ec10da 100644
+--- a/pkg/server/service/main_query_s.go
++++ b/pkg/server/service/query_s.go
+@@ -215,3 +215,9 @@ func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWith
+ 	}
+ 	return functions, nil
+ }
++
++func InitService(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver, q queue.Queue) {
++	sharedContext = ctx
++	sharedDriver = driver
++	sharedQueue = q
++}
+diff --git a/pkg/server/service/shared.go b/pkg/server/service/shared.go
+deleted file mode 100644
+index b7c9262..0000000
+--- a/pkg/server/service/shared.go
++++ /dev/null
+@@ -1,15 +0,0 @@
+-package service
+-
+-import (
+-	"context"
+-
+-	"github.com/opensibyl/sibyl2/pkg/server/binding"
+-	"github.com/opensibyl/sibyl2/pkg/server/object"
+-	"github.com/opensibyl/sibyl2/pkg/server/queue"
+-)
+-
+-func InitService(_ object.ExecuteConfig, ctx context.Context, driver binding.Driver, q queue.Queue) {
+-	sharedContext = ctx
+-	sharedDriver = driver
+-	sharedQueue = q
+-}
+diff --git a/pkg/server/service/main_upload_s.go b/pkg/server/service/upload_s.go
+similarity index 100%
+rename from pkg/server/service/main_upload_s.go
+rename to pkg/server/service/upload_s.go
+`
 
 func TestServer(t *testing.T) {
 	cmd := NewServerCmd()
@@ -75,4 +125,8 @@ func TestServer(t *testing.T) {
 	if len(classes) == 0 {
 		panic(err)
 	}
+
+	diff, _, err := apiClient.EXTRASApi.ApiV1FuncctxDiffGet(ctx).Repo(repo).Rev(rev).Diff(unifiedDiff).Execute()
+	assert.Nil(t, err)
+	core.Log.Infof("diff: %v", diff)
 }

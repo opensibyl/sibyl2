@@ -1,6 +1,8 @@
 # sibyl 2
 
-> Take a quick snapshot of your codebase in seconds, with zero cost.
+> Bring your plain code alive with tiny effort.
+
+[中文文档](https://opensibyl.github.io/doc/)
 
 ## Status
 

@@ -39,6 +39,7 @@ require (
 	github.com/coreos/go-semver v0.3.0 // indirect
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dgryski/go-farm v0.0.0-20190423205320-6a90982ecee2 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
@@ -89,6 +90,7 @@ require (
 	github.com/pingcap/failpoint v0.0.0-20210918120811-547c13e3eb00 // indirect
 	github.com/pingcap/kvproto v0.0.0-20221129023506-621ec37aac7a // indirect
 	github.com/pingcap/log v1.1.1-0.20221015072633-39906604fb81 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/prometheus/client_golang v1.11.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.26.0 // indirect
@@ -100,6 +102,8 @@ require (
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stathat/consistent v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.0 // indirect
+	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/subosito/gotenv v1.4.1 // indirect
 	github.com/tikv/pd/client v0.0.0-20221031025758-80f0d8ca4d07 // indirect
 	github.com/twmb/murmur3 v1.1.3 // indirect

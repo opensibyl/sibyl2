@@ -113,6 +113,13 @@ Easily combine with other systems:
 - golang: https://github.com/opensibyl/sibyl-go-client
 - java: https://github.com/opensibyl/sibyl-java-client
 
+We use [openapi-generator](https://github.com/OpenAPITools/openapi-generator) for creating clients automatically.
+Also, you can easily create your own one.
+
+```bash
+java -jar ~/Downloads/openapi-generator-cli-6.2.1.jar generate -i pkg/server/docs/swagger.yaml -g go -o ~/github_workspace/sibyl-go-client
+```
+
 ### Use as a commandline tool
 
 #### Basic Functions

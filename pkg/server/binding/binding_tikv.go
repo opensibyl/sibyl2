@@ -213,13 +213,18 @@ func (t *TiKVDriver) ReadRepos(_ context.Context) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]string, 0)
+	m := make(map[string]struct{}, 0)
 	for _, eachRev := range revs {
 		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
 		if err != nil {
 			return nil, err
 		}
-		ret = append(ret, wc.RepoId)
+		m[wc.RepoId] = struct{}{}
+	}
+
+	ret := make([]string, 0, len(m))
+	for k := range m {
+		ret = append(ret, k)
 	}
 	return ret, nil
 }

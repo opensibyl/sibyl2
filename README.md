@@ -60,11 +60,10 @@ Users can access all the features with a simple binary file, without any extra d
 
 You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
 
-Or directly download with `wget` (replace `x.y.z` to the latest
-version: ![GitHub release (latest by date)](https://img.shields.io/github/v/release/opensibyl/sibyl2)    ):
+Or directly download with `wget` (linux only):
 
 ```bash
-wget https://github.com/opensibyl/sibyl2/releases/download/v<x.y.z>/sibyl2_<x.y.z>_linux_amd64
+curl https://raw.githubusercontent.com/opensibyl/sibyl2/master/scripts/download_latest.sh | bash
 ```
 
 ### Use as a service (recommend)

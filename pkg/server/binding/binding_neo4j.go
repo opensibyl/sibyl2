@@ -48,13 +48,23 @@ type neo4jDriver struct {
 	neo4j.DriverWithContext
 }
 
+func (d *neo4jDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (d *neo4jDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (d *neo4jDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
-	//TODO implement me
+	// TODO implement me
 	return errors.New("implement me")
 }
 
 func (d *neo4jDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
-	//TODO implement me
+	// TODO implement me
 	return nil, errors.New("implement me")
 }
 

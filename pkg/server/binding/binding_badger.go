@@ -292,6 +292,20 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ co
 	return searchResult, nil
 }
 
+func (d *badgerDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	classes, err := d.ReadClasses(wc, path, ctx)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]*sibyl2.ClazzWithPath, 0)
+	for _, each := range classes {
+		if each.GetSpan().ContainAnyLine(lines...) {
+			ret = append(ret, each)
+		}
+	}
+	return ret, nil
+}
+
 func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
@@ -327,6 +341,22 @@ func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ 
 		return nil, err
 	}
 	return searchResult, nil
+}
+
+func (d *badgerDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+	functions, err := d.ReadFunctionsWithLines(wc, path, lines, ctx)
+	if err != nil {
+		return nil, err
+	}
+	ret := make([]*sibyl2.FunctionContext, 0)
+	for _, eachFunc := range functions {
+		functionContext, err := d.ReadFunctionContextWithSignature(wc, eachFunc.GetSignature(), ctx)
+		if err != nil {
+			return nil, err
+		}
+		ret = append(ret, functionContext)
+	}
+	return ret, nil
 }
 
 func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {

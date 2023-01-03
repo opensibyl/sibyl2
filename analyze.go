@@ -111,7 +111,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 
 	// build relationship
 	for _, eachFuncFile := range funcFiles {
-		core.Log.Infof("file %s , methods: %d", eachFuncFile.Path, len(eachFuncFile.Units))
+		core.Log.Debugf("file %s , methods: %d", eachFuncFile.Path, len(eachFuncFile.Units))
 		for _, eachFunc := range eachFuncFile.Units {
 			refs, ok := funcRefMap[eachFunc.GetIndexName()]
 			if !ok {

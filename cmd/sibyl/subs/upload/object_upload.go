@@ -25,6 +25,7 @@ type ServerConfigPart struct {
 	Url   string `mapstructure:"url"`
 	Batch int    `mapstructure:"batch"`
 	Dry   bool   `mapstructure:"dry"`
+	Depth int    `mapstructure:"depth"`
 }
 
 type uploadConfig struct {
@@ -62,6 +63,7 @@ func defaultConfig() *uploadConfig {
 			Url:   "http://127.0.0.1:9876",
 			Batch: 50,
 			Dry:   false,
+			Depth: 1,
 		},
 	}
 }

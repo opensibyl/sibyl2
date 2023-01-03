@@ -3,6 +3,7 @@ package upload
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	object2 "github.com/go-git/go-git/v5/plumbing/object"
 	"github.com/hashicorp/go-retryablehttp"
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -38,6 +40,7 @@ func NewUploadCmd() *cobra.Command {
 	var uploadWithClass bool
 	var uploadBatchLimit int
 	var uploadDryRun bool
+	var uploadDepth int
 
 	uploadCmd := &cobra.Command{
 		Use:    "upload",
@@ -74,6 +77,7 @@ func NewUploadCmd() *cobra.Command {
 			config.WithClass = uploadWithClass
 			config.Batch = uploadBatchLimit
 			config.Dry = uploadDryRun
+			config.Depth = uploadDepth
 
 			// execute
 			execWithConfig(config)
@@ -100,45 +104,83 @@ func NewUploadCmd() *cobra.Command {
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", config.Url, "backend url")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", config.WithCtx, "with func context")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithClass, "withClass", config.WithClass, "with class")
-	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", config.Batch, "with func context")
+	uploadCmd.PersistentFlags().IntVar(&uploadBatchLimit, "batch", config.Batch, "each batch size")
 	uploadCmd.PersistentFlags().BoolVar(&uploadDryRun, "dry", config.Dry, "dry run without upload")
+	uploadCmd.PersistentFlags().IntVar(&uploadDepth, "depth", config.Depth, "upload with history")
 
 	return uploadCmd
 }
 
+func panicIfErr(err error) {
+	if err != nil {
+		panic(err)
+	}
+}
+
 func execWithConfig(c *uploadConfig) {
 	configStr, err := c.ToJson()
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 	core.Log.Infof("upload with config: %s", configStr)
 	uploadSrc, err := filepath.Abs(c.Src)
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 	repo, err := loadRepo(uploadSrc)
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 	head, err := repo.Head()
+	panicIfErr(err)
 	curRepo := filepath.Base(uploadSrc)
-	curRev := head.Hash().String()
 
-	wc := &object.WorkspaceConfig{
-		RepoId:  curRepo,
-		RevHash: curRev,
+	cIter, err := repo.Log(&git.LogOptions{From: head.Hash()})
+	var commits = make([]*object2.Commit, 0, c.Depth)
+	count := 0
+	_ = cIter.ForEach(func(commit *object2.Commit) error {
+		commits = append(commits, commit)
+		count += 1
+		if count >= c.Depth {
+			return errors.New("break")
+		}
+		return nil
+	})
+
+	tree, err := repo.Worktree()
+	panicIfErr(err)
+
+	for _, eachRev := range commits {
+		if eachRev.Hash != head.Hash() {
+			core.Log.Infof("checkout: %s", eachRev.Hash)
+			err = tree.Checkout(&git.CheckoutOptions{
+				Hash: eachRev.Hash,
+				Keep: true,
+			})
+			panicIfErr(err)
+		}
+
+		wc := &object.WorkspaceConfig{
+			RepoId:  curRepo,
+			RevHash: eachRev.Hash.String(),
+		}
+		execCurRevWithConfig(uploadSrc, wc, c)
 	}
 
+	// recover
+	if c.Depth != 1 {
+		core.Log.Infof("recover checkout: %s", head)
+		err = tree.Checkout(&git.CheckoutOptions{
+			Hash: head.Hash(),
+			Keep: true,
+		})
+		panicIfErr(err)
+	}
+
+	core.Log.Infof("upload finished")
+}
+
+func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploadConfig) {
 	filterFunc, err := createFileFilter(c)
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
 		FileFilter: filterFunc,
 	})
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 
 	funcUrl := fmt.Sprintf("%s/api/v1/func", c.Url)
 	funcCtxUrl := fmt.Sprintf("%s/api/v1/funcctx", c.Url)
@@ -167,7 +209,7 @@ func execWithConfig(c *uploadConfig) {
 		}
 		core.Log.Infof("graph ready")
 		if !c.Dry {
-			uploadGraph(funcCtxUrl, wc, f, g, c.Batch)
+			uploadFunctionContexts(funcCtxUrl, wc, f, g, c.Batch)
 		}
 		core.Log.Infof("upload graph finished")
 	}
@@ -184,8 +226,6 @@ func execWithConfig(c *uploadConfig) {
 			uploadClazz(clazzUrl, wc, s, c.Batch)
 		}
 	}
-
-	core.Log.Infof("upload finished")
 }
 
 func createFileFilter(c *uploadConfig) (func(path string) bool, error) {
@@ -298,7 +338,7 @@ func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
 	wg.Wait()
 }
 
-func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph, batch int) {
+func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph, batch int) {
 	var wg sync.WaitGroup
 	ptr := 0
 	for ptr < len(functions) {
@@ -325,7 +365,7 @@ func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.
 					related := graph.FindRelated(eachFunc)
 					ctxs = append(ctxs, related)
 				}
-				uploadFunctionContexts(url, wc, ctxs)
+				uploadFunctionContextUnits(url, wc, ctxs)
 			}(eachFuncFile, &wg, g)
 		}
 		wg.Wait()
@@ -333,19 +373,15 @@ func uploadGraph(url string, wc *object.WorkspaceConfig, functions []*extractor.
 	}
 }
 
-func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
+func uploadFunctionContextUnits(url string, wc *object.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
 	uploadUnit := &object.FunctionContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
 	jsonStr, err := json.Marshal(uploadUnit)
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 	resp, err := httpClient.Post(
 		url,
 		"application/json",
 		bytes.NewBuffer(jsonStr))
-	if err != nil {
-		panic(err)
-	}
+	panicIfErr(err)
 	data, err := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
 		core.Log.Errorf("upload resp: %v", string(data))

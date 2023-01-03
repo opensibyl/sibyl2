@@ -23,6 +23,11 @@ jobs:
         run: |
           go install github.com/swaggo/swag/cmd/swag@v1.8.7
           make
+      
+      - name: Start Sibyl
+        run: |
+          chmod +x ./sibyl
+          ./sibyl server &
 
       - name: Prepare third party repos
         run: |
@@ -35,12 +40,12 @@ jobs:
 
       - name: Test Java
         run: |
-          ./sibyl upload --src ./spring-boot --dry
+          ./sibyl upload --src ./spring-boot
 
       - name: Test Golang
         run: |
-          ./sibyl upload --src ./gin --dry
+          ./sibyl upload --src ./gin
 
       - name: Test Python
         run: |
-          ./sibyl upload --src ./requests --dry
+          ./sibyl upload --src ./requests

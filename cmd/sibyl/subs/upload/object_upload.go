@@ -55,7 +55,8 @@ func defaultConfig() *uploadConfig {
 		&SrcConfigPart{
 			Src:          ".",
 			Lang:         "",
-			WithCtx:      false,
+			WithCtx:      true,
+			WithClass:    true,
 			IncludeRegex: "",
 			ExcludeRegex: "",
 		},

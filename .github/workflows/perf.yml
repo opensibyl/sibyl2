@@ -35,12 +35,12 @@ jobs:
 
       - name: Test Java
         run: |
-          ./sibyl upload --src ./spring-boot --withCtx --dry
+          ./sibyl upload --src ./spring-boot --dry
 
       - name: Test Golang
         run: |
-          ./sibyl upload --src ./gin --withCtx --dry
+          ./sibyl upload --src ./gin --dry
 
       - name: Test Python
         run: |
-          ./sibyl upload --src ./requests --withCtx --dry
+          ./sibyl upload --src ./requests --dry

@@ -13,6 +13,7 @@ const (
 )
 
 type SrcConfigPart struct {
+	RepoId       string `mapstructure:"repoId"`
 	Src          string `mapstructure:"src"`
 	Lang         string `mapstructure:"lang"`
 	WithCtx      bool   `mapstructure:"withCtx"`
@@ -53,6 +54,7 @@ func (config *uploadConfig) ToJson() ([]byte, error) {
 func defaultConfig() *uploadConfig {
 	return &uploadConfig{
 		&SrcConfigPart{
+			RepoId:       "",
 			Src:          ".",
 			Lang:         "",
 			WithCtx:      true,

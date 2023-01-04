@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// todo: create this diff with program
 const unifiedDiff = `
 diff --git a/pkg/server/service/ops_s.go b/pkg/server/service/admin_s.go
 similarity index 100%
@@ -128,5 +129,9 @@ func TestServer(t *testing.T) {
 
 	diff, _, err := apiClient.EXTRASApi.ApiV1FuncctxDiffGet(ctx).Repo(repo).Rev(rev).Diff(unifiedDiff).Execute()
 	assert.Nil(t, err)
-	core.Log.Infof("diff: %v", diff)
+	core.Log.Infof("diff ctxs: %v", diff)
+
+	funcs, _, err := apiClient.EXTRASApi.ApiV1FuncDiffGet(ctx).Repo(repo).Rev(rev).Diff(unifiedDiff).Execute()
+	assert.Nil(t, err)
+	core.Log.Infof("diff funcs: %v", funcs)
 }

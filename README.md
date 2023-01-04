@@ -47,11 +47,11 @@ See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opens
 
 ## Languages support
 
-| Languages | Function | Function Context | Class   |
-|-----------|----------|------------------|---------|
-| Golang    | Yes      | Yes              | Yes     |
-| Java      | Yes      | Yes              | Yes     |
-| Python    | Yes      | Yes              | Not yet |
+| Languages | Function | Function Context | Class |
+|-----------|----------|------------------|-------|
+| Golang    | Yes      | Yes              | Yes   |
+| Java      | Yes      | Yes              | Yes   |
+| Python    | Yes      | Yes              | Yes   |
 
 ## Examples of Usage
 

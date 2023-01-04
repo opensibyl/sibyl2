@@ -19,11 +19,17 @@ def b(s):
 	print("defabc")
 	print("wowo")
 
+@abcd
 class C(object):
+	@EEE
+	def d():
+		print("ok")
+
+class D:
 	pass
 `
 
-func TestPythonExtractor_ExtractFunctions(t *testing.T) {
+func TestExtractor_ExtractFunctions(t *testing.T) {
 	parser := core.NewParser(core.LangPython)
 	units, err := parser.Parse([]byte(pythonCode))
 	if err != nil {
@@ -44,5 +50,22 @@ func TestPythonExtractor_ExtractFunctions(t *testing.T) {
 				panic(nil)
 			}
 		}
+	}
+}
+
+func TestExtractor_ExtractClasses(t *testing.T) {
+	parser := core.NewParser(core.LangPython)
+	units, err := parser.Parse([]byte(pythonCode))
+	if err != nil {
+		panic(err)
+	}
+
+	extractor := &Extractor{}
+	classes, err := extractor.ExtractClasses(units)
+	if err != nil {
+		panic(err)
+	}
+	for _, each := range classes {
+		core.Log.Infof("cls: %s %v", each.Name, each.Extras)
 	}
 }

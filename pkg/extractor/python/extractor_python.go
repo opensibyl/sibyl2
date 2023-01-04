@@ -11,6 +11,7 @@ const (
 	KindPythonDecoratedDefinition core.KindRepr = "decorated_definition"
 	KindPythonDecorator           core.KindRepr = "decorator"
 	KindPythonBlock               core.KindRepr = "block"
+	KindPythonClassDefinition     core.KindRepr = "class_definition"
 )
 
 type Extractor struct {

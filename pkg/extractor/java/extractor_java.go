@@ -11,6 +11,8 @@ const (
 	KindJavaScopeIdentifier      core.KindRepr = "scoped_identifier"
 	KindJavaIdentifier           core.KindRepr = "identifier"
 	KindJavaClassDeclaration     core.KindRepr = "class_declaration"
+	KindJavaClassBody            core.KindRepr = "class_body"
+	KindJavaFieldDeclaration     core.KindRepr = "field_declaration"
 	KindJavaEnumDeclaration      core.KindRepr = "enum_declaration"
 	KindJavaInterfaceDeclaration core.KindRepr = "interface_declaration"
 	KindJavaMethodDeclaration    core.KindRepr = "method_declaration"
@@ -26,6 +28,7 @@ const (
 	FieldJavaObject              core.KindRepr = "object"
 	FieldJavaName                core.KindRepr = "name"
 	FieldJavaArguments           core.KindRepr = "arguments"
+	FieldJavaDeclarator          core.KindRepr = "declarator"
 )
 
 type Extractor struct {

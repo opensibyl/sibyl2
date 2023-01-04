@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/stretchr/testify/assert"
 )
 
 var javaCode = `
@@ -16,6 +17,13 @@ import com.williamfzc.sibyl.core.model.method.Method;
 @ClassAnnotationA(argA="yes")
 @ClassAnnotationB
 public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
+	private static final int ABC = 1;
+
+	@InjectMocks
+	private static final int ABCD = 1;
+
+	private final String DBCA;
+
     @Override
 	@abcde
 	@adeflkjbg(abc = "dfff")
@@ -63,14 +71,10 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		core.Log.Debugf("each: %s %s %s", each.Name, each.Extras, each.BodySpan.String())
 		// check base info
 		if each.Name == "enterMethodDeclarationWithoutMethodBody" {
-			if each.BodySpan.String() != "14:71,17:5" {
-				panic(nil)
-			}
+			assert.Equal(t, each.BodySpan.String(), "21:71,24:5")
 		}
 
-		if each.Extras.(*FunctionExtras).ClassInfo.Annotations == nil {
-			panic(err)
-		}
+		assert.NotNil(t, each.Extras.(*FunctionExtras).ClassInfo.Annotations)
 	}
 }
 
@@ -85,5 +89,8 @@ func TestExtractor_ExtractClasses(t *testing.T) {
 	data, err := extractor.ExtractClasses(units)
 	for _, each := range data {
 		core.Log.Infof("find class: %v", each.GetSignature())
+		for _, field := range each.Extras.(*ClassExtras).Fields {
+			core.Log.Infof("field: %v", field)
+		}
 	}
 }

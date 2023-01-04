@@ -43,7 +43,7 @@ func (d *badgerDriver) DeferDriver() error {
 	return d.db.Close()
 }
 
-func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
+func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, _ context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err

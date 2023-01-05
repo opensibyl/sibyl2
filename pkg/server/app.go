@@ -82,11 +82,6 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
 		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
 		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzQuery)
-		// extras query
-		// diff
-		v1group.Handle(http.MethodGet, "/func/diff", service.HandleFunctionsDiffQuery)
-		v1group.Handle(http.MethodGet, "/funcctx/diff", service.HandleFunctionCtxDiffQuery)
-		v1group.Handle(http.MethodGet, "/clazz/diff", service.HandleClazzDiffQuery)
 		// main upload
 		v1group.Handle(http.MethodPost, "/func", service.HandleFunctionUpload)
 		v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)

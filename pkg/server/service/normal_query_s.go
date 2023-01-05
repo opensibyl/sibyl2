@@ -91,7 +91,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 // @Success 200 {array} sibyl2.FunctionContext
 // @Router  /api/v1/funcctx [get]
 // @Tags MAIN
-func HandleFunctionCtxQuery(c *gin.Context) {
+func HandleFunctionContextsQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	file := c.Query("file")
@@ -129,7 +129,7 @@ func HandleFunctionCtxQuery(c *gin.Context) {
 // @Success 200 {array} sibyl2.ClazzWithPath
 // @Router  /api/v1/clazz [get]
 // @Tags MAIN
-func HandleClazzQuery(c *gin.Context) {
+func HandleClazzesQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	file := c.Query("file")

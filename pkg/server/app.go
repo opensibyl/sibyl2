@@ -79,14 +79,19 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
 		v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
 		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
-		// normal query
-		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
-		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
-		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzQuery)
 		// normal upload
 		v1group.Handle(http.MethodPost, "/func", service.HandleFunctionUpload)
 		v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
 		v1group.Handle(http.MethodPost, "/clazz", service.HandleClazzUpload)
+		// normal query
+		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
+		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionContextsQuery)
+		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzesQuery)
+
+		// EXPERIMENTAL
+		// global query (e.g. Method name is known, but do not know where it is)
+		v1group.Handle(http.MethodGet, "/func/signature", service.HandleFunctionSignaturesQuery)
+		v1group.Handle(http.MethodGet, "/func/with/signature", service.HandleFunctionQueryWithSignature)
 	}
 	// for ops
 	opsGroup := engine.Group("/ops")

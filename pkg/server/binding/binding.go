@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
@@ -74,6 +73,7 @@ type driverRead interface {
 	ReadRevs(repoId string, ctx context.Context) ([]string, error)
 	ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error)
 	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error)
 	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
 	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
 	ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
@@ -98,10 +98,6 @@ type Driver interface {
 	driverRead
 	driverUpdate
 	driverDelete
-}
-
-func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
-	return &neo4jDriver{dwc}, nil
 }
 
 func WorkspaceConfigFromKey(key string) (*object.WorkspaceConfig, error) {

@@ -48,6 +48,11 @@ type neo4jDriver struct {
 	neo4j.DriverWithContext
 }
 
+func (d *neo4jDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (d *neo4jDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
 	// TODO implement me
 	panic("implement me")
@@ -687,4 +692,8 @@ func initNeo4jDriver(config object.ExecuteConfig) Driver {
 		panic(err)
 	}
 	return final
+}
+
+func NewNeo4jDriver(dwc neo4j.DriverWithContext) (Driver, error) {
+	return &neo4jDriver{dwc}, nil
 }

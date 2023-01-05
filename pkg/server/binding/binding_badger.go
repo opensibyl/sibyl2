@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"regexp"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -306,6 +307,42 @@ func (d *badgerDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path str
 	return ret, nil
 }
 
+func (d *badgerDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, _ context.Context) ([]string, error) {
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+
+	compiled, err := regexp.Compile(regex)
+	if err != nil {
+		return nil, err
+	}
+
+	searchResult := make([]string, 0)
+	err = d.db.View(func(txn *badger.Txn) error {
+		opts := badger.DefaultIteratorOptions
+		opts.PrefetchValues = false
+		it := txn.NewIterator(opts)
+		defer it.Close()
+		prefix := []byte(ToRevKey(key).ToScanPrefix())
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			k := string(it.Item().Key())
+			flag := "func|"
+			if strings.Contains(k, flag) {
+				_, after, _ := strings.Cut(k, flag)
+				if compiled.MatchString(after) {
+					searchResult = append(searchResult, after)
+				}
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return searchResult, nil
+}
+
 func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
@@ -359,17 +396,15 @@ func (d *badgerDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig,
 	return ret, nil
 }
 
-func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error) {
+func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	rk := ToRevKey(key)
-	var ret *sibyl2.FunctionWithPath
+	ret := &sibyl2.FunctionWithPath{}
 	err = d.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		it := txn.NewIterator(opts)
-
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 		prefixStr := rk.ToScanPrefix() + "file_"
 		prefix := []byte(prefixStr)

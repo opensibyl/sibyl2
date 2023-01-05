@@ -276,6 +276,11 @@ func (t *TiKVDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) 
 	return searchResult, nil
 }
 
+func (t *TiKVDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {

@@ -106,7 +106,7 @@ Tree-like storage:
         - file
             - function
 
-Try with swagger: http://127.0.0.1:9876/swagger/index.html#/
+Try with swagger: http://127.0.0.1:9876/ops/swagger/index.html#/
 
 #### Access with sdk
 

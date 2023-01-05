@@ -75,25 +75,25 @@ func Execute(config object.ExecuteConfig) {
 
 	// for CRUD
 	if needGateway {
-		// main query
+		// scope query
 		v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
 		v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
 		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
+		// normal query
 		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
 		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
 		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzQuery)
-		// main upload
+		// normal upload
 		v1group.Handle(http.MethodPost, "/func", service.HandleFunctionUpload)
 		v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
 		v1group.Handle(http.MethodPost, "/clazz", service.HandleClazzUpload)
-		// swagger
-		engine.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	}
 	// for ops
 	opsGroup := engine.Group("/ops")
 	opsGroup.Handle(http.MethodGet, "/ping", service.HandlePing)
 	opsGroup.Handle(http.MethodGet, "/monitor/upload", service.HandleStatusUpload)
 	opsGroup.Handle(http.MethodGet, "/version", service.HandleVersion)
+	opsGroup.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	err = engine.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {

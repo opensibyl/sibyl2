@@ -408,7 +408,7 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 		defer it.Close()
 		prefixStr := rk.ToScanPrefix() + "file_"
 		prefix := []byte(prefixStr)
-		shouldContain := "func|" + signature
+		shouldContain := "_func|" + signature
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := string(item.Key())
@@ -423,6 +423,8 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 				if err != nil {
 					return err
 				}
+				fp, _, _ := strings.Cut(strings.TrimPrefix(k, prefixStr), shouldContain)
+				ret.Path = fp
 				return nil
 			}
 		}

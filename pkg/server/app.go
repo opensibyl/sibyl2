@@ -83,6 +83,7 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionCtxQuery)
 		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzQuery)
 		// extras query
+		// diff
 		v1group.Handle(http.MethodGet, "/func/diff", service.HandleFunctionsDiffQuery)
 		v1group.Handle(http.MethodGet, "/funcctx/diff", service.HandleFunctionCtxDiffQuery)
 		v1group.Handle(http.MethodGet, "/clazz/diff", service.HandleClazzDiffQuery)
@@ -97,6 +98,7 @@ func Execute(config object.ExecuteConfig) {
 	opsGroup := engine.Group("/ops")
 	opsGroup.Handle(http.MethodGet, "/ping", service.HandlePing)
 	opsGroup.Handle(http.MethodGet, "/monitor/upload", service.HandleStatusUpload)
+	opsGroup.Handle(http.MethodGet, "/version", service.HandleVersion)
 
 	err = engine.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {

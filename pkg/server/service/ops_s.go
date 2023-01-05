@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/worker"
 )
 
@@ -37,5 +38,17 @@ func HandleStatusUpload(c *gin.Context) {
 func HandlePing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
+	})
+}
+
+// @BasePath /
+// @Summary  sibyl version
+// @Produce  json
+// @Success  200
+// @Router   /ops/version [get]
+// @Tags OPS
+func HandleVersion(c *gin.Context) {
+	c.JSON(http.StatusOK, gin.H{
+		"version": sibyl2.Version,
 	})
 }

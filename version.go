@@ -1,4 +1,5 @@
 package sibyl2
 
-// strictly sync with tag
+// Version strictly sync with tag
 const Version = "v0.10.2"
+const HomePage = "https://github.com/opensibyl/sibyl2"

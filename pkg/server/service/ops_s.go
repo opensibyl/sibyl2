@@ -50,5 +50,6 @@ func HandlePing(c *gin.Context) {
 func HandleVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"version": sibyl2.Version,
+		"url":     sibyl2.HomePage,
 	})
 }

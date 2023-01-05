@@ -3,11 +3,13 @@ package main
 import (
 	"log"
 
+	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/diff"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/extract"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/history"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/server"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
+	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/spf13/cobra"
 )
 
@@ -32,6 +34,7 @@ func main() {
 
 // now we build only one big fat execution
 func init() {
+	core.Log.Infof("opensibyl/sibyl2 %s (%s)", sibyl2.Version, sibyl2.HomePage)
 	extractCmd := extract.NewExtractCmd()
 	rootCmd.AddCommand(extractCmd)
 

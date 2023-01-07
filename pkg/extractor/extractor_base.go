@@ -68,7 +68,6 @@ func GetExtractor(lang core.LangType) Extractor {
 	return nil
 }
 
-type ValueUnit = object.ValueUnit
 type Function = object.Function
 type Symbol = object.Symbol
 type Call = object.Call

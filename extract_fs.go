@@ -48,7 +48,7 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 		return nil, err
 	}
 
-	var final []*extractor.FunctionFileResult
+	final := make([]*extractor.FunctionFileResult, 0)
 	for _, each := range results {
 		var newUnits = make([]*extractor.Function, len(each.Units))
 		for i, v := range each.Units {
@@ -78,7 +78,7 @@ func ExtractClazz(targetFile string, config *ExtractConfig) ([]*extractor.ClazzF
 		return nil, err
 	}
 
-	var final []*extractor.ClazzFileResult
+	final := make([]*extractor.ClazzFileResult, 0)
 	for _, each := range results {
 		var newUnits = make([]*extractor.Clazz, len(each.Units))
 		for i, v := range each.Units {

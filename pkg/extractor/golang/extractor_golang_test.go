@@ -8,6 +8,7 @@ import (
 
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
+	"github.com/stretchr/testify/assert"
 )
 
 var goCode = `
@@ -51,6 +52,7 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 	if target.BodySpan.String() != location {
 		panic(fmt.Sprintf("%s != %s", target.BodySpan.String(), location))
 	}
+	assert.Equal(t, target.Lang, core.LangGo)
 }
 
 func TestGolangExtractor_Serialize(t *testing.T) {

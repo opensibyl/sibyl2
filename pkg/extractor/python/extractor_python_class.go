@@ -36,6 +36,9 @@ func (extractor *Extractor) ExtractClasses(units []*core.Unit) ([]*object.Clazz,
 func (extractor *Extractor) ExtractClass(unit *core.Unit) (*object.Clazz, error) {
 	clazz := object.NewClazz()
 	clazz.Span = unit.Span
+	clazz.Lang = extractor.GetLang()
+	clazz.Unit = unit
+
 	clazzName := core.FindFirstByKindInSubsWithBfs(unit, KindPythonIdentifier)
 	if clazzName == nil {
 		return nil, errors.New("class name not found")

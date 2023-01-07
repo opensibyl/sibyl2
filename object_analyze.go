@@ -18,8 +18,7 @@ type SymbolWithPath struct {
 // because they maybe not come from a real file
 type FunctionWithPath struct {
 	*extractor.Function
-	Path     string        `json:"path"`
-	Language core.LangType `json:"language"`
+	Path string `json:"path"`
 }
 
 type FunctionContext struct {

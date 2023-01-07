@@ -136,7 +136,9 @@ func (extractor *Extractor) methodUnit2Function(unit *core.Unit) (*object.Functi
 func (extractor *Extractor) funcUnit2Function(unit *core.Unit) (*object.Function, error) {
 	funcUnit := &object.Function{}
 	funcUnit.Span = unit.Span
+	funcUnit.Lang = extractor.GetLang()
 	funcUnit.Unit = unit
+
 	// body scope
 	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
 	if funcBody != nil {

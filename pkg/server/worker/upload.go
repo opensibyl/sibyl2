@@ -13,7 +13,7 @@ var funcUnitQueue chan *object.FunctionUploadUnit
 var funcCtxUnitQueue chan *object.FunctionContextUploadUnit
 var clazzUnitQueue chan *object.ClazzUploadUnit
 
-// default neo4j db may be very slow in I/O
+// worker count, db connections count
 var workerCount int
 
 // tiny mq, will block request when it is full

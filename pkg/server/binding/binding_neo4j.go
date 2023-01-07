@@ -225,7 +225,6 @@ func (d *neo4jDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx
 			fwp := &sibyl2.FunctionWithPath{
 				Function: f,
 				Path:     file["lang"].(string),
-				Language: core.LangType(file["path"].(string)),
 			}
 			ret = append(ret, fwp)
 		}
@@ -271,7 +270,6 @@ func (d *neo4jDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sign
 			fwp := &sibyl2.FunctionWithPath{
 				Function: f,
 				Path:     file["lang"].(string),
-				Language: core.LangType(file["path"].(string)),
 			}
 			ret = append(ret, fwp)
 		}
@@ -360,7 +358,6 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 			srcfwp := &sibyl2.FunctionWithPath{
 				Function: srcf,
 				Path:     srcFile["lang"].(string),
-				Language: core.LangType(srcFile["path"].(string)),
 			}
 			targetf, err := extractor.Map2Func(targetMap)
 			if err != nil {
@@ -369,13 +366,11 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 			targetfwp := &sibyl2.FunctionWithPath{
 				Function: targetf,
 				Path:     targetFile["lang"].(string),
-				Language: core.LangType(targetFile["path"].(string)),
 			}
 
 			fwp := &sibyl2.FunctionWithPath{
 				Function: f,
 				Path:     file["lang"].(string),
-				Language: core.LangType(file["path"].(string)),
 			}
 			fc.FunctionWithPath = fwp
 			srcCache[srcfwp.GetSignature()] = srcfwp
@@ -663,7 +658,7 @@ func createFuncGraphTransaction(wc *object.WorkspaceConfig, f *sibyl2.FunctionCo
 				"rev_hash":                          wc.RevHash,
 				"srcPath":                           f.Path,
 				"targetPath":                        each.Path,
-				"file_lang":                         each.Language,
+				"file_lang":                         each.Lang,
 				"func0_signature":                   f.GetSignature(),
 				fmt.Sprintf("func%d_signature", id): each.GetSignature(),
 			})

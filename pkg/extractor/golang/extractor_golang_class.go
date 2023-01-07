@@ -45,6 +45,8 @@ func (extractor *Extractor) ExtractClasses(units []*core.Unit) ([]*object.Clazz,
 func (extractor *Extractor) ExtractClass(unit *core.Unit) (*object.Clazz, error) {
 	clazz := object.NewClazz()
 	clazz.Span = unit.Span
+	clazz.Lang = extractor.GetLang()
+	clazz.Unit = unit
 
 	// struct name
 	structName := core.FindFirstByFieldInSubsWithBfs(

@@ -30,6 +30,9 @@ type Function struct {
 
 	// ptr to origin Unit
 	Unit *core.Unit `json:"-"`
+
+	// language
+	Lang core.LangType `json:"lang"`
 }
 
 func NewFunction() *Function {

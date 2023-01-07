@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -18,21 +19,22 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ co
 	if err != nil {
 		return nil, err
 	}
-	fk := toFileKey(key, path)
+	curFileKey := toFileKey(key, path)
 
 	searchResult := make([]*sibyl2.ClazzWithPath, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
-		prefixStr := fk.ToScanPrefix() + "clazz|"
+
+		prefixStr := curFileKey.ToScanPrefix() + "clazz|"
 		prefix := []byte(prefixStr)
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			c := &sibyl2.ClazzWithPath{}
-			err := it.Item().Value(func(val []byte) error {
-				err := json.Unmarshal(val, c)
+			err = it.Item().Value(func(val []byte) error {
+				err = json.Unmarshal(val, c)
 				if err != nil {
-					return err
+					return fmt.Errorf("unmarshal class failed: %w", err)
 				}
 				return nil
 			})

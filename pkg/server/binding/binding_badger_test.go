@@ -161,20 +161,20 @@ func TestBadgerFuncCtx(t *testing.T) {
 
 	father := &extractor.Function{
 		Name: "abcde",
+		Lang: core.LangGo,
 	}
 	funcCtx := sibyl2.FunctionContext{
 		FunctionWithPath: &sibyl2.FunctionWithPath{
 			Function: father,
 			Path:     "a/b/c.go",
-			Language: core.LangGo,
 		},
 		Calls: []*sibyl2.FunctionWithPath{
 			{
 				Function: &extractor.Function{
 					Name: "abcde",
+					Lang: core.LangGo,
 				},
-				Path:     "b/c/d.go",
-				Language: core.LangGo,
+				Path: "b/c/d.go",
 			},
 		},
 		ReverseCalls: []*sibyl2.FunctionWithPath{},

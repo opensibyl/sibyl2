@@ -19,6 +19,9 @@ type Clazz struct {
 
 	// ptr to origin Unit
 	Unit *core.Unit `json:"-"`
+
+	// language
+	Lang core.LangType `json:"lang"`
 }
 
 func (c *Clazz) GetSignature() ClazzSignature {

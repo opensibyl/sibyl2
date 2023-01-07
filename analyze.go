@@ -95,7 +95,6 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			fwp := &FunctionWithPath{
 				eachFunc,
 				eachFuncFile.Path,
-				eachFuncFile.Language,
 			}
 			err := reverseCallGraph.AddVertex(fwp)
 			if err != nil {
@@ -124,7 +123,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			// and at the most time these methods will not be analyzed
 			if len(refs) > refLimit {
 				// happen very easily in big repo, suppress it
-				//core.Log.Warnf("func %s exceed the ref limit %d, now %d", eachFunc.GetIndexName(), refLimit, len(refs))
+				// core.Log.Warnf("func %s exceed the ref limit %d, now %d", eachFunc.GetIndexName(), refLimit, len(refs))
 				continue
 			}
 

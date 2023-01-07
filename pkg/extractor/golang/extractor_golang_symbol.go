@@ -16,7 +16,7 @@ func (extractor *Extractor) IsSymbol(unit *core.Unit) bool {
 }
 
 func (extractor *Extractor) ExtractSymbols(unit []*core.Unit) ([]*object.Symbol, error) {
-	var ret []*object.Symbol
+	ret := make([]*object.Symbol, 0)
 	for _, eachUnit := range unit {
 		if !extractor.IsSymbol(eachUnit) {
 			continue

@@ -34,6 +34,8 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 	funcUnit := object.NewFunction()
 	funcUnit.Span = unit.Span
 	funcUnit.Unit = unit
+	funcUnit.Lang = extractor.GetLang()
+
 	// body scope
 	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindPythonBlock)
 	if funcBody != nil {

@@ -3,12 +3,14 @@ package server
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
 
 	openapi "github.com/opensibyl/sibyl-go-client"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestServer(t *testing.T) {
@@ -30,12 +32,12 @@ func TestServer(t *testing.T) {
 	configuration.Scheme = "http"
 	configuration.Host = "127.0.0.1:9876"
 	apiClient := openapi.NewAPIClient(configuration)
-	strings, _, err := apiClient.MAINApi.ApiV1RepoGet(ctx).Execute()
+	strings, _, err := apiClient.SCOPEApi.ApiV1RepoGet(ctx).Execute()
 	if err != nil {
 		panic(err)
 	}
 	repo := strings[0]
-	revs, _, err := apiClient.MAINApi.ApiV1RevGet(ctx).Repo(repo).Execute()
+	revs, _, err := apiClient.SCOPEApi.ApiV1RevGet(ctx).Repo(repo).Execute()
 	if err != nil {
 		return
 	}
@@ -43,7 +45,7 @@ func TestServer(t *testing.T) {
 		panic(nil)
 	}
 	rev := revs[0]
-	files, _, err := apiClient.MAINApi.ApiV1FileGet(ctx).Repo(repo).Rev(rev).Execute()
+	files, _, err := apiClient.SCOPEApi.ApiV1FileGet(ctx).Repo(repo).Rev(rev).Execute()
 	if err != nil {
 		panic(err)
 	}
@@ -75,4 +77,17 @@ func TestServer(t *testing.T) {
 	if len(classes) == 0 {
 		panic(err)
 	}
+
+	signatures, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncSignatureGet(ctx).Repo(repo).Rev(rev).Regex(".*").Execute()
+	assert.NotEqual(t, 0, len(signatures))
+	f, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithSignatureGet(ctx).Repo(repo).Rev(rev).Signature(signatures[0]).Execute()
+	assert.Nil(t, err)
+	assert.NotNil(t, f)
+
+	rule := make(map[string]string)
+	rule["name"] = ".*"
+	ruleStr, err := json.Marshal(rule)
+	assert.Nil(t, err)
+	fwr, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(ruleStr)).Execute()
+	assert.NotEqual(t, 0, len(fwr))
 }

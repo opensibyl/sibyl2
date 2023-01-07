@@ -247,19 +247,18 @@ func (t *TiKVDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 	for iter.Valid() {
 		k := string(iter.Key())
 		flag := "func|"
-		if !strings.Contains(k, flag) {
-			continue
-		}
-		rawFunc := iter.Value()
-		for rk, rv := range compiledRule {
-			v := gjson.GetBytes(rawFunc, rk)
-			if rv.MatchString(v.String()) {
-				f := &sibyl2.FunctionWithPath{}
-				err = json.Unmarshal(rawFunc, f)
-				if err != nil {
-					return nil, err
+		if strings.Contains(k, flag) {
+			rawFunc := iter.Value()
+			for rk, rv := range compiledRule {
+				v := gjson.GetBytes(rawFunc, rk)
+				if rv.MatchString(v.String()) {
+					f := &sibyl2.FunctionWithPath{}
+					err = json.Unmarshal(rawFunc, f)
+					if err != nil {
+						return nil, err
+					}
+					searchResult = append(searchResult, f)
 				}
-				searchResult = append(searchResult, f)
 			}
 		}
 		err = iter.Next()

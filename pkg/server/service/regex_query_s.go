@@ -41,7 +41,7 @@ func HandleFunctionSignaturesQuery(c *gin.Context) {
 // @Param   rev   query string true  "rev"
 // @Param   signature   query string true  "signature"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionWithPath
+// @Success 200 {object} sibyl2.FunctionWithPath
 // @Router  /api/v1/func/with/signature [get]
 // @Tags EXPERIMENTAL
 func HandleFunctionQueryWithSignature(c *gin.Context) {

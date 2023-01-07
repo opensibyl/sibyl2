@@ -16,6 +16,10 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
+// [2023]
+// Currently we use badger and tikv as our standard databases.
+// So neo4j driver is not recommended.
+
 // NOTICE:
 // I am not pretty sure that neo4j is a proper database
 // so my implementation here may be a little casual

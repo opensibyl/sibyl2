@@ -2,13 +2,13 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/opensibyl/sibyl2"
-	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/opensibyl/sibyl2/pkg/server/queue"
@@ -50,7 +50,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	var functions []*sibyl2.FunctionWithPath
+	functions := make([]*sibyl2.FunctionWithPath, 0)
 	var err error
 	if lines == "" {
 		functions, err = sharedDriver.ReadFunctions(wc, file, sharedContext)
@@ -60,14 +60,14 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 		for _, each := range linesStrList {
 			num, err := strconv.Atoi(each)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("strconv convert error: %w", err)
 			}
 			lineNums = append(lineNums, num)
 		}
 		functions, err = sharedDriver.ReadFunctionsWithLines(wc, file, lineNums, sharedContext)
 	}
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("read function error: %w", err)
 	}
 
 	// export signature
@@ -112,8 +112,7 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 	for _, each := range ret {
 		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, sharedContext)
 		if err != nil {
-			c.JSON(http.StatusBadRequest, err)
-			core.Log.Errorf("err when read with sign: %v", err)
+			c.JSON(http.StatusBadRequest, fmt.Errorf("err when read with sign: %w", err))
 			return
 		}
 		ctxs = append(ctxs, funcCtx)
@@ -150,10 +149,9 @@ func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWith
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	var functions []*sibyl2.ClazzWithPath
+	functions := make([]*sibyl2.ClazzWithPath, 0)
 	var err error
 	functions, err = sharedDriver.ReadClasses(wc, file, sharedContext)
-
 	if err != nil {
 		return nil, err
 	}

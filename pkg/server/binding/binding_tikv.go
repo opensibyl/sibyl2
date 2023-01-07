@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
+	"regexp"
 	"strings"
 
 	"github.com/opensibyl/sibyl2"
@@ -276,9 +277,41 @@ func (t *TiKVDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) 
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error) {
-	// TODO implement me
-	panic("implement me")
+func (t *TiKVDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, _ context.Context) ([]string, error) {
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+
+	compiled, err := regexp.Compile(regex)
+	if err != nil {
+		return nil, err
+	}
+
+	searchResult := make([]string, 0)
+	txn := t.client.GetSnapshot(math.MaxUint64)
+	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+
+	for iter.Valid() {
+		k := string(iter.Key())
+		flag := "func|"
+		if strings.Contains(k, flag) {
+			_, after, _ := strings.Cut(k, flag)
+			if compiled.MatchString(after) {
+				searchResult = append(searchResult, after)
+			}
+		}
+		err := iter.Next()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+	return searchResult, nil
 }
 
 func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
@@ -400,6 +433,8 @@ func (t *TiKVDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 			if err != nil {
 				return nil, err
 			}
+			fp, _, _ := strings.Cut(strings.TrimPrefix(k, prefixStr), shouldContain)
+			ret.Path = fp
 			return ret, nil
 		}
 		err = iter.Next()

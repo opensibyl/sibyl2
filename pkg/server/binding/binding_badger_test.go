@@ -11,8 +11,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func getBadgerTestConfig() object.ExecuteConfig {
+	conf := object.DefaultExecuteConfig()
+	conf.DbType = object.DriverTypeInMemory
+	return conf
+}
+
 func TestWc(t *testing.T) {
-	d := initBadgerDriver(object.DefaultExecuteConfig())
+	d := initBadgerDriver(getBadgerTestConfig())
 	ctx := context.TODO()
 	err := d.InitDriver(ctx)
 	if err != nil {
@@ -36,7 +42,7 @@ func TestWc(t *testing.T) {
 }
 
 func TestBadgerFunc(t *testing.T) {
-	d := initBadgerDriver(object.DefaultExecuteConfig())
+	d := initBadgerDriver(getBadgerTestConfig())
 	ctx := context.TODO()
 	err := d.InitDriver(ctx)
 	if err != nil {
@@ -74,10 +80,15 @@ func TestBadgerFunc(t *testing.T) {
 	if functions[0].Name != function.Units[0].Name {
 		panic(nil)
 	}
+
+	// signatures
+	signatures, err := d.ReadFunctionSignaturesWithRegex(wc, ".*", ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, len(signatures), 1)
 }
 
 func TestBadgerClazz(t *testing.T) {
-	d := initBadgerDriver(object.DefaultExecuteConfig())
+	d := initBadgerDriver(getBadgerTestConfig())
 	ctx := context.TODO()
 	err := d.InitDriver(ctx)
 	if err != nil {
@@ -120,7 +131,7 @@ func TestBadgerClazz(t *testing.T) {
 }
 
 func TestBadgerFuncCtx(t *testing.T) {
-	d := initBadgerDriver(object.DefaultExecuteConfig())
+	d := initBadgerDriver(getBadgerTestConfig())
 	ctx := context.TODO()
 	err := d.InitDriver(ctx)
 	if err != nil {

@@ -15,7 +15,7 @@ var tikvDriver Driver
 
 func init() {
 	config := object.DefaultExecuteConfig()
-	config.TikvAddrs = "127.0.0.1:2379"
+	config.TikvAddrs = "10.177.1.175:2379"
 	tikvDriver = initTikvDriver(config)
 }
 
@@ -77,6 +77,11 @@ func TestTikvFunc(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(functions))
 	assert.Equal(t, functions[0].Name, function.Units[0].Name)
+
+	// signature
+	signatures, err := tikvDriver.ReadFunctionSignaturesWithRegex(wc, ".*", ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, len(signatures))
 }
 
 func TestTikvClazz(t *testing.T) {

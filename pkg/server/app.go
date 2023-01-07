@@ -13,6 +13,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/queue"
 	"github.com/opensibyl/sibyl2/pkg/server/service"
 	"github.com/opensibyl/sibyl2/pkg/server/worker"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
@@ -99,6 +100,7 @@ func Execute(config object.ExecuteConfig) {
 	opsGroup.Handle(http.MethodGet, "/monitor/upload", service.HandleStatusUpload)
 	opsGroup.Handle(http.MethodGet, "/version", service.HandleVersion)
 	opsGroup.Handle(http.MethodGet, "/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	opsGroup.Handle(http.MethodGet, "/metrics", gin.WrapH(promhttp.Handler()))
 
 	err = engine.Run(fmt.Sprintf(":%d", config.Port))
 	if err != nil {

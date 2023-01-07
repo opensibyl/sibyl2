@@ -12,6 +12,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/tidwall/gjson"
 )
 
 type badgerDriver struct {
@@ -371,6 +372,61 @@ func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ 
 
 			f.Path = path
 			searchResult = append(searchResult, f)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return searchResult, nil
+}
+
+func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*sibyl2.FunctionWithPath, error) {
+	if len(rule) == 0 {
+		return nil, errors.New("rule is empty")
+	}
+	compiledRule := make(map[string]*regexp.Regexp)
+	for k, v := range rule {
+		newRegex, err := regexp.Compile(v)
+		if err != nil {
+			return nil, err
+		}
+		compiledRule[k] = newRegex
+	}
+
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+
+	searchResult := make([]*sibyl2.FunctionWithPath, 0)
+	err = d.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		prefix := []byte(ToRevKey(key).ToScanPrefix())
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			k := string(it.Item().Key())
+			flag := "func|"
+			if !strings.Contains(k, flag) {
+				continue
+			}
+			err = it.Item().Value(func(val []byte) error {
+				for rk, rv := range compiledRule {
+					v := gjson.GetBytes(val, rk)
+					if rv.MatchString(v.String()) {
+						f := &sibyl2.FunctionWithPath{}
+						err = json.Unmarshal(val, f)
+						if err != nil {
+							return err
+						}
+						searchResult = append(searchResult, f)
+					}
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})

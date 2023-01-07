@@ -48,6 +48,11 @@ type neo4jDriver struct {
 	neo4j.DriverWithContext
 }
 
+func (d *neo4jDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+	// TODO implement me
+	panic("implement me")
+}
+
 func (d *neo4jDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error) {
 	// TODO implement me
 	panic("implement me")

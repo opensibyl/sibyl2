@@ -11,6 +11,7 @@ import (
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/tidwall/gjson"
 	"github.com/tikv/client-go/v2/kv"
 	"github.com/tikv/client-go/v2/txnkv"
 )
@@ -391,6 +392,58 @@ func (t *TiKVDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx 
 		}
 	}
 
+	return searchResult, nil
+}
+
+func (t *TiKVDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+	if len(rule) == 0 {
+		return nil, errors.New("rule is empty")
+	}
+	compiledRule := make(map[string]*regexp.Regexp)
+	for k, v := range rule {
+		newRegex, err := regexp.Compile(v)
+		if err != nil {
+			return nil, err
+		}
+		compiledRule[k] = newRegex
+	}
+
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+
+	searchResult := make([]*sibyl2.FunctionWithPath, 0)
+
+	prefix := []byte(ToRevKey(key).ToScanPrefix())
+
+	txn := t.client.GetSnapshot(math.MaxUint64)
+	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	defer iter.Close()
+
+	for iter.Valid() {
+		k := string(iter.Key())
+		flag := "func|"
+		if !strings.Contains(k, flag) {
+			continue
+		}
+		rawFunc := iter.Value()
+		for rk, rv := range compiledRule {
+			v := gjson.GetBytes(rawFunc, rk)
+			if rv.MatchString(v.String()) {
+				f := &sibyl2.FunctionWithPath{}
+				err = json.Unmarshal(rawFunc, f)
+				if err != nil {
+					return nil, err
+				}
+				searchResult = append(searchResult, f)
+			}
+		}
+		err = iter.Next()
+		if err != nil {
+			return nil, err
+		}
+	}
 	return searchResult, nil
 }
 

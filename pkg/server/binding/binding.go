@@ -61,6 +61,15 @@ type driverBase interface {
 	DeferDriver() error
 }
 
+/*
+Rule
+
+Rule is a query structure implemented with regex and gjson syntax.
+- key: gjson path syntax
+- value: regex
+*/
+type Rule = map[string]string
+
 type driverCreate interface {
 	CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
 	CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error
@@ -73,6 +82,7 @@ type driverRead interface {
 	ReadRevs(repoId string, ctx context.Context) ([]string, error)
 	ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error)
 	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
 	ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error)
 	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
 	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)

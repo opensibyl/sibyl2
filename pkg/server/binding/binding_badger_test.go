@@ -70,6 +70,15 @@ func TestBadgerFunc(t *testing.T) {
 				BodySpan:   core.Span{},
 				Extras:     nil,
 			},
+			{
+				Name:       "fn1",
+				Receiver:   "fr",
+				Parameters: nil,
+				Returns:    nil,
+				Span:       core.Span{},
+				BodySpan:   core.Span{},
+				Extras:     nil,
+			},
 		},
 	}
 
@@ -77,14 +86,19 @@ func TestBadgerFunc(t *testing.T) {
 	assert.Nil(t, err)
 	functions, err := d.ReadFunctions(wc, function.Path, ctx)
 	assert.Nil(t, err)
-	if functions[0].Name != function.Units[0].Name {
-		panic(nil)
-	}
+	assert.Len(t, functions, 2)
 
 	// signatures
-	signatures, err := d.ReadFunctionSignaturesWithRegex(wc, ".*", ctx)
+	signatures, err := d.ReadFunctionSignaturesWithRegex(wc, "fn1.*", ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, len(signatures), 1)
+
+	// rule
+	rule := make(map[string]string)
+	rule["name"] = "fn1.*"
+	funcs, err := d.ReadFunctionsWithRule(wc, rule, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(funcs))
 }
 
 func TestBadgerClazz(t *testing.T) {

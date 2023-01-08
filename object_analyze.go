@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 
 	"github.com/dominikbraun/graph"
-	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
@@ -29,8 +28,7 @@ type FunctionContext struct {
 
 type ClazzWithPath struct {
 	*extractor.Clazz
-	Path     string        `json:"path"`
-	Language core.LangType `json:"language"`
+	Path string `json:"path"`
 }
 
 func (f *FunctionContext) ToGraph() *FuncGraphType {

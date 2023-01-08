@@ -13,7 +13,7 @@
 | Docker Image   | [![ImageBuild](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/imagebuild.yml) |
 | Perf Tests     | [![perftest](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml/badge.svg)](https://github.com/opensibyl/sibyl2/actions/workflows/perf.yml)               |
 | Code Coverage  | [![codecov](https://codecov.io/github/opensibyl/sibyl2/branch/master/graph/badge.svg?token=1DuAXh12Ys)](https://codecov.io/github/opensibyl/sibyl2)                   |
-| Code Style     | [![CodeFactor](https://www.codefactor.io/repository/github/opensibyl/sibyl2/badge)](https://www.codefactor.io/repository/github/opensibyl/sibyl2)                     |
+| Code Style     | [![Go Report Card](https://goreportcard.com/badge/github.com/opensibyl/sibyl2)](https://goreportcard.com/report/github.com/opensibyl/sibyl2)                          |
 
 ## Overview
 

@@ -7,7 +7,7 @@ import (
 	"github.com/tikv/client-go/v2/kv"
 )
 
-func (t *TiKVDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
+func (t *tikvDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err

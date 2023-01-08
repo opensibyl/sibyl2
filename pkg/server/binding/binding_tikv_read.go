@@ -14,7 +14,7 @@ import (
 	"github.com/tikv/client-go/v2/kv"
 )
 
-func (t *TiKVDriver) readRawRevs() ([]*revKey, error) {
+func (t *tikvDriver) readRawRevs() ([]*revKey, error) {
 	snapshot := t.client.GetSnapshot(math.MaxUint64)
 	keyByte := []byte(revPrefix)
 	iter, err := snapshot.Iter(keyByte, nil)
@@ -33,7 +33,7 @@ func (t *TiKVDriver) readRawRevs() ([]*revKey, error) {
 	return ret, nil
 }
 
-func (t *TiKVDriver) ReadRepos(_ context.Context) ([]string, error) {
+func (t *tikvDriver) ReadRepos(_ context.Context) ([]string, error) {
 	revs, err := t.readRawRevs()
 	if err != nil {
 		return nil, err
@@ -54,7 +54,7 @@ func (t *TiKVDriver) ReadRepos(_ context.Context) ([]string, error) {
 	return ret, nil
 }
 
-func (t *TiKVDriver) ReadRevs(repoId string, _ context.Context) ([]string, error) {
+func (t *tikvDriver) ReadRevs(repoId string, _ context.Context) ([]string, error) {
 	revs, err := t.readRawRevs()
 	if err != nil {
 		return nil, err
@@ -72,7 +72,7 @@ func (t *TiKVDriver) ReadRevs(repoId string, _ context.Context) ([]string, error
 	return ret, nil
 }
 
-func (t *TiKVDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error) {
+func (t *tikvDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -101,7 +101,7 @@ func (t *TiKVDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) 
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, _ context.Context) ([]string, error) {
+func (t *tikvDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, _ context.Context) ([]string, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -138,7 +138,7 @@ func (t *TiKVDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig,
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -171,7 +171,7 @@ func (t *TiKVDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (t *tikvDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
 	classes, err := t.ReadClasses(wc, path, ctx)
 	if err != nil {
 		return nil, err
@@ -185,7 +185,7 @@ func (t *TiKVDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path strin
 	return ret, nil
 }
 
-func (t *TiKVDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -218,7 +218,7 @@ func (t *TiKVDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx 
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -269,7 +269,7 @@ func (t *TiKVDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+func (t *tikvDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
 	functions, err := t.ReadFunctionsWithLines(wc, path, lines, ctx)
 	if err != nil {
 		return nil, err
@@ -285,7 +285,7 @@ func (t *TiKVDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, p
 	return ret, nil
 }
 
-func (t *TiKVDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionWithPath, error) {
+func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -321,7 +321,7 @@ func (t *TiKVDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	return nil, nil
 }
 
-func (t *TiKVDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
+func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	functions, err := t.ReadFunctions(wc, path, ctx)
 	if err != nil {
 		return nil, err
@@ -336,7 +336,7 @@ func (t *TiKVDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path str
 	return searchResult, nil
 }
 
-func (t *TiKVDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
+func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err

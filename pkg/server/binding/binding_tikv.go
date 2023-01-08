@@ -8,23 +8,23 @@ import (
 	"github.com/tikv/client-go/v2/txnkv"
 )
 
-type TiKVDriver struct {
+type tikvDriver struct {
 	client    *txnkv.Client
 	addresses []string
 }
 
 func initTikvDriver(config object.ExecuteConfig) Driver {
 	addresses := strings.Split(config.TikvAddrs, ",")
-	return &TiKVDriver{
+	return &tikvDriver{
 		addresses: addresses,
 	}
 }
 
-func (t *TiKVDriver) GetType() object.DriverType {
+func (t *tikvDriver) GetType() object.DriverType {
 	return object.DriverTypeTikv
 }
 
-func (t *TiKVDriver) InitDriver(_ context.Context) error {
+func (t *tikvDriver) InitDriver(_ context.Context) error {
 	client, err := txnkv.NewClient(t.addresses)
 	if err != nil {
 		return err
@@ -33,7 +33,7 @@ func (t *TiKVDriver) InitDriver(_ context.Context) error {
 	return nil
 }
 
-func (t *TiKVDriver) DeferDriver() error {
+func (t *tikvDriver) DeferDriver() error {
 	if err := t.client.Close(); err != nil {
 		return err
 	}

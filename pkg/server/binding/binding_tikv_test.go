@@ -11,29 +11,29 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var tikvDriver Driver
+var tikvTestDriver Driver
 
 func init() {
 	config := object.DefaultExecuteConfig()
 	config.TikvAddrs = "127.0.0.1:2379"
-	tikvDriver = initTikvDriver(config)
+	tikvTestDriver = initTikvDriver(config)
 }
 
 func TestTikvFunc(t *testing.T) {
 	ctx := context.Background()
-	err := tikvDriver.InitDriver(ctx)
+	err := tikvTestDriver.InitDriver(ctx)
 	if err != nil {
 		panic(err)
 	}
-	defer tikvDriver.DeferDriver()
-	defer tikvDriver.DeleteWorkspace(wc, ctx)
+	defer tikvTestDriver.DeferDriver()
+	defer tikvTestDriver.DeleteWorkspace(wc, ctx)
 
-	err = tikvDriver.CreateWorkspace(wc, ctx)
+	err = tikvTestDriver.CreateWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
 	}
 
-	repos, err := tikvDriver.ReadRepos(ctx)
+	repos, err := tikvTestDriver.ReadRepos(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -65,42 +65,42 @@ func TestTikvFunc(t *testing.T) {
 		},
 	}
 
-	err = tikvDriver.CreateFuncFile(wc, &function, ctx)
+	err = tikvTestDriver.CreateFuncFile(wc, &function, ctx)
 	assert.Nil(t, err)
 
 	// check
-	files, err := tikvDriver.ReadFiles(wc, ctx)
+	files, err := tikvTestDriver.ReadFiles(wc, ctx)
 	assert.Equal(t, 1, len(files))
 
 	// functions
-	functions, err := tikvDriver.ReadFunctions(wc, function.Path, ctx)
+	functions, err := tikvTestDriver.ReadFunctions(wc, function.Path, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(functions))
 	assert.Equal(t, functions[0].Name, function.Units[0].Name)
 
 	// signatures
-	signatures, err := tikvDriver.ReadFunctionSignaturesWithRegex(wc, "fn1.*", ctx)
+	signatures, err := tikvTestDriver.ReadFunctionSignaturesWithRegex(wc, "fn1.*", ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, len(signatures), 1)
 
 	// rule
 	rule := make(map[string]string)
 	rule["name"] = "fn1.*"
-	funcs, err := tikvDriver.ReadFunctionsWithRule(wc, rule, ctx)
+	funcs, err := tikvTestDriver.ReadFunctionsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))
 }
 
 func TestTikvClazz(t *testing.T) {
 	ctx := context.Background()
-	err := tikvDriver.InitDriver(ctx)
+	err := tikvTestDriver.InitDriver(ctx)
 	if err != nil {
 		panic(err)
 	}
-	defer tikvDriver.DeferDriver()
-	defer tikvDriver.DeleteWorkspace(wc, ctx)
+	defer tikvTestDriver.DeferDriver()
+	defer tikvTestDriver.DeleteWorkspace(wc, ctx)
 
-	err = tikvDriver.CreateWorkspace(wc, ctx)
+	err = tikvTestDriver.CreateWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -123,11 +123,11 @@ func TestTikvClazz(t *testing.T) {
 		},
 	}
 
-	err = tikvDriver.CreateClazzFile(wc, &clazz, ctx)
+	err = tikvTestDriver.CreateClazzFile(wc, &clazz, ctx)
 	assert.Nil(t, err)
 
 	// check
-	classes, err := tikvDriver.ReadClasses(wc, clazz.Path, ctx)
+	classes, err := tikvTestDriver.ReadClasses(wc, clazz.Path, ctx)
 	assert.Nil(t, err)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(classes))
@@ -135,14 +135,14 @@ func TestTikvClazz(t *testing.T) {
 
 func TestTikvFuncCtx(t *testing.T) {
 	ctx := context.Background()
-	err := tikvDriver.InitDriver(ctx)
+	err := tikvTestDriver.InitDriver(ctx)
 	if err != nil {
 		panic(err)
 	}
-	defer tikvDriver.DeferDriver()
-	defer tikvDriver.DeleteWorkspace(wc, ctx)
+	defer tikvTestDriver.DeferDriver()
+	defer tikvTestDriver.DeleteWorkspace(wc, ctx)
 
-	err = tikvDriver.CreateWorkspace(wc, ctx)
+	err = tikvTestDriver.CreateWorkspace(wc, ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -168,9 +168,9 @@ func TestTikvFuncCtx(t *testing.T) {
 		ReverseCalls: []*sibyl2.FunctionWithPath{},
 	}
 
-	err = tikvDriver.CreateFuncContext(wc, &funcCtx, ctx)
+	err = tikvTestDriver.CreateFuncContext(wc, &funcCtx, ctx)
 	assert.Nil(t, err)
-	newCtx, err := tikvDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
+	newCtx, err := tikvTestDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, newCtx.Function, father)
 }

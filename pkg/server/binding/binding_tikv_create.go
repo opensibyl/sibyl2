@@ -8,7 +8,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
-func (t *TiKVDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
+func (t *tikvDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func (t *TiKVDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.Cl
 	return nil
 }
 
-func (t *TiKVDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
+func (t *tikvDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -90,7 +90,7 @@ func (t *TiKVDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fun
 	return nil
 }
 
-func (t *TiKVDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
+func (t *tikvDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -127,7 +127,7 @@ func (t *TiKVDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.Fun
 	return nil
 }
 
-func (t *TiKVDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
+func (t *tikvDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err

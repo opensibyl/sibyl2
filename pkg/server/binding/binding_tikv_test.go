@@ -131,6 +131,13 @@ func TestTikvClazz(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(classes))
+
+	// rule
+	rule := make(map[string]string)
+	rule["name"] = "clazz0.*"
+	classes, err = tikvTestDriver.ReadClassesWithRule(wc, rule, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(classes))
 }
 
 func TestTikvFuncCtx(t *testing.T) {
@@ -173,4 +180,11 @@ func TestTikvFuncCtx(t *testing.T) {
 	newCtx, err := tikvTestDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, newCtx.Function, father)
+
+	// rule
+	rule := make(map[string]string)
+	rule["name"] = "abc.*"
+	funcs, err := tikvTestDriver.ReadFunctionContextsWithRule(wc, rule, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(funcs))
 }

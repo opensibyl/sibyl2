@@ -94,6 +94,8 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/func/signature", service.HandleFunctionSignaturesQuery)
 		v1group.Handle(http.MethodGet, "/func/with/signature", service.HandleFunctionQueryWithSignature)
 		v1group.Handle(http.MethodGet, "/func/with/rule", service.HandleFunctionQueryWithRule)
+		v1group.Handle(http.MethodGet, "/clazz/with/rule", service.HandleClazzQueryWithRule)
+		v1group.Handle(http.MethodGet, "/funcctx/with/rule", service.HandleFuncCtxQueryWithRule)
 	}
 	// for ops
 	opsGroup := engine.Group("/ops")

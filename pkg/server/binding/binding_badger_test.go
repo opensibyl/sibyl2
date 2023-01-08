@@ -140,8 +140,13 @@ func TestBadgerClazz(t *testing.T) {
 	// check
 	classes, err := d.ReadClasses(wc, clazz.Path, ctx)
 	assert.Nil(t, err)
-	assert.Nil(t, err)
 	assert.Equal(t, 2, len(classes))
+
+	rule := make(map[string]string)
+	rule["name"] = "clazz0"
+	classes, err = d.ReadClassesWithRule(wc, rule, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(classes))
 }
 
 func TestBadgerFuncCtx(t *testing.T) {
@@ -185,4 +190,11 @@ func TestBadgerFuncCtx(t *testing.T) {
 	newCtx, err := d.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, newCtx.Function, father)
+
+	// check
+	rule := make(map[string]string)
+	rule["name"] = "abc.*"
+	f, err := d.ReadFunctionContextsWithRule(wc, rule, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, 1, len(f))
 }

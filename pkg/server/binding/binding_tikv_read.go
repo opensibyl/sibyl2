@@ -369,3 +369,13 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 	// did not find anything
 	return nil, nil
 }
+
+func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+	// TODO implement me
+	return nil, errors.New("implement me")
+}
+
+func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+	// TODO implement me
+	return nil, errors.New("implement me")
+}

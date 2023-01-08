@@ -84,10 +84,29 @@ func TestServer(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	rule := make(map[string]string)
-	rule["name"] = ".*"
-	ruleStr, err := json.Marshal(rule)
+	funcRule := make(map[string]string)
+	funcRule["name"] = ".*Handle.*"
+	ruleStr, err := json.Marshal(funcRule)
 	assert.Nil(t, err)
 	fwr, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(ruleStr)).Execute()
+	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(fwr))
+	for _, each := range fwr {
+		assert.Contains(t, *each.Name, "Handle")
+	}
+
+	clazzRule := make(map[string]string)
+	clazzRule["name"] = ".*"
+	clazzRuleStr, err := json.Marshal(clazzRule)
+	assert.Nil(t, err)
+	cwr, _, err := apiClient.EXPERIMENTALApi.ApiV1ClazzWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(clazzRuleStr)).Execute()
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(cwr))
+
+	fcwr, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(ruleStr)).Execute()
+	assert.Nil(t, err)
+	assert.NotEqual(t, 0, len(fcwr))
+	for _, each := range fcwr {
+		assert.Contains(t, *each.Name, "Handle")
+	}
 }

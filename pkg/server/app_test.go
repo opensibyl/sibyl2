@@ -14,6 +14,9 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
+// NOTICE:
+// test cases for server has been moved to /cmd/sibyl/subs/server
+
 var wc = &object.WorkspaceConfig{
 	RepoId:  "sibyl",
 	RevHash: "12345f",

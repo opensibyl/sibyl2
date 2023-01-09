@@ -2,6 +2,7 @@ package object
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -44,4 +45,16 @@ func (wc *WorkspaceConfig) Key() (string, error) {
 		return "", err
 	}
 	return fmt.Sprintf("%s%s%s", wc.RepoId, FlagWcKeySplit, wc.RevHash), nil
+}
+
+type RevInfo struct {
+	Hash       string `json:"hash"`
+	CreateTime int64  `json:"createTime"`
+}
+
+func NewRevInfo(hash string) *RevInfo {
+	return &RevInfo{
+		Hash:       hash,
+		CreateTime: time.Now().Unix(),
+	}
 }

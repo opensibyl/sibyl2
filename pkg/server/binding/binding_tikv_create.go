@@ -2,6 +2,8 @@ package binding
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
@@ -132,14 +134,20 @@ func (t *tikvDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Con
 	if err != nil {
 		return err
 	}
+
+	revInfo := object.NewRevInfo(wc.RevHash)
+	revInfoStr, err := json.Marshal(revInfo)
+	if err != nil {
+		return fmt.Errorf("failed to marshal rev info: %w", err)
+	}
+
 	byteKey := []byte(ToRevKey(key).String())
 	txn, err := t.client.Begin()
 	if err != nil {
 		return err
 	}
 
-	// tikv does not allow set nil value
-	err = txn.Set(byteKey, byteKey)
+	err = txn.Set(byteKey, revInfoStr)
 	if err != nil {
 		return err
 	}

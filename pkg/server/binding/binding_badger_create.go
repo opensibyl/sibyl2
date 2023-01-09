@@ -2,6 +2,8 @@ package binding
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/opensibyl/sibyl2"
@@ -118,9 +120,16 @@ func (d *badgerDriver) CreateWorkspace(wc *object.WorkspaceConfig, _ context.Con
 	if err != nil {
 		return err
 	}
+
+	revInfo := object.NewRevInfo(wc.RevHash)
+	revInfoStr, err := json.Marshal(revInfo)
+	if err != nil {
+		return fmt.Errorf("failed to marshal rev info: %w", err)
+	}
+
 	err = d.db.Update(func(txn *badger.Txn) error {
 		byteKey := []byte(ToRevKey(key).String())
-		err = txn.Set(byteKey, nil)
+		err = txn.Set(byteKey, revInfoStr)
 		if err != nil {
 			return err
 		}

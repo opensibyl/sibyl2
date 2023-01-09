@@ -38,6 +38,33 @@ func HandleRevQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, revs)
 }
 
+// @Summary rev delte
+// @Param   repo query string true "repo"
+// @Param   rev  query string true "rev"
+// @Produce json
+// @Success 200
+// @Router  /api/v1/rev [delete]
+// @Tags SCOPE
+func HandleRevDelete(c *gin.Context) {
+	repo := c.Query("repo")
+	rev := c.Query("rev")
+	wc := &object.WorkspaceConfig{
+		RepoId:  repo,
+		RevHash: rev,
+	}
+	if err := wc.Verify(); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	err := sharedDriver.DeleteWorkspace(wc, sharedContext)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
+}
+
 // @Summary file query
 // @Param   repo query string true "repo"
 // @Param   rev  query string true "rev"

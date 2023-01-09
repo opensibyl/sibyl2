@@ -23,8 +23,9 @@ func (s *Span) Lines() []int {
 
 func (s *Span) ContainLine(lineNum int) bool {
 	// real line number
-	uint32Line := uint32(lineNum) + 1
-	return s.Start.Row <= uint32Line && uint32Line <= s.End.Row
+	realLineNum := lineNum + 1
+	// int can be 32 or 64 bits
+	return int(s.Start.Row) <= realLineNum && realLineNum <= int(s.End.Row)
 }
 
 func (s *Span) ContainAnyLine(lineNums ...int) bool {

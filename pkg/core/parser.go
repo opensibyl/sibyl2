@@ -2,6 +2,7 @@ package core
 
 import (
 	"context"
+
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
@@ -84,8 +85,14 @@ func (p *Parser) node2Unit(data []byte, node *sitter.Node, fieldName string, par
 
 	// range
 	ret.Span = Span{
-		Start: Point{Row: node.StartPoint().Row, Column: node.StartPoint().Column},
-		End:   Point{Row: node.EndPoint().Row, Column: node.EndPoint().Column},
+		Start: Point{
+			Row:    node.StartPoint().Row,
+			Column: node.StartPoint().Column,
+		},
+		End: Point{
+			Row:    node.EndPoint().Row,
+			Column: node.EndPoint().Column,
+		},
 	}
 	ret.ParentUnit = parentUnit
 	return ret, nil

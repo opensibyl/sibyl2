@@ -32,11 +32,11 @@ func TestServer(t *testing.T) {
 	configuration.Scheme = "http"
 	configuration.Host = "127.0.0.1:9876"
 	apiClient := openapi.NewAPIClient(configuration)
-	strings, _, err := apiClient.SCOPEApi.ApiV1RepoGet(ctx).Execute()
+	repos, _, err := apiClient.SCOPEApi.ApiV1RepoGet(ctx).Execute()
 	if err != nil {
 		panic(err)
 	}
-	repo := strings[0]
+	repo := repos[0]
 	revs, _, err := apiClient.SCOPEApi.ApiV1RevGet(ctx).Repo(repo).Execute()
 	if err != nil {
 		return
@@ -79,6 +79,7 @@ func TestServer(t *testing.T) {
 	}
 
 	signatures, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncSignatureGet(ctx).Repo(repo).Rev(rev).Regex(".*").Execute()
+	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(signatures))
 	f, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithSignatureGet(ctx).Repo(repo).Rev(rev).Signature(signatures[0]).Execute()
 	assert.Nil(t, err)

@@ -50,7 +50,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 		symbolMap[each.Path] = make(map[string][]*extractor.Symbol)
 		for _, eachSymbol := range validSymbols {
 			if symbolList, ok := symbolMap[each.Path][eachSymbol.GetIndexName()]; ok {
-				symbolList = append(symbolList, eachSymbol)
+				symbolMap[each.Path][eachSymbol.GetIndexName()] = append(symbolList, eachSymbol)
 			} else {
 				symbolList := make([]*extractor.Symbol, 0)
 				symbolList = append(symbolList, eachSymbol)

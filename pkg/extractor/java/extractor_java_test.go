@@ -87,6 +87,7 @@ func TestExtractor_ExtractClasses(t *testing.T) {
 
 	extractor := &Extractor{}
 	data, err := extractor.ExtractClasses(units)
+	assert.Nil(t, err)
 	for _, each := range data {
 		core.Log.Infof("find class: %v", each.GetSignature())
 		for _, field := range each.Extras.(*ClassExtras).Fields {

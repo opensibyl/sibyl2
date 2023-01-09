@@ -63,6 +63,9 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	var ret *sibyl2.FunctionWithPath
@@ -114,6 +117,9 @@ func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ co
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	for iter.Valid() {
@@ -157,6 +163,9 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	for iter.Valid() {

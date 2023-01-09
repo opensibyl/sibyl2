@@ -50,7 +50,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	functions := make([]*sibyl2.FunctionWithPath, 0)
+	var functions []*sibyl2.FunctionWithPath
 	var err error
 	if lines == "" {
 		functions, err = sharedDriver.ReadFunctions(wc, file, sharedContext)
@@ -149,7 +149,7 @@ func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWith
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	functions := make([]*sibyl2.ClazzWithPath, 0)
+	var functions []*sibyl2.ClazzWithPath
 	var err error
 	functions, err = sharedDriver.ReadClasses(wc, file, sharedContext)
 	if err != nil {

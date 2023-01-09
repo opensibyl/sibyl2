@@ -38,6 +38,9 @@ func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, ru
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	for iter.Valid() {
@@ -94,6 +97,9 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	for iter.Valid() {

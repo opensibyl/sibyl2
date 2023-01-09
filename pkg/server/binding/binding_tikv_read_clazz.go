@@ -28,6 +28,9 @@ func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	for iter.Valid() {
@@ -85,6 +88,9 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
+	if err != nil {
+		return nil, err
+	}
 	defer iter.Close()
 
 	for iter.Valid() {

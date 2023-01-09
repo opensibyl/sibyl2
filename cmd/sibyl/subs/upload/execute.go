@@ -55,6 +55,7 @@ func execWithConfig(c *uploadConfig) {
 	}
 
 	cIter, err := repo.Log(&git.LogOptions{From: head.Hash()})
+	panicIfErr(err)
 	var commits = make([]*object2.Commit, 0, c.Depth)
 	count := 0
 	_ = cIter.ForEach(func(commit *object2.Commit) error {
@@ -251,10 +252,9 @@ func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
 				url,
 				"application/json",
 				bytes.NewBuffer(jsonStr))
-			if err != nil {
-				panic(err)
-			}
+			panicIfErr(err)
 			data, err := io.ReadAll(resp.Body)
+			panicIfErr(err)
 			if resp.StatusCode != http.StatusOK {
 				core.Log.Errorf("upload failed: %v", string(data))
 			}
@@ -308,6 +308,7 @@ func uploadFunctionContextUnits(url string, wc *object.WorkspaceConfig, ctxs []*
 		bytes.NewBuffer(jsonStr))
 	panicIfErr(err)
 	data, err := io.ReadAll(resp.Body)
+	panicIfErr(err)
 	if resp.StatusCode != http.StatusOK {
 		core.Log.Errorf("upload resp: %v", string(data))
 	}
@@ -359,10 +360,9 @@ func uploadClazzUnits(url string, units []*object.ClazzUploadUnit) {
 				url,
 				"application/json",
 				bytes.NewBuffer(jsonStr))
-			if err != nil {
-				panic(err)
-			}
+			panicIfErr(err)
 			data, err := io.ReadAll(resp.Body)
+			panicIfErr(err)
 			if resp.StatusCode != http.StatusOK {
 				core.Log.Errorf("upload failed: %v", string(data))
 			}

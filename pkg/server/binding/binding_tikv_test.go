@@ -70,6 +70,7 @@ func TestTikvFunc(t *testing.T) {
 
 	// check
 	files, err := tikvTestDriver.ReadFiles(wc, ctx)
+	assert.Nil(t, err)
 	assert.Equal(t, 1, len(files))
 
 	// functions

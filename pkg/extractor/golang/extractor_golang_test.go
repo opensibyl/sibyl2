@@ -93,12 +93,11 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 func TestExtractor_ExtractClasses(t *testing.T) {
 	parser := core.NewParser(core.LangGo)
 	units, err := parser.Parse([]byte(goCode))
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
 
 	extractor := &Extractor{}
 	data, err := extractor.ExtractClasses(units)
+	assert.Nil(t, err)
 	for _, eachType := range data {
 		core.Log.Infof("clazz: %v", eachType.GetSignature())
 

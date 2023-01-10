@@ -2,6 +2,7 @@ package binding
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/opensibyl/sibyl2"
@@ -85,8 +86,12 @@ func TestTikvFunc(t *testing.T) {
 	assert.Equal(t, len(signatures), 1)
 
 	// rule
-	rule := make(map[string]string)
-	rule["name"] = "fn1.*"
+	rule := make(Rule)
+	regex, err := regexp.Compile("fn1.*")
+	assert.Nil(t, err)
+	rule["name"] = func(s string) bool {
+		return regex.Match([]byte(s))
+	}
 	funcs, err := tikvTestDriver.ReadFunctionsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))
@@ -134,8 +139,12 @@ func TestTikvClazz(t *testing.T) {
 	assert.Equal(t, 2, len(classes))
 
 	// rule
-	rule := make(map[string]string)
-	rule["name"] = "clazz0.*"
+	rule := make(Rule)
+	regex, err := regexp.Compile("clazz0")
+	assert.Nil(t, err)
+	rule["name"] = func(s string) bool {
+		return regex.Match([]byte(s))
+	}
 	classes, err = tikvTestDriver.ReadClassesWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(classes))
@@ -183,8 +192,12 @@ func TestTikvFuncCtx(t *testing.T) {
 	assert.Equal(t, newCtx.Function, father)
 
 	// rule
-	rule := make(map[string]string)
-	rule["name"] = "abc.*"
+	rule := make(Rule)
+	regex, err := regexp.Compile("abc.*")
+	assert.Nil(t, err)
+	rule["name"] = func(s string) bool {
+		return regex.Match([]byte(s))
+	}
 	funcs, err := tikvTestDriver.ReadFunctionContextsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))

@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -123,15 +122,13 @@ func TestMainScenario(t *testing.T) {
 	}
 
 	// scenario 2: specific global search
-	rule := make(map[string]string)
-	rule["name"] = ".*Handle.*"
-	ruleStr, err := json.Marshal(rule)
 	assert.Nil(t, err)
 	functionWithPaths, _, err := apiClient.EXPERIMENTALApi.
-		ApiV1FuncWithRuleGet(ctx).
+		ApiV1FuncWithRegexGet(ctx).
 		Repo(projectName).
 		Rev(head.Hash().String()).
-		Rule(string(ruleStr)).
+		Field("name").
+		Regex(".*Handle.*").
 		Execute()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, functionWithPaths)

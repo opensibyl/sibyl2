@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"math"
-	"regexp"
 	"strings"
 
 	"github.com/opensibyl/sibyl2"
@@ -35,7 +34,7 @@ func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 
 	for iter.Valid() {
 		c := &sibyl2.ClazzWithPath{}
-		err := json.Unmarshal(iter.Value(), c)
+		err = json.Unmarshal(iter.Value(), c)
 		if err != nil {
 			return nil, err
 		}
@@ -68,14 +67,6 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
-	compiledRule := make(map[string]*regexp.Regexp)
-	for k, v := range rule {
-		newRegex, err := regexp.Compile(v)
-		if err != nil {
-			return nil, err
-		}
-		compiledRule[k] = newRegex
-	}
 
 	key, err := wc.Key()
 	if err != nil {
@@ -98,18 +89,23 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 		flag := "clazz|"
 		if strings.Contains(k, flag) {
 			rawClazz := iter.Value()
-			for rk, rv := range compiledRule {
+			for rk, verify := range rule {
 				v := gjson.GetBytes(rawClazz, rk)
-				if rv.MatchString(v.String()) {
-					c := &sibyl2.ClazzWithPath{}
-					err = json.Unmarshal(rawClazz, c)
-					if err != nil {
-						return nil, err
-					}
-					searchResult = append(searchResult, c)
+				if !verify(v.String()) {
+					// failed and ignore this item
+					goto nextIter
 				}
 			}
+			// all the rules passed
+			c := &sibyl2.ClazzWithPath{}
+			err = json.Unmarshal(rawClazz, c)
+			if err != nil {
+				return nil, err
+			}
+			searchResult = append(searchResult, c)
 		}
+
+	nextIter:
 		err = iter.Next()
 		if err != nil {
 			return nil, err

@@ -90,14 +90,6 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
-	compiledRule := make(map[string]*regexp.Regexp)
-	for k, v := range rule {
-		newRegex, err := regexp.Compile(v)
-		if err != nil {
-			return nil, err
-		}
-		compiledRule[k] = newRegex
-	}
 
 	key, err := wc.Key()
 	if err != nil {
@@ -116,17 +108,21 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 				continue
 			}
 			err = it.Item().Value(func(val []byte) error {
-				for rk, rv := range compiledRule {
+				for rk, verify := range rule {
 					v := gjson.GetBytes(val, rk)
-					if rv.MatchString(v.String()) {
-						f := &sibyl2.FunctionWithPath{}
-						err = json.Unmarshal(val, f)
-						if err != nil {
-							return err
-						}
-						searchResult = append(searchResult, f)
+					if !verify(v.String()) {
+						// failed and ignore this item
+						return nil
 					}
 				}
+				// all the rules passed
+				f := &sibyl2.FunctionWithPath{}
+				err = json.Unmarshal(val, f)
+				if err != nil {
+					return err
+				}
+				searchResult = append(searchResult, f)
+
 				return nil
 			})
 			if err != nil {

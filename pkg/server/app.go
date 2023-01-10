@@ -95,9 +95,9 @@ func Execute(config object.ExecuteConfig) {
 		// global query (e.g. Method name is known, but do not know where it is)
 		v1group.Handle(http.MethodGet, "/func/signature", service.HandleFunctionSignaturesQuery)
 		v1group.Handle(http.MethodGet, "/func/with/signature", service.HandleFunctionQueryWithSignature)
-		v1group.Handle(http.MethodGet, "/func/with/rule", service.HandleFunctionQueryWithRule)
-		v1group.Handle(http.MethodGet, "/clazz/with/rule", service.HandleClazzQueryWithRule)
-		v1group.Handle(http.MethodGet, "/funcctx/with/rule", service.HandleFuncCtxQueryWithRule)
+		v1group.Handle(http.MethodGet, "/func/with/regex", service.HandleFunctionQueryWithRegex)
+		v1group.Handle(http.MethodGet, "/clazz/with/regex", service.HandleClazzQueryWithRegex)
+		v1group.Handle(http.MethodGet, "/funcctx/with/regex", service.HandleFuncCtxQueryWithRegex)
 	}
 	// for ops
 	opsGroup := engine.Group("/ops")

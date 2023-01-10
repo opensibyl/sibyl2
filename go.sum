@@ -377,6 +377,8 @@ github.com/neo4j/neo4j-go-driver/v5 v5.2.0/go.mod h1:Vff8OwT7QpLm7L2yYr85XNWe9Rb
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
 github.com/opensibyl/sibyl-go-client v0.0.0-20230108134946-31cef7bf0df6 h1:F1EkIPtf79wkGL5twtgXWAIWjAb3nxa8MsLVdWKJVJg=
 github.com/opensibyl/sibyl-go-client v0.0.0-20230108134946-31cef7bf0df6/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
+github.com/opensibyl/sibyl-go-client v0.0.0-20230110153645-a4227ffd4c33 h1:0WwFvk5Q1fdXHWaIpM03qVLnu/jQul7m1qP3zI5Svmg=
+github.com/opensibyl/sibyl-go-client v0.0.0-20230110153645-a4227ffd4c33/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=

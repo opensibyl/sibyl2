@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"regexp"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -71,14 +70,6 @@ func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
-	compiledRule := make(map[string]*regexp.Regexp)
-	for k, v := range rule {
-		newRegex, err := regexp.Compile(v)
-		if err != nil {
-			return nil, err
-		}
-		compiledRule[k] = newRegex
-	}
 
 	key, err := wc.Key()
 	if err != nil {
@@ -98,17 +89,20 @@ func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule
 				continue
 			}
 			err = it.Item().Value(func(val []byte) error {
-				for rk, rv := range compiledRule {
+				for rk, verify := range rule {
 					v := gjson.GetBytes(val, rk)
-					if rv.MatchString(v.String()) {
-						c := &sibyl2.ClazzWithPath{}
-						err = json.Unmarshal(val, c)
-						if err != nil {
-							return err
-						}
-						searchResult = append(searchResult, c)
+					if !verify(v.String()) {
+						// failed and ignore this item
+						return nil
 					}
 				}
+				// all the rules passed
+				c := &sibyl2.ClazzWithPath{}
+				err = json.Unmarshal(val, c)
+				if err != nil {
+					return err
+				}
+				searchResult = append(searchResult, c)
 				return nil
 			})
 			if err != nil {

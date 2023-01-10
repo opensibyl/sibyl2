@@ -3,7 +3,6 @@ package server
 import (
 	"bytes"
 	"context"
-	"encoding/json"
 	"testing"
 	"time"
 
@@ -32,6 +31,8 @@ func TestServer(t *testing.T) {
 	configuration.Scheme = "http"
 	configuration.Host = "127.0.0.1:9876"
 	apiClient := openapi.NewAPIClient(configuration)
+	defer apiClient.SCOPEApi.ApiV1RepoDelete(ctx).Repo("sibyl2").Execute()
+
 	repos, _, err := apiClient.SCOPEApi.ApiV1RepoGet(ctx).Execute()
 	if err != nil {
 		panic(err)
@@ -85,26 +86,37 @@ func TestServer(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
-	funcRule := make(map[string]string)
-	funcRule["name"] = ".*Handle.*"
-	ruleStr, err := json.Marshal(funcRule)
 	assert.Nil(t, err)
-	fwr, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(ruleStr)).Execute()
+	fwr, _, err := apiClient.EXPERIMENTALApi.
+		ApiV1FuncWithRegexGet(ctx).
+		Repo(repo).
+		Rev(rev).
+		Field("name").
+		Regex(".*Handle.*").
+		Execute()
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(fwr))
 	for _, each := range fwr {
 		assert.Contains(t, *each.Name, "Handle")
 	}
 
-	clazzRule := make(map[string]string)
-	clazzRule["name"] = ".*"
-	clazzRuleStr, err := json.Marshal(clazzRule)
-	assert.Nil(t, err)
-	cwr, _, err := apiClient.EXPERIMENTALApi.ApiV1ClazzWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(clazzRuleStr)).Execute()
+	cwr, _, err := apiClient.EXPERIMENTALApi.
+		ApiV1ClazzWithRegexGet(ctx).
+		Repo(repo).
+		Rev(rev).
+		Field("name").
+		Regex(".*").
+		Execute()
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(cwr))
 
-	fcwr, _, err := apiClient.EXPERIMENTALApi.ApiV1FuncWithRuleGet(ctx).Repo(repo).Rev(rev).Rule(string(ruleStr)).Execute()
+	fcwr, _, err := apiClient.EXPERIMENTALApi.
+		ApiV1FuncctxWithRegexGet(ctx).
+		Repo(repo).
+		Rev(rev).
+		Field("name").
+		Regex(".*Handle.*").
+		Execute()
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(fcwr))
 	for _, each := range fcwr {

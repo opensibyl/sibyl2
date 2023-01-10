@@ -2,6 +2,7 @@ package binding
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/opensibyl/sibyl2"
@@ -94,8 +95,12 @@ func TestBadgerFunc(t *testing.T) {
 	assert.Equal(t, len(signatures), 1)
 
 	// rule
-	rule := make(map[string]string)
-	rule["name"] = "fn1.*"
+	rule := make(Rule)
+	regex, err := regexp.Compile("fn1.*")
+	assert.Nil(t, err)
+	rule["name"] = func(s string) bool {
+		return regex.Match([]byte(s))
+	}
 	funcs, err := d.ReadFunctionsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))
@@ -142,8 +147,12 @@ func TestBadgerClazz(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, 2, len(classes))
 
-	rule := make(map[string]string)
-	rule["name"] = "clazz0"
+	rule := make(Rule)
+	regex, err := regexp.Compile("clazz0")
+	assert.Nil(t, err)
+	rule["name"] = func(s string) bool {
+		return regex.Match([]byte(s))
+	}
 	classes, err = d.ReadClassesWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(classes))
@@ -192,8 +201,13 @@ func TestBadgerFuncCtx(t *testing.T) {
 	assert.Equal(t, newCtx.Function, father)
 
 	// check
-	rule := make(map[string]string)
-	rule["name"] = "abc.*"
+	rule := make(Rule)
+	regex, err := regexp.Compile("abc.*")
+	assert.Nil(t, err)
+	rule["name"] = func(s string) bool {
+		return regex.Match([]byte(s))
+	}
+
 	f, err := d.ReadFunctionContextsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(f))

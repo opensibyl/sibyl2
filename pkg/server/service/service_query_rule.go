@@ -1,27 +1,30 @@
 package service
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 // @Summary func query
 // @Param   repo  query string true  "repo"
 // @Param   rev   query string true  "rev"
-// @Param   rule   query string true  "rule"
+// @Param   field   query string true  "field"
+// @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionWithPath
-// @Router  /api/v1/func/with/rule [get]
+// @Router  /api/v1/func/with/regex [get]
 // @Tags EXPERIMENTAL
-func HandleFunctionQueryWithRule(c *gin.Context) {
+func HandleFunctionQueryWithRegex(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
-	rule := c.Query("rule")
+	field := c.Query("field")
+	regex := c.Query("regex")
 
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
@@ -32,12 +35,17 @@ func HandleFunctionQueryWithRule(c *gin.Context) {
 		return
 	}
 
-	ruleMap := make(map[string]string)
-	err := json.Unmarshal([]byte(rule), &ruleMap)
+	newRegex, err := regexp.Compile(regex)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, fmt.Errorf("invalid regex: %w", err))
 		return
 	}
+	// regex fn
+	verify := func(s string) bool {
+		return newRegex.Match([]byte(s))
+	}
+	ruleMap := make(binding.Rule)
+	ruleMap[field] = verify
 
 	functions, err := sharedDriver.ReadFunctionsWithRule(wc, ruleMap, sharedContext)
 	if err != nil {
@@ -50,15 +58,17 @@ func HandleFunctionQueryWithRule(c *gin.Context) {
 // @Summary clazz query
 // @Param   repo  query string true  "repo"
 // @Param   rev   query string true  "rev"
-// @Param   rule   query string true  "rule"
+// @Param   field   query string true  "field"
+// @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.ClazzWithPath
-// @Router  /api/v1/clazz/with/rule [get]
+// @Router  /api/v1/clazz/with/regex [get]
 // @Tags EXPERIMENTAL
-func HandleClazzQueryWithRule(c *gin.Context) {
+func HandleClazzQueryWithRegex(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
-	rule := c.Query("rule")
+	field := c.Query("field")
+	regex := c.Query("regex")
 
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
@@ -69,12 +79,17 @@ func HandleClazzQueryWithRule(c *gin.Context) {
 		return
 	}
 
-	ruleMap := make(map[string]string)
-	err := json.Unmarshal([]byte(rule), &ruleMap)
+	newRegex, err := regexp.Compile(regex)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, err)
+		c.JSON(http.StatusBadRequest, fmt.Errorf("invalid regex: %w", err))
 		return
 	}
+	// regex fn
+	verify := func(s string) bool {
+		return newRegex.Match([]byte(s))
+	}
+	ruleMap := make(binding.Rule)
+	ruleMap[field] = verify
 
 	classes, err := sharedDriver.ReadClassesWithRule(wc, ruleMap, sharedContext)
 	if err != nil {
@@ -87,16 +102,18 @@ func HandleClazzQueryWithRule(c *gin.Context) {
 // @Summary func ctx query
 // @Param   repo  query string true  "repo"
 // @Param   rev   query string true  "rev"
-// @Param   rule   query string true  "rule"
+// @Param   field   query string true  "field"
+// @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContext
-// @Router  /api/v1/funcctx/with/rule [get]
+// @Router  /api/v1/funcctx/with/regex [get]
 // @Tags EXPERIMENTAL
-func HandleFuncCtxQueryWithRule(c *gin.Context) {
+func HandleFuncCtxQueryWithRegex(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
-	rule := c.Query("rule")
-	ret, err := handleFuncCtxQueryWithRule(repo, rev, rule)
+	field := c.Query("field")
+	regex := c.Query("regex")
+	ret, err := handleFuncCtxQueryWithRule(repo, rev, field, regex)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -104,7 +121,7 @@ func HandleFuncCtxQueryWithRule(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleFuncCtxQueryWithRule(repo string, rev string, rule string) ([]*sibyl2.FunctionContext, error) {
+func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*sibyl2.FunctionContext, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
@@ -113,11 +130,16 @@ func handleFuncCtxQueryWithRule(repo string, rev string, rule string) ([]*sibyl2
 		return nil, err
 	}
 
-	ruleMap := make(map[string]string)
-	err := json.Unmarshal([]byte(rule), &ruleMap)
+	newRegex, err := regexp.Compile(regex)
 	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal json: %w", err)
+		return nil, fmt.Errorf("invalid regex: %w", err)
 	}
+	// regex fn
+	verify := func(s string) bool {
+		return newRegex.Match([]byte(s))
+	}
+	ruleMap := make(binding.Rule)
+	ruleMap[field] = verify
 
 	functionContexts, err := sharedDriver.ReadFunctionContextsWithRule(wc, ruleMap, sharedContext)
 	if err != nil {

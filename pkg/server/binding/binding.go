@@ -66,9 +66,9 @@ Rule
 
 Rule is a query structure implemented with regex and gjson syntax.
 - key: gjson path syntax
-- value: regex
+- value: verify function
 */
-type Rule = map[string]string
+type Rule = map[string]func(string) bool
 
 type driverCreate interface {
 	CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error

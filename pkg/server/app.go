@@ -78,6 +78,7 @@ func Execute(config object.ExecuteConfig) {
 	if needGateway {
 		// scope query
 		v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
+		v1group.Handle(http.MethodDelete, "/repo", service.HandleRepoDelete)
 		v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
 		v1group.Handle(http.MethodDelete, "/rev", service.HandleRevDelete)
 		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)

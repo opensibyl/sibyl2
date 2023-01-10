@@ -22,6 +22,35 @@ func HandleRepoQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, repos)
 }
 
+// @Summary repo delete
+// @Param   repo query string true "rev delete by repo"
+// @Produce json
+// @Success 200
+// @Router  /api/v1/repo [delete]
+// @Tags SCOPE
+func HandleRepoDelete(c *gin.Context) {
+	repo := c.Query("repo")
+	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	for _, eachRev := range revs {
+		eachWc := &object.WorkspaceConfig{
+			RepoId:  repo,
+			RevHash: eachRev,
+		}
+		err := sharedDriver.DeleteWorkspace(eachWc, sharedContext)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, err)
+			return
+		}
+	}
+
+	// return all the revs deleted
+	c.JSON(http.StatusOK, revs)
+}
+
 // @Summary rev query
 // @Param   repo query string true "rev search by repo"
 // @Produce json

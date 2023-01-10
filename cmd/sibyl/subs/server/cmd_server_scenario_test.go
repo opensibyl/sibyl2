@@ -86,6 +86,7 @@ func TestMainScenario(t *testing.T) {
 	configuration.Scheme = "http"
 	configuration.Host = url
 	apiClient := openapi.NewAPIClient(configuration)
+	defer apiClient.SCOPEApi.ApiV1RepoDelete(ctx).Repo("sibyl2").Execute()
 
 	// do the upload first
 	uploadCmd := upload.NewUploadCmd()
@@ -122,7 +123,6 @@ func TestMainScenario(t *testing.T) {
 	}
 
 	// scenario 2: specific global search
-	assert.Nil(t, err)
 	functionWithPaths, _, err := apiClient.EXPERIMENTALApi.
 		ApiV1FuncWithRegexGet(ctx).
 		Repo(projectName).
@@ -135,4 +135,15 @@ func TestMainScenario(t *testing.T) {
 	for _, each := range functionWithPaths {
 		assert.True(t, strings.Contains(*each.Name, "Handle"))
 	}
+
+	// scenario 3: hot functions
+	fc, _, err := apiClient.EXPERIMENTALApi.
+		ApiV1FuncctxWithReferencedCountGet(ctx).
+		Repo(projectName).
+		Rev(head.Hash().String()).
+		MoreThan(10).
+		LessThan(100).
+		Execute()
+	assert.Nil(t, err)
+	assert.NotEmpty(t, fc)
 }

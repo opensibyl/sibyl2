@@ -48,13 +48,15 @@ func (wc *WorkspaceConfig) Key() (string, error) {
 }
 
 type RevInfo struct {
-	Hash       string `json:"hash"`
-	CreateTime int64  `json:"createTime"`
+	Hash       string                 `json:"hash"`
+	CreateTime int64                  `json:"createTime"`
+	Extras     map[string]interface{} `json:"extras"`
 }
 
 func NewRevInfo(hash string) *RevInfo {
 	return &RevInfo{
 		Hash:       hash,
 		CreateTime: time.Now().Unix(),
+		Extras:     make(map[string]interface{}),
 	}
 }

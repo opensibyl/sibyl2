@@ -2,6 +2,8 @@ package binding
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"math"
 	"strings"
 
@@ -94,4 +96,31 @@ func (t *tikvDriver) ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) 
 		return nil, err
 	}
 	return searchResult, nil
+}
+
+func (t *tikvDriver) ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Context) (*object.RevInfo, error) {
+	snapshot := t.client.GetSnapshot(math.MaxUint64)
+
+	ret := &object.RevInfo{}
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+	rk := ToRevKey(key)
+	keyByte := []byte(rk.String())
+
+	iter, err := snapshot.Iter(keyByte, nil)
+	if err != nil {
+		return nil, err
+	}
+	defer iter.Close()
+	for iter.Valid() {
+		err := json.Unmarshal(iter.Value(), ret)
+		if err != nil {
+			return nil, fmt.Errorf("failed to unmarshal rev info: %w", err)
+		}
+		// only check the first one
+		break
+	}
+	return ret, nil
 }

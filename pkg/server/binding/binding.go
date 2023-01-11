@@ -80,6 +80,7 @@ type driverCreate interface {
 type driverRead interface {
 	ReadRepos(ctx context.Context) ([]string, error)
 	ReadRevs(repoId string, ctx context.Context) ([]string, error)
+	ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Context) (*object.RevInfo, error)
 	ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error)
 	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
 	ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)

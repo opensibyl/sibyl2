@@ -100,6 +100,7 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/funcctx/with/regex", service.HandleFuncCtxQueryWithRegex)
 		v1group.Handle(http.MethodGet, "/funcctx/with/reference/count", service.HandleFuncQueryWithReferenceCount)
 		v1group.Handle(http.MethodGet, "/funcctx/with/referenced/count", service.HandleFuncQueryWithReferencedCount)
+		v1group.Handle(http.MethodGet, "/rev/stat", service.HandleRevStatQuery)
 	}
 	// for ops
 	opsGroup := engine.Group("/ops")

@@ -40,6 +40,11 @@ func TestWc(t *testing.T) {
 			panic(nil)
 		}
 	}
+
+	info, err := d.ReadRevInfo(wc, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, info.Hash, wc.RevHash)
+	assert.NotNil(t, info.CreateTime)
 }
 
 func TestBadgerFunc(t *testing.T) {

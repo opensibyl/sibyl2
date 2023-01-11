@@ -2,6 +2,8 @@ package binding
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -94,4 +96,37 @@ func (d *badgerDriver) ReadFiles(wc *object.WorkspaceConfig, _ context.Context) 
 		return nil, err
 	}
 	return searchResult, nil
+}
+
+func (d *badgerDriver) ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Context) (*object.RevInfo, error) {
+	ret := &object.RevInfo{}
+	key, err := wc.Key()
+	if err != nil {
+		return nil, err
+	}
+	rk := ToRevKey(key)
+
+	err = d.db.View(func(txn *badger.Txn) error {
+		it := txn.NewIterator(badger.DefaultIteratorOptions)
+		defer it.Close()
+		prefix := []byte(rk.String())
+		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
+			item := it.Item()
+			err := item.Value(func(val []byte) error {
+				err := json.Unmarshal(val, ret)
+				if err != nil {
+					return fmt.Errorf("failed to unmarshal rev info: %w", err)
+				}
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return ret, nil
 }

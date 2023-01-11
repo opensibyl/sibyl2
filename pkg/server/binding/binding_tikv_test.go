@@ -20,6 +20,29 @@ func init() {
 	tikvTestDriver = initTikvDriver(config)
 }
 
+func TestTikvWc(t *testing.T) {
+	ctx := context.Background()
+	defer tikvTestDriver.DeferDriver()
+	defer tikvTestDriver.DeleteWorkspace(wc, ctx)
+	err := tikvTestDriver.CreateWorkspace(wc, ctx)
+	assert.Nil(t, err)
+	revs, err := tikvTestDriver.ReadRevs(wc.RepoId, ctx)
+	assert.Nil(t, err)
+	if len(revs) != 1 {
+		panic(nil)
+	}
+	for _, each := range revs {
+		if each != wc.RevHash {
+			panic(nil)
+		}
+	}
+
+	info, err := tikvTestDriver.ReadRevInfo(wc, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, info.Hash, wc.RevHash)
+	assert.NotNil(t, info.CreateTime)
+}
+
 func TestTikvFunc(t *testing.T) {
 	ctx := context.Background()
 	err := tikvTestDriver.InitDriver(ctx)

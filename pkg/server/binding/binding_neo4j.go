@@ -52,6 +52,11 @@ type neo4jDriver struct {
 	neo4j.DriverWithContext
 }
 
+func (d *neo4jDriver) ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Context) (*object.RevInfo, error) {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (d *neo4jDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
 	// TODO implement me
 	panic("implement me")

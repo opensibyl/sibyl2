@@ -1,6 +1,9 @@
 package core
 
-import "crypto/md5"
+import (
+	"crypto/md5"
+	"sync"
+)
 
 type md5sum = [16]byte
 
@@ -10,19 +13,17 @@ UnitCache
 current cache is unlimited
 */
 type UnitCache struct {
-	// data md5: []Unit
-	inner map[md5sum][]*Unit
+	// data md5sum: []Unit
+	inner sync.Map
 }
 
 func NewUnitCache() *UnitCache {
-	return &UnitCache{
-		make(map[md5sum][]*Unit),
-	}
+	return &UnitCache{}
 }
 
 func (cache *UnitCache) Create(sum md5sum, value []*Unit) {
 	// overwrite
-	cache.inner[sum] = value
+	cache.inner.Store(sum, value)
 }
 
 func (cache *UnitCache) CreateByData(data []byte, value []*Unit) {
@@ -30,11 +31,11 @@ func (cache *UnitCache) CreateByData(data []byte, value []*Unit) {
 }
 
 func (cache *UnitCache) Read(sum md5sum) []*Unit {
-	ret, ok := cache.inner[sum]
+	ret, ok := cache.inner.Load(sum)
 	if !ok {
 		return nil
 	}
-	return ret
+	return ret.([]*Unit)
 }
 
 func (cache *UnitCache) ReadByData(data []byte) []*Unit {

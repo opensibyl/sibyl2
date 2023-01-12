@@ -44,3 +44,17 @@ func TestExtractString(t *testing.T) {
 		core.Log.Debugf("result: %s", each.GetDesc())
 	}
 }
+
+func BenchmarkExtractFromString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		// no   cache: 499267 ns/op
+		// with cache: 14275 ns/op
+		_, err := ExtractFromString(javaCode, &ExtractConfig{
+			LangType:    core.LangJava,
+			ExtractType: extractor.TypeExtractFunction,
+		})
+		if err != nil {
+			panic(err)
+		}
+	}
+}

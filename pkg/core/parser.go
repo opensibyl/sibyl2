@@ -6,6 +6,8 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 )
 
+var globalUnitCache = NewUnitCache()
+
 /*
 Parser
 
@@ -25,11 +27,23 @@ func NewParser(lang LangType) *Parser {
 }
 
 func (p *Parser) ParseCtx(data []byte, context context.Context) ([]*Unit, error) {
+	// check cache first
+	units := globalUnitCache.ReadByData(data)
+	if units != nil {
+		return units, nil
+	}
+
 	tree, err := p.engine.ParseCtx(context, nil, data)
 	if err != nil {
 		return nil, err
 	}
-	return p.node2Units(data, tree.RootNode(), "", nil)
+	units, err = p.node2Units(data, tree.RootNode(), "", nil)
+	if err != nil {
+		return nil, err
+	}
+	// save to cache
+	globalUnitCache.CreateByData(data, units)
+	return units, nil
 }
 
 func (p *Parser) ParseStringCtx(data string, context context.Context) ([]*Unit, error) {

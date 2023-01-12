@@ -76,3 +76,20 @@ func TestExtractClazz(t *testing.T) {
 		core.Log.Infof("path: %v, %v", each.Path, each.Units)
 	}
 }
+
+func BenchmarkExtract(b *testing.B) {
+	// with cache: 79614514 ns/op
+	// no   cache: 294940375 ns/op
+	for i := 0; i < b.N; i++ {
+		fileResult, err := Extract(".", &ExtractConfig{
+			LangType:    core.LangGo,
+			ExtractType: extractor.TypeExtractFunction,
+		})
+		if err != nil {
+			panic(err)
+		}
+		for _, each := range fileResult {
+			core.Log.Debugf("path: %v, %v", each.Path, each.Units)
+		}
+	}
+}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"regexp"
 	"testing"
+	"time"
 
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -222,8 +223,12 @@ func TestTikvFuncCtx(t *testing.T) {
 	}
 	slimCtx := funcCtx.ToSlim()
 
+	err = tikvTestDriver.CreateFuncFile(wc, called, ctx)
+	assert.Nil(t, err)
 	err = tikvTestDriver.CreateFuncContext(wc, slimCtx, ctx)
 	assert.Nil(t, err)
+	time.Sleep(1 * time.Second)
+
 	newCtx, err := tikvTestDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, newCtx.Function, father)

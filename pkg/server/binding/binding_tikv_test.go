@@ -227,7 +227,7 @@ func TestTikvFuncCtx(t *testing.T) {
 	assert.Nil(t, err)
 	err = tikvTestDriver.CreateFuncContext(wc, slimCtx, ctx)
 	assert.Nil(t, err)
-	time.Sleep(1 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	newCtx, err := tikvTestDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
@@ -240,6 +240,7 @@ func TestTikvFuncCtx(t *testing.T) {
 	rule["name"] = func(s string) bool {
 		return regex.Match([]byte(s))
 	}
+
 	funcs, err := tikvTestDriver.ReadFunctionContextsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))

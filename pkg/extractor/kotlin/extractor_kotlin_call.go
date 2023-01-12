@@ -2,7 +2,7 @@ package kotlin
 
 import (
 	"github.com/opensibyl/sibyl2/pkg/core"
-	"github.com/opensibyl/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
 func (extractor *Extractor) IsCall(unit *core.Unit) bool {
@@ -10,7 +10,7 @@ func (extractor *Extractor) IsCall(unit *core.Unit) bool {
 	panic("implement me")
 }
 
-func (extractor *Extractor) ExtractCalls(units []*core.Unit) ([]*extractor.Call, error) {
+func (extractor *Extractor) ExtractCalls(units []*core.Unit) ([]*object.Call, error) {
 	// TODO implement me
 	panic("implement me")
 }

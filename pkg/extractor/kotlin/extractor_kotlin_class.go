@@ -4,7 +4,6 @@ import (
 	"errors"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
-	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
@@ -31,7 +30,7 @@ func (extractor *Extractor) ExtractClasses(units []*core.Unit) ([]*object.Clazz,
 	return ret, nil
 }
 
-func (extractor *Extractor) ExtractClass(unit *core.Unit) (*extractor.Clazz, error) {
+func (extractor *Extractor) ExtractClass(unit *core.Unit) (*object.Clazz, error) {
 	clazz := object.NewClazz()
 	clazz.Span = unit.Span
 	clazz.Lang = extractor.GetLang()

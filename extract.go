@@ -36,6 +36,9 @@ func ExtractFromBytes(content []byte, config *ExtractConfig) (*extractor.FileRes
 		return nil, err
 	}
 	langExtractor := extractor.GetExtractor(lang)
+	if langExtractor == nil {
+		return nil, fmt.Errorf("no extractor found for %s", lang)
+	}
 	var datas []extractor.DataType
 
 	switch config.ExtractType {

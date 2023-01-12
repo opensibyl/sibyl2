@@ -4,6 +4,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/golang"
 	"github.com/opensibyl/sibyl2/pkg/extractor/java"
+	"github.com/opensibyl/sibyl2/pkg/extractor/kotlin"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 	"github.com/opensibyl/sibyl2/pkg/extractor/python"
 )
@@ -64,6 +65,8 @@ func GetExtractor(lang core.LangType) Extractor {
 		return &golang.Extractor{}
 	case core.LangPython:
 		return &python.Extractor{}
+	case core.LangKotlin:
+		return &kotlin.Extractor{}
 	}
 	return nil
 }

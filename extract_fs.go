@@ -138,6 +138,9 @@ func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult,
 	}
 
 	langExtractor := extractor.GetExtractor(config.LangType)
+	if langExtractor == nil {
+		return nil, fmt.Errorf("no extractor found for %s", config.LangType)
+	}
 	var results []*extractor.FileResult
 	for _, eachFileUnit := range fileUnits {
 		fileResult := &extractor.FileResult{

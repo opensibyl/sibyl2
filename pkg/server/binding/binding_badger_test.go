@@ -18,6 +18,11 @@ func getBadgerTestConfig() object.ExecuteConfig {
 	return conf
 }
 
+var wc = &object.WorkspaceConfig{
+	RepoId:  "sibyl",
+	RevHash: "12345f",
+}
+
 func TestWc(t *testing.T) {
 	d := initBadgerDriver(getBadgerTestConfig())
 	ctx := context.TODO()

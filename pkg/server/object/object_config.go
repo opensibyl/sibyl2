@@ -22,12 +22,9 @@ type ServerConfigPart struct {
 
 type BindingConfigPart struct {
 	// binding
-	DbType        DriverType `mapstructure:"dbType"`
-	Neo4jUri      string     `mapstructure:"neo4JUri"`
-	Neo4jUserName string     `mapstructure:"neo4JUserName"`
-	Neo4jPassword string     `mapstructure:"neo4JPassword"`
-	BadgerPath    string     `mapstructure:"badgerPath"`
-	TikvAddrs     string     `mapstructure:"tikvAddrs"`
+	DbType     DriverType `mapstructure:"dbType"`
+	BadgerPath string     `mapstructure:"badgerPath"`
+	TikvAddrs  string     `mapstructure:"tikvAddrs"`
 }
 
 type WorkerConfigPart struct {
@@ -63,9 +60,6 @@ func DefaultExecuteConfig() ExecuteConfig {
 		},
 		BindingConfigPart: &BindingConfigPart{
 			DriverTypeBadger,
-			"bolt://localhost:7687",
-			"neo4j",
-			"neo4j",
 			"./sibyl2-badger-storage",
 			"127.0.0.1:2379",
 		},

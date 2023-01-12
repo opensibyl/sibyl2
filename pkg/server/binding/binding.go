@@ -10,49 +10,19 @@ import (
 	"github.com/pkg/errors"
 )
 
-// binding to backend databases
-// mainly designed for graph db
-// such as neo4j/nebula
-
 /*
-About how to insert a func node to graph db
+binding to backend databases
 
-- create func node itself with all the properties
-- check and create nodes:
-	- file node, create if absent
-	- rev node, create if absent
-	- repo node, create if absent
-- create links
-	- file INCLUDE func
-	- rev INCLUDE file
-	- repo INCLUDE rev
+Mainly designed for k/v databases.
+You can implement Driver interface to adapt different backends.
 
-About how to create link between functions
+Such as:
+- tikv
+- redis (WIP)
+- badger
+- ...
 
-- check:
-	- func 1 existed
-	- func 2 existed
-- link
-	- func1 CALL func2
-
-cypher:
-
-create nodes:
-	MERGE (func:Func {signature: "abcde:fdeglkb"})
-	MERGE (f:File {path: 'abcde'})
-	MERGE (rev:Rev {hash: '123456F'})
-	MERGE (repo:Repo {id: 1234, name: "haha"})
-
-	MERGE (f)-[:INCLUDE]->(func)
-	MERGE (rev)-[:INCLUDE]->(f)
-	MERGE (repo)-[:INCLUDE]->(rev)
-	RETURN *
-
-create func links:
-	MATCH (src:Func {signature:"abcde:fdeglkb"})
-	MATCH (tar:Func {signature:"eytjkdgfhs"})
-	MERGE (src)-[r:CALL]->(tar)
-	RETURN *
+In the past days, we have tried neo4j but removed because of performance and distribution.
 */
 
 type driverBase interface {
@@ -136,8 +106,6 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) (Driver, error
 	case object.DriverTypeInMemory:
 		// now in memory driver handled by badger
 		driver = initBadgerDriver(config)
-	case object.DriverTypeNeo4j:
-		driver = initNeo4jDriver(config)
 	case object.DriverTypeBadger:
 		driver = initBadgerDriver(config)
 	case object.DriverTypeTikv:

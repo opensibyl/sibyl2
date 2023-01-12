@@ -37,6 +37,11 @@ func panicIfErr(err error) {
 }
 
 func execWithConfig(c *uploadConfig) {
+	startTime := time.Now()
+	defer func() {
+		core.Log.Infof("upload total cost: %d ms", time.Since(startTime).Milliseconds())
+	}()
+
 	configStr, err := c.ToJson()
 	panicIfErr(err)
 	core.Log.Infof("upload with config: %s", configStr)
@@ -103,8 +108,20 @@ func execWithConfig(c *uploadConfig) {
 func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploadConfig) {
 	filterFunc, err := createFileFilter(c)
 	panicIfErr(err)
+
+	runner := &core.Runner{}
+	lang := core.LangUnknown
+	if c.Lang == "" {
+		langFromDir, err := runner.GuessLangFromDir(c.Src, filterFunc)
+		panicIfErr(err)
+		lang = langFromDir
+	} else {
+		lang = core.LangType(c.Lang)
+	}
+
 	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
 		FileFilter: filterFunc,
+		LangType:   lang,
 	})
 	panicIfErr(err)
 
@@ -123,6 +140,7 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploa
 	if c.WithCtx {
 		s, err := sibyl2.ExtractSymbol(uploadSrc, &sibyl2.ExtractConfig{
 			FileFilter: filterFunc,
+			LangType:   lang,
 		})
 		if err != nil {
 			panic(err)
@@ -143,6 +161,7 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploa
 	if c.WithClass {
 		s, err := sibyl2.ExtractClazz(uploadSrc, &sibyl2.ExtractConfig{
 			FileFilter: filterFunc,
+			LangType:   lang,
 		})
 		if err != nil {
 			panic(err)

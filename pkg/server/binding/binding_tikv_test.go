@@ -12,6 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// ./.tiup/bin/tiup playground --mode tikv-slim --host 0.0.0.0
 var tikvTestDriver Driver
 
 func init() {
@@ -22,9 +23,13 @@ func init() {
 
 func TestTikvWc(t *testing.T) {
 	ctx := context.Background()
+	err := tikvTestDriver.InitDriver(ctx)
+	if err != nil {
+		panic(err)
+	}
 	defer tikvTestDriver.DeferDriver()
 	defer tikvTestDriver.DeleteWorkspace(wc, ctx)
-	err := tikvTestDriver.CreateWorkspace(wc, ctx)
+	err = tikvTestDriver.CreateWorkspace(wc, ctx)
 	assert.Nil(t, err)
 	revs, err := tikvTestDriver.ReadRevs(wc.RepoId, ctx)
 	assert.Nil(t, err)
@@ -191,24 +196,33 @@ func TestTikvFuncCtx(t *testing.T) {
 		Name: "abcde",
 		Lang: core.LangGo,
 	}
+	calledFunc := &extractor.Function{
+		Name: "calledfunc",
+		Lang: core.LangGo,
+	}
+	p := "abc/def.go"
+	called := &extractor.FunctionFileResult{
+		Path:     p,
+		Language: core.LangGo,
+		Units:    []*extractor.Function{calledFunc, father},
+	}
+
 	funcCtx := sibyl2.FunctionContext{
 		FunctionWithPath: &sibyl2.FunctionWithPath{
 			Function: father,
-			Path:     "a/b/c.go",
+			Path:     p,
 		},
 		Calls: []*sibyl2.FunctionWithPath{
 			{
-				Function: &extractor.Function{
-					Name: "abcde",
-					Lang: core.LangGo,
-				},
-				Path: "b/c/d.go",
+				Function: calledFunc,
+				Path:     p,
 			},
 		},
 		ReverseCalls: []*sibyl2.FunctionWithPath{},
 	}
+	slimCtx := funcCtx.ToSlim()
 
-	err = tikvTestDriver.CreateFuncContext(wc, &funcCtx, ctx)
+	err = tikvTestDriver.CreateFuncContext(wc, slimCtx, ctx)
 	assert.Nil(t, err)
 	newCtx, err := tikvTestDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
@@ -224,4 +238,9 @@ func TestTikvFuncCtx(t *testing.T) {
 	funcs, err := tikvTestDriver.ReadFunctionContextsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))
+
+	// check its signature is valid
+	fws, err := tikvTestDriver.ReadFunctionWithSignature(wc, funcs[0].Calls[0], ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, fws.Name, called.Units[0].Name)
 }

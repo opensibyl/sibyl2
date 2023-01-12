@@ -77,7 +77,7 @@ func startWorker(ctx context.Context, driver binding.Driver) {
 			_ = driver.CreateWorkspace(result.WorkspaceConfig, ctx)
 
 			for _, each := range result.FunctionContexts {
-				err := driver.CreateFuncContext(result.WorkspaceConfig, each, ctx)
+				err := driver.CreateFuncContext(result.WorkspaceConfig, each.ToSlim(), ctx)
 				if err != nil {
 					// deadlock easily happen in neo4j when creating complex edges
 					// append to the queue

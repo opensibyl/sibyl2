@@ -82,7 +82,7 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 	return nil
 }
 
-func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, _ context.Context) error {
+func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, _ context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.F
 		}
 
 		eachFuncKey := toFuncCtxKey(fk.RevHash, fk.FileHash, f.GetSignature())
-		eachFuncV, err := f.ToJson()
+		eachFuncV, err := json.Marshal(f)
 		if err != nil {
 			return err
 		}

@@ -92,7 +92,7 @@ func (t *tikvDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fun
 	return nil
 }
 
-func (t *tikvDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
+func (t *tikvDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err

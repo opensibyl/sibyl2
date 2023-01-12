@@ -182,28 +182,40 @@ func TestBadgerFuncCtx(t *testing.T) {
 		Name: "abcde",
 		Lang: core.LangGo,
 	}
+	calledFunc := &extractor.Function{
+		Name: "calledfunc",
+		Lang: core.LangGo,
+	}
+	p := "abc/def.go"
+	called := &extractor.FunctionFileResult{
+		Path:     p,
+		Language: core.LangGo,
+		Units:    []*extractor.Function{calledFunc, father},
+	}
+
 	funcCtx := sibyl2.FunctionContext{
 		FunctionWithPath: &sibyl2.FunctionWithPath{
 			Function: father,
-			Path:     "a/b/c.go",
+			Path:     p,
 		},
 		Calls: []*sibyl2.FunctionWithPath{
 			{
-				Function: &extractor.Function{
-					Name: "abcde",
-					Lang: core.LangGo,
-				},
-				Path: "b/c/d.go",
+				Function: calledFunc,
+				Path:     p,
 			},
 		},
 		ReverseCalls: []*sibyl2.FunctionWithPath{},
 	}
+	slimCtx := funcCtx.ToSlim()
 
-	err = d.CreateFuncContext(wc, &funcCtx, ctx)
+	err = d.CreateFuncFile(wc, called, ctx)
 	assert.Nil(t, err)
+	err = d.CreateFuncContext(wc, slimCtx, ctx)
+	assert.Nil(t, err)
+
 	newCtx, err := d.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)
-	assert.Equal(t, newCtx.Function, father)
+	assert.Equal(t, newCtx.Function.Name, father.Name)
 
 	// check
 	rule := make(Rule)
@@ -216,4 +228,9 @@ func TestBadgerFuncCtx(t *testing.T) {
 	f, err := d.ReadFunctionContextsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(f))
+
+	// check its signature is valid
+	fws, err := d.ReadFunctionWithSignature(wc, f[0].Calls[0], ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, fws.Name, called.Units[0].Name)
 }

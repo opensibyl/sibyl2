@@ -26,6 +26,13 @@ type FunctionContext struct {
 	ReverseCalls []*FunctionWithPath `json:"reverseCalls"`
 }
 
+// FunctionContextSlim instead of whole object, slim will only keep the signature
+type FunctionContextSlim struct {
+	*FunctionWithPath
+	Calls        []string `json:"calls"`
+	ReverseCalls []string `json:"reverseCalls"`
+}
+
 type ClazzWithPath struct {
 	*extractor.Clazz
 	Path string `json:"path"`
@@ -75,6 +82,21 @@ func (f *FunctionContext) ToJson() ([]byte, error) {
 		return nil, err
 	}
 	return raw, nil
+}
+
+func (f *FunctionContext) ToSlim() *FunctionContextSlim {
+	slim := &FunctionContextSlim{
+		FunctionWithPath: f.FunctionWithPath,
+		Calls:            make([]string, 0, len(f.Calls)),
+		ReverseCalls:     make([]string, 0, len(f.ReverseCalls)),
+	}
+	for _, each := range f.Calls {
+		slim.Calls = append(slim.Calls, each.GetSignature())
+	}
+	for _, each := range f.ReverseCalls {
+		slim.ReverseCalls = append(slim.ReverseCalls, each.GetSignature())
+	}
+	return slim
 }
 
 func Json2FuncCtx(exported []byte) (*FunctionContext, error) {

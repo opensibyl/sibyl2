@@ -90,7 +90,7 @@ func TestNeo4jDriver_UploadFuncContextWithContext(t *testing.T) {
 	for _, eachFunc := range functions {
 		for _, eachFFF := range eachFunc.Units {
 			fc := fg.FindRelated(eachFFF)
-			err := newDriver.CreateFuncContext(wc, fc, ctx)
+			err := newDriver.CreateFuncContext(wc, fc.ToSlim(), ctx)
 			if err != nil {
 				panic(err)
 			}

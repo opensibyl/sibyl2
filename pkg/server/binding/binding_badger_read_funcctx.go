@@ -12,12 +12,12 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func (d *badgerDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+func (d *badgerDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
 	functions, err := d.ReadFunctionsWithLines(wc, path, lines, ctx)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*sibyl2.FunctionContext, 0)
+	ret := make([]*sibyl2.FunctionContextSlim, 0)
 	for _, eachFunc := range functions {
 		functionContext, err := d.ReadFunctionContextWithSignature(wc, eachFunc.GetSignature(), ctx)
 		if err != nil {
@@ -28,7 +28,7 @@ func (d *badgerDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig,
 	return ret, nil
 }
 
-func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*sibyl2.FunctionContext, error) {
+func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -39,7 +39,7 @@ func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, 
 	}
 	prefix := []byte(ToRevKey(key).ToScanPrefix())
 
-	searchResult := make([]*sibyl2.FunctionContext, 0)
+	searchResult := make([]*sibyl2.FunctionContextSlim, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -59,7 +59,7 @@ func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, 
 					}
 				}
 				// all the rules passed
-				f := &sibyl2.FunctionContext{}
+				f := &sibyl2.FunctionContextSlim{}
 				err = json.Unmarshal(val, f)
 				if err != nil {
 					return err
@@ -80,13 +80,13 @@ func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, 
 
 }
 
-func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionContext, error) {
+func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionContextSlim, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	rk := ToRevKey(key)
-	var ret *sibyl2.FunctionContext
+	ret := &sibyl2.FunctionContextSlim{}
 	err = d.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
@@ -100,7 +100,7 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 			k := string(item.Key())
 			if strings.Contains(k, shouldContain) {
 				err := item.Value(func(val []byte) error {
-					ret, err = sibyl2.Json2FuncCtx(val)
+					err = json.Unmarshal(val, ret)
 					if err != nil {
 						return err
 					}

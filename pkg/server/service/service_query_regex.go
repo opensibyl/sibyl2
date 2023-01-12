@@ -121,7 +121,7 @@ func HandleFuncCtxQueryWithRegex(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*sibyl2.FunctionContext, error) {
+func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*sibyl2.FunctionContextSlim, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,

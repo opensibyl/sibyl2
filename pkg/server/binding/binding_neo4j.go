@@ -62,7 +62,7 @@ func (d *neo4jDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule,
 	panic("implement me")
 }
 
-func (d *neo4jDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+func (d *neo4jDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
 	// TODO implement me
 	panic("implement me")
 }
@@ -82,7 +82,7 @@ func (d *neo4jDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path stri
 	panic("implement me")
 }
 
-func (d *neo4jDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContext, error) {
+func (d *neo4jDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
 	// TODO implement me
 	panic("implement me")
 }
@@ -161,7 +161,7 @@ func (d *neo4jDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fu
 	return nil
 }
 
-func (d *neo4jDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) error {
+func (d *neo4jDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
 	if err := wc.Verify(); err != nil {
 		return err
 	}
@@ -317,7 +317,7 @@ func (d *neo4jDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path st
 	return ret, nil
 }
 
-func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContext, error) {
+func (d *neo4jDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContextSlim, error) {
 	session := d.DriverWithContext.NewSession(ctx, neo4j.SessionConfig{
 		AccessMode: neo4j.AccessModeRead,
 	})
@@ -412,7 +412,7 @@ RETURN f, file, srcFunc, srcFile, targetFunc, targetFile
 	if ret == nil {
 		return nil, nil
 	}
-	return ret.(*sibyl2.FunctionContext), nil
+	return ret.(*sibyl2.FunctionContextSlim), nil
 }
 
 func (d *neo4jDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
@@ -653,7 +653,7 @@ func createFunctionFileTransaction(wc *object.WorkspaceConfig, f *extractor.Func
 	}
 }
 
-func createFuncGraphTransaction(wc *object.WorkspaceConfig, f *sibyl2.FunctionContext, ctx context.Context) neo4j.ManagedTransactionWork {
+func createFuncGraphTransaction(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) neo4j.ManagedTransactionWork {
 	return func(tx neo4j.ManagedTransaction) (any, error) {
 		for i, each := range f.Calls {
 			id := i + 1
@@ -672,10 +672,8 @@ func createFuncGraphTransaction(wc *object.WorkspaceConfig, f *sibyl2.FunctionCo
 				"repo_id":                           wc.RepoId,
 				"rev_hash":                          wc.RevHash,
 				"srcPath":                           f.Path,
-				"targetPath":                        each.Path,
-				"file_lang":                         each.Lang,
 				"func0_signature":                   f.GetSignature(),
-				fmt.Sprintf("func%d_signature", id): each.GetSignature(),
+				fmt.Sprintf("func%d_signature", id): each,
 			})
 			if err != nil {
 				return nil, err

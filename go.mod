@@ -135,3 +135,5 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/smacker/go-tree-sitter v0.0.0-20221031025734-03a9c97d8039 => github.com/williamfzc/go-tree-sitter v0.0.0-20230112040556-1c6a3ce73d7c

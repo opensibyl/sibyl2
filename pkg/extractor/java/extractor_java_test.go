@@ -49,10 +49,9 @@ func TestJavaExtractor_ExtractSymbols(t *testing.T) {
 	}
 
 	extractor := &Extractor{}
-	_, err = extractor.ExtractSymbols(units)
-	if err != nil {
-		panic(err)
-	}
+	symbols, err := extractor.ExtractSymbols(units)
+	assert.Nil(t, err)
+	assert.NotEmpty(t, symbols)
 }
 
 func TestJavaExtractor_ExtractFunctions(t *testing.T) {
@@ -64,9 +63,8 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 
 	extractor := &Extractor{}
 	data, err := extractor.ExtractFunctions(units)
-	if err != nil {
-		panic(err)
-	}
+	assert.Nil(t, err)
+	assert.NotEmpty(t, data)
 	for _, each := range data {
 		core.Log.Debugf("each: %s %s %s", each.Name, each.Extras, each.BodySpan.String())
 		// check base info

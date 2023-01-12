@@ -1,12 +1,14 @@
 package core
 
 import (
+	"strings"
+
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
+	"github.com/smacker/go-tree-sitter/kotlin"
 	"github.com/smacker/go-tree-sitter/python"
 	"golang.org/x/exp/slices"
-	"strings"
 )
 
 type LangType string
@@ -15,6 +17,7 @@ const (
 	LangJava    LangType = "JAVA"
 	LangGo      LangType = "GOLANG"
 	LangPython  LangType = "PYTHON"
+	LangKotlin  LangType = "KOTLIN"
 	LangUnknown LangType = "UNKNOWN"
 )
 
@@ -22,6 +25,7 @@ var SupportedLangs = []LangType{
 	LangJava,
 	LangGo,
 	LangPython,
+	LangKotlin,
 }
 
 func (langType LangType) IsSupported() bool {
@@ -40,6 +44,8 @@ func LangTypeValueOf(raw string) LangType {
 		return LangGo
 	case LangPython.GetValue():
 		return LangPython
+	case LangKotlin.GetValue():
+		return LangKotlin
 	default:
 		return LangUnknown
 	}
@@ -53,6 +59,8 @@ func (langType LangType) GetLanguage() *sitter.Language {
 		return golang.GetLanguage()
 	case LangPython:
 		return python.GetLanguage()
+	case LangKotlin:
+		return kotlin.GetLanguage()
 	}
 	return nil
 }
@@ -65,6 +73,8 @@ func (langType LangType) GetFileSuffix() string {
 		return ".go"
 	case LangPython:
 		return ".py"
+	case LangKotlin:
+		return ".kt"
 	}
 	return ""
 }

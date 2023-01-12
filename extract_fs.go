@@ -104,7 +104,7 @@ func ExtractClazz(targetFile string, config *ExtractConfig) ([]*extractor.ClazzF
 func Extract(targetFile string, config *ExtractConfig) ([]*extractor.FileResult, error) {
 	startTime := time.Now()
 	defer func() {
-		core.Log.Infof("cost: %d ms", time.Since(startTime).Milliseconds())
+		core.Log.Infof("extract cost: %d ms", time.Since(startTime).Milliseconds())
 	}()
 
 	if _, err := os.Stat(targetFile); os.IsNotExist(err) {

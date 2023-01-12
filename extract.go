@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
@@ -26,11 +25,6 @@ func ExtractFromString(content string, config *ExtractConfig) (*extractor.FileRe
 }
 
 func ExtractFromBytes(content []byte, config *ExtractConfig) (*extractor.FileResult, error) {
-	startTime := time.Now()
-	defer func() {
-		core.Log.Infof("cost: %d ms", time.Since(startTime).Milliseconds())
-	}()
-
 	lang := config.LangType
 	if !lang.IsSupported() {
 		return nil, errors.New(fmt.Sprintf("unknown languages, supported: %v", core.SupportedLangs))

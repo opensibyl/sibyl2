@@ -23,7 +23,7 @@ func TestServer(t *testing.T) {
 
 	// do the upload first
 	uploadCmd := upload.NewUploadCmd()
-	uploadCmd.SetArgs([]string{"--src", "../../../..", "--withCtx", "--withClass"})
+	uploadCmd.SetArgs([]string{"--src", "../../../..", "--withCtx", "--withClass", "--lang", "GOLANG"})
 	uploadCmd.Execute()
 	time.Sleep(1 * time.Second)
 

@@ -15,10 +15,10 @@ import (
 // @Param   moreThan   query int true  "moreThan"
 // @Param   lessThan   query int true  "lessThan"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionWithPath
+// @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/funcctx/with/reference/count [get]
 // @Tags EXPERIMENTAL
-func HandleFuncQueryWithReferenceCount(c *gin.Context) {
+func HandleFunctionContextQueryWithReferenceCount(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	moreThan := c.Query("moreThan")
@@ -73,10 +73,10 @@ func HandleFuncQueryWithReferenceCount(c *gin.Context) {
 // @Param   moreThan   query int true  "moreThan"
 // @Param   lessThan   query int true  "lessThan"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionWithPath
+// @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/funcctx/with/referenced/count [get]
 // @Tags EXPERIMENTAL
-func HandleFuncQueryWithReferencedCount(c *gin.Context) {
+func HandleFunctionContextQueryWithReferencedCount(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	moreThan := c.Query("moreThan")

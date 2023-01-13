@@ -98,8 +98,8 @@ func Execute(config object.ExecuteConfig) {
 		v1group.Handle(http.MethodGet, "/func/with/regex", service.HandleFunctionQueryWithRegex)
 		v1group.Handle(http.MethodGet, "/clazz/with/regex", service.HandleClazzQueryWithRegex)
 		v1group.Handle(http.MethodGet, "/funcctx/with/regex", service.HandleFuncCtxQueryWithRegex)
-		v1group.Handle(http.MethodGet, "/funcctx/with/reference/count", service.HandleFuncQueryWithReferenceCount)
-		v1group.Handle(http.MethodGet, "/funcctx/with/referenced/count", service.HandleFuncQueryWithReferencedCount)
+		v1group.Handle(http.MethodGet, "/funcctx/with/reference/count", service.HandleFunctionContextQueryWithReferenceCount)
+		v1group.Handle(http.MethodGet, "/funcctx/with/referenced/count", service.HandleFunctionContextQueryWithReferencedCount)
 		v1group.Handle(http.MethodGet, "/rev/stat", service.HandleRevStatQuery)
 	}
 	// for ops

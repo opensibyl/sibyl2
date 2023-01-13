@@ -86,7 +86,7 @@ func TestMainScenario(t *testing.T) {
 	configuration.Scheme = "http"
 	configuration.Host = url
 	apiClient := openapi.NewAPIClient(configuration)
-	defer apiClient.SCOPEApi.ApiV1RepoDelete(ctx).Repo("sibyl2").Execute()
+	defer apiClient.ScopeApi.ApiV1RepoDelete(ctx).Repo("sibyl2").Execute()
 
 	// do the upload first
 	uploadCmd := upload.NewUploadCmd()
@@ -106,7 +106,7 @@ func TestMainScenario(t *testing.T) {
 			strLineList = append(strLineList, strconv.Itoa(each))
 		}
 
-		functionWithPaths, _, err := apiClient.MAINApi.
+		functionWithPaths, _, err := apiClient.BasicQueryApi.
 			ApiV1FuncctxGet(ctx).
 			Repo(projectName).
 			Rev(head.Hash().String()).
@@ -123,7 +123,7 @@ func TestMainScenario(t *testing.T) {
 	}
 
 	// scenario 2: specific global search
-	functionWithPaths, _, err := apiClient.EXPERIMENTALApi.
+	functionWithPaths, _, err := apiClient.RegexQueryApi.
 		ApiV1FuncWithRegexGet(ctx).
 		Repo(projectName).
 		Rev(head.Hash().String()).
@@ -137,7 +137,7 @@ func TestMainScenario(t *testing.T) {
 	}
 
 	// scenario 3: hot functions
-	fc, _, err := apiClient.EXPERIMENTALApi.
+	fc, _, err := apiClient.ReferenceQueryApi.
 		ApiV1FuncctxWithReferencedCountGet(ctx).
 		Repo(projectName).
 		Rev(head.Hash().String()).

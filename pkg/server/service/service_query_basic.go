@@ -26,7 +26,7 @@ var sharedQueue queue.Queue
 // @Produce json
 // @Success 200 {array} object.FunctionWithSignature
 // @Router  /api/v1/func [get]
-// @Tags MAIN
+// @Tags BasicQuery
 func HandleFunctionsQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -90,7 +90,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/funcctx [get]
-// @Tags MAIN
+// @Tags BasicQuery
 func HandleFunctionContextsQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -127,7 +127,7 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} sibyl2.ClazzWithPath
 // @Router  /api/v1/clazz [get]
-// @Tags MAIN
+// @Tags BasicQuery
 func HandleClazzesQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

@@ -19,7 +19,7 @@ type UploadStats struct {
 // @Produce json
 // @Success 200
 // @Router  /ops/monitor/upload [get]
-// @Tags OPS
+// @Tags Ops
 func HandleStatusUpload(c *gin.Context) {
 	stat := &UploadStats{
 		FuncUnitTodo:    worker.GetFuncQueueTodoCount(),
@@ -34,7 +34,7 @@ func HandleStatusUpload(c *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /ops/ping [get]
-// @Tags OPS
+// @Tags Ops
 func HandlePing(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message": "pong",
@@ -46,7 +46,7 @@ func HandlePing(c *gin.Context) {
 // @Produce  json
 // @Success  200
 // @Router   /ops/version [get]
-// @Tags OPS
+// @Tags Ops
 func HandleVersion(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"version": sibyl2.Version,

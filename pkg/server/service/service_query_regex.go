@@ -19,7 +19,7 @@ import (
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionWithPath
 // @Router  /api/v1/func/with/regex [get]
-// @Tags EXPERIMENTAL
+// @Tags RegexQuery
 func HandleFunctionQueryWithRegex(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -63,7 +63,7 @@ func HandleFunctionQueryWithRegex(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} sibyl2.ClazzWithPath
 // @Router  /api/v1/clazz/with/regex [get]
-// @Tags EXPERIMENTAL
+// @Tags RegexQuery
 func HandleClazzQueryWithRegex(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -107,7 +107,7 @@ func HandleClazzQueryWithRegex(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContext
 // @Router  /api/v1/funcctx/with/regex [get]
-// @Tags EXPERIMENTAL
+// @Tags RegexQuery
 func HandleFuncCtxQueryWithRegex(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

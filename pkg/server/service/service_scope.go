@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/repo [get]
-// @Tags SCOPE
+// @Tags Scope
 func HandleRepoQuery(c *gin.Context) {
 	repos, err := sharedDriver.ReadRepos(sharedContext)
 	if err != nil {
@@ -27,7 +27,7 @@ func HandleRepoQuery(c *gin.Context) {
 // @Produce json
 // @Success 200
 // @Router  /api/v1/repo [delete]
-// @Tags SCOPE
+// @Tags Scope
 func HandleRepoDelete(c *gin.Context) {
 	repo := c.Query("repo")
 	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
@@ -56,7 +56,7 @@ func HandleRepoDelete(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/rev [get]
-// @Tags SCOPE
+// @Tags Scope
 func HandleRevQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
@@ -73,7 +73,7 @@ func HandleRevQuery(c *gin.Context) {
 // @Produce json
 // @Success 200
 // @Router  /api/v1/rev [delete]
-// @Tags SCOPE
+// @Tags Scope
 func HandleRevDelete(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -101,7 +101,7 @@ func HandleRevDelete(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/file [get]
-// @Tags SCOPE
+// @Tags Scope
 func HandleFileQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

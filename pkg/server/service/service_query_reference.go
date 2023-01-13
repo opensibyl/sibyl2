@@ -17,7 +17,7 @@ import (
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/funcctx/with/reference/count [get]
-// @Tags EXPERIMENTAL
+// @Tags ReferenceQuery
 func HandleFunctionContextQueryWithReferenceCount(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -75,7 +75,7 @@ func HandleFunctionContextQueryWithReferenceCount(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/funcctx/with/referenced/count [get]
-// @Tags EXPERIMENTAL
+// @Tags ReferenceQuery
 func HandleFunctionContextQueryWithReferencedCount(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

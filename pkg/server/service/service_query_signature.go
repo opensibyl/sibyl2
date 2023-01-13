@@ -14,7 +14,7 @@ import (
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/func/signature [get]
-// @Tags EXPERIMENTAL
+// @Tags SignatureQuery
 func HandleFunctionSignaturesQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -43,7 +43,7 @@ func HandleFunctionSignaturesQuery(c *gin.Context) {
 // @Produce json
 // @Success 200 {object} sibyl2.FunctionWithPath
 // @Router  /api/v1/func/with/signature [get]
-// @Tags EXPERIMENTAL
+// @Tags SignatureQuery
 func HandleFunctionQueryWithSignature(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

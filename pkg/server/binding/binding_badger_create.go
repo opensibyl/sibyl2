@@ -64,7 +64,7 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 
 		for _, eachFunc := range f.Units {
 			eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-			eachFuncV, err := eachFunc.ToJson()
+			eachFuncV, err := json.Marshal(eachFunc)
 			if err != nil {
 				continue
 			}

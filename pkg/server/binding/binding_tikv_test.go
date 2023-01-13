@@ -227,7 +227,7 @@ func TestTikvFuncCtx(t *testing.T) {
 	assert.Nil(t, err)
 	err = tikvTestDriver.CreateFuncContext(wc, slimCtx, ctx)
 	assert.Nil(t, err)
-	time.Sleep(5 * time.Second)
+	time.Sleep(1 * time.Second)
 
 	newCtx, err := tikvTestDriver.ReadFunctionContextWithSignature(wc, father.GetSignature(), ctx)
 	assert.Nil(t, err)

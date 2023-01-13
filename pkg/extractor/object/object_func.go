@@ -1,7 +1,6 @@
 package object
 
 import (
-	"encoding/json"
 	"fmt"
 	"strings"
 
@@ -65,32 +64,6 @@ func (f *Function) GetSignature() FuncSignature {
 	retPart := strings.Join(rets, ",")
 
 	return fmt.Sprintf("%s|%s|%s", prefix, paramPart, retPart)
-}
-
-// ToMap export a very simple map without any custom structs. It will lose ptr to origin Unit.
-func (f *Function) ToMap() (map[string]any, error) {
-	b, err := json.Marshal(f)
-	if err != nil {
-		return nil, err
-	}
-	var m map[string]interface{}
-	err = json.Unmarshal(b, &m)
-	if err != nil {
-		return nil, err
-	}
-	return m, nil
-}
-
-func (f *Function) ToJson() ([]byte, error) {
-	m, err := f.ToMap()
-	if err != nil {
-		return nil, err
-	}
-	raw, err := json.Marshal(m)
-	if err != nil {
-		return nil, err
-	}
-	return raw, nil
 }
 
 func (f *Function) GetIndexName() string {

@@ -68,7 +68,7 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 		panic(err)
 	}
 	for _, each := range functions {
-		normal, err := each.ToJson()
+		normal, err := json.Marshal(each)
 		if err != nil {
 			panic(err)
 		}

@@ -74,7 +74,7 @@ func (t *tikvDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fun
 
 	for _, eachFunc := range f.Units {
 		eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-		eachFuncV, err := eachFunc.ToJson()
+		eachFuncV, err := json.Marshal(eachFunc)
 		if err != nil {
 			continue
 		}
@@ -113,7 +113,7 @@ func (t *tikvDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.Fun
 	}
 
 	eachFuncKey := toFuncCtxKey(fk.RevHash, fk.FileHash, f.GetSignature())
-	eachFuncV, err := f.ToJson()
+	eachFuncV, err := json.Marshal(f)
 	if err != nil {
 		return err
 	}

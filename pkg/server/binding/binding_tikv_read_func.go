@@ -68,7 +68,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	}
 	defer iter.Close()
 
-	var ret *sibyl2.FunctionWithPath
+	ret := &sibyl2.FunctionWithPath{}
 	for iter.Valid() {
 		k := string(iter.Key())
 		if strings.Contains(k, shouldContain) {

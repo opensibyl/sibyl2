@@ -248,5 +248,5 @@ func TestTikvFuncCtx(t *testing.T) {
 	// check its signature is valid
 	fws, err := tikvTestDriver.ReadFunctionWithSignature(wc, funcs[0].Calls[0], ctx)
 	assert.Nil(t, err)
-	assert.Equal(t, fws.Name, called.Units[0].Name)
+	assert.Equal(t, fws.Name, calledFunc.Name)
 }

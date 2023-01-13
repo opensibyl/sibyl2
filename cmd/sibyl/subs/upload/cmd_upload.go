@@ -9,7 +9,7 @@ import (
 func NewUploadCmd() *cobra.Command {
 	var uploadRepoId string
 	var uploadSrc string
-	var uploadLangType string
+	var uploadLangType []string
 	var uploadUrl string
 	var uploadWithCtx bool
 	var uploadWithClass bool
@@ -54,7 +54,7 @@ func NewUploadCmd() *cobra.Command {
 			if uploadSrc != defaultConf.Src {
 				config.Src = uploadSrc
 			}
-			if uploadLangType != defaultConf.Lang {
+			if len(uploadLangType) != 0 {
 				config.Lang = uploadLangType
 			}
 			if uploadUrl != defaultConf.Url {
@@ -98,7 +98,7 @@ func NewUploadCmd() *cobra.Command {
 	config := defaultConfig()
 	uploadCmd.PersistentFlags().StringVar(&uploadRepoId, "repoId", config.RepoId, "custom repo id")
 	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", config.Src, "src dir path")
-	uploadCmd.PersistentFlags().StringVar(&uploadLangType, "lang", config.Lang, "lang type of your source code")
+	uploadCmd.PersistentFlags().StringSliceVar(&uploadLangType, "lang", config.Lang, "lang type of your source code")
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", config.Url, "backend url")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithCtx, "withCtx", config.WithCtx, "with func context")
 	uploadCmd.PersistentFlags().BoolVar(&uploadWithClass, "withClass", config.WithClass, "with class")

@@ -110,15 +110,30 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploa
 	panicIfErr(err)
 
 	runner := &core.Runner{}
-	lang := core.LangUnknown
-	if c.Lang == "" {
+	var lang []string
+	if len(c.Lang) == 0 {
 		langFromDir, err := runner.GuessLangFromDir(c.Src, filterFunc)
 		panicIfErr(err)
-		lang = langFromDir
+		lang = []string{string(langFromDir)}
 	} else {
-		lang = core.LangType(c.Lang)
+		lang = c.Lang
+	}
+	if len(lang) == 0 {
+		panic(errors.New("no valid lang found"))
 	}
 
+	for _, eachLang := range lang {
+		eachLangType := core.LangTypeValueOf(eachLang)
+		if !eachLangType.IsSupported() {
+			core.Log.Warnf("lang %v not supported, supported list: %v", eachLangType, core.SupportedLangs)
+			continue
+		}
+		core.Log.Infof("scan lang: %v", eachLang)
+		execCurRevCurLangWithConfig(uploadSrc, core.LangType(eachLang), filterFunc, wc, c)
+	}
+}
+
+func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *uploadConfig) {
 	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
 		FileFilter: filterFunc,
 		LangType:   lang,

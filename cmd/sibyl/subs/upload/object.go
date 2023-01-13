@@ -13,13 +13,13 @@ const (
 )
 
 type SrcConfigPart struct {
-	RepoId       string `mapstructure:"repoId"`
-	Src          string `mapstructure:"src"`
-	Lang         string `mapstructure:"lang"`
-	WithCtx      bool   `mapstructure:"withCtx"`
-	WithClass    bool   `mapstructure:"withClass"`
-	IncludeRegex string `mapstructure:"includeRegex"`
-	ExcludeRegex string `mapstructure:"excludeRegex"`
+	RepoId       string   `mapstructure:"repoId"`
+	Src          string   `mapstructure:"src"`
+	Lang         []string `mapstructure:"lang"`
+	WithCtx      bool     `mapstructure:"withCtx"`
+	WithClass    bool     `mapstructure:"withClass"`
+	IncludeRegex string   `mapstructure:"includeRegex"`
+	ExcludeRegex string   `mapstructure:"excludeRegex"`
 }
 
 type ServerConfigPart struct {
@@ -56,7 +56,7 @@ func defaultConfig() *uploadConfig {
 		&SrcConfigPart{
 			RepoId:       "",
 			Src:          ".",
-			Lang:         "",
+			Lang:         []string{},
 			WithCtx:      true,
 			WithClass:    true,
 			IncludeRegex: "",

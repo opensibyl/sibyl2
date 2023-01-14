@@ -2,7 +2,7 @@
 
 > Bring your plain code alive with tiny effort.
 
-[中文文档](https://opensibyl.github.io/doc/)
+[中文文档](https://opensibyl.github.io/doc/docs/intro)
 
 ## Status
 
@@ -52,6 +52,7 @@ See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opens
 | Golang    | Yes      | Yes              | Yes   |
 | Java      | Yes      | Yes              | Yes   |
 | Python    | Yes      | Yes              | Yes   |
+| Kotlin    | Yes      | Yes              | Yes   |
 
 ## Examples of Usage
 
@@ -293,6 +294,13 @@ We have tested it on some famous repos, like [guava](https://github.com/google/g
 fast enough".
 
 See https://github.com/williamfzc/sibyl2/actions/workflows/perf.yml for details.
+
+| Language | Repo                                               | Cost |
+|----------|----------------------------------------------------|------|
+| Golang   | https://github.com/gin-gonic/gin.git               | ~1s  |
+| Java     | https://github.com/spring-projects/spring-boot.git | ~50s |
+| Python   | https://github.com/psf/requests                    | ~1s  |
+| Kotlin   | https://github.com/square/okhttp                   | ~1s  |
 
 ## Contribution
 

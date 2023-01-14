@@ -119,6 +119,18 @@ func TestMainScenario(t *testing.T) {
 		for _, each := range functionWithPaths {
 			core.Log.Infof("file %s hit func %s, ref: %d, refed: %d",
 				fileName, *each.Name, len(each.Calls), len(each.ReverseCalls))
+
+			// get all the calls details?
+			for _, eachCall := range each.Calls {
+				detail, _, err := apiClient.SignatureQueryApi.
+					ApiV1FuncWithSignatureGet(ctx).
+					Repo(projectName).
+					Rev(head.Hash().String()).
+					Signature(eachCall).
+					Execute()
+				assert.Nil(t, err)
+				core.Log.Infof("call: %v", detail)
+			}
 		}
 	}
 

@@ -64,3 +64,32 @@ func HandleFunctionQueryWithSignature(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, f)
 }
+
+// @Summary funcctx query
+// @Param   repo  query string true  "repo"
+// @Param   rev   query string true  "rev"
+// @Param   signature   query string true  "signature"
+// @Produce json
+// @Success 200 {object} sibyl2.FunctionContextSlim
+// @Router  /api/v1/funcctx/with/signature [get]
+// @Tags SignatureQuery
+func HandleFunctionContextQueryWithSignature(c *gin.Context) {
+	repo := c.Query("repo")
+	rev := c.Query("rev")
+	signature := c.Query("signature")
+
+	wc := &object.WorkspaceConfig{
+		RepoId:  repo,
+		RevHash: rev,
+	}
+	if err := wc.Verify(); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	f, err := sharedDriver.ReadFunctionContextWithSignature(wc, signature, sharedContext)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	c.JSON(http.StatusOK, f)
+}

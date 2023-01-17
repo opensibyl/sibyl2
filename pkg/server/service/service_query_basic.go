@@ -88,7 +88,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 // @Param   file  query string true  "file"
 // @Param   lines query string false "specific lines"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionContextSlim
+// @Success 200 {array} object.FunctionContextSlimWithSignature
 // @Router  /api/v1/funcctx [get]
 // @Tags BasicQuery
 func HandleFunctionContextsQuery(c *gin.Context) {
@@ -108,14 +108,18 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 		return
 	}
 
-	ctxs := make([]*sibyl2.FunctionContextSlim, 0)
+	ctxs := make([]*object.FunctionContextSlimWithSignature, 0)
 	for _, each := range ret {
 		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, sharedContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, fmt.Errorf("err when read with sign: %w", err))
 			return
 		}
-		ctxs = append(ctxs, funcCtx)
+		wrapper := &object.FunctionContextSlimWithSignature{
+			FunctionContextSlim: funcCtx,
+			Signature:           funcCtx.GetSignature(),
+		}
+		ctxs = append(ctxs, wrapper)
 	}
 	c.JSON(http.StatusOK, ctxs)
 }

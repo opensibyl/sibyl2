@@ -98,12 +98,3 @@ func (f *FunctionContext) ToSlim() *FunctionContextSlim {
 	}
 	return slim
 }
-
-func Json2FuncCtx(exported []byte) (*FunctionContext, error) {
-	f := &FunctionContext{}
-	err := json.Unmarshal(exported, &f)
-	if err != nil {
-		return nil, err
-	}
-	return f, nil
-}

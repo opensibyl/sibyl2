@@ -12,6 +12,11 @@ type FunctionWithSignature struct {
 	Signature string `json:"signature"`
 }
 
+type FunctionContextSlimWithSignature struct {
+	*sibyl2.FunctionContextSlim
+	Signature string `json:"signature"`
+}
+
 type FunctionUploadUnit struct {
 	WorkspaceConfig *WorkspaceConfig              `json:"workspace"`
 	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`

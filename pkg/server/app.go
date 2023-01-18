@@ -76,12 +76,13 @@ func Execute(config object.ExecuteConfig) {
 
 	// for CRUD
 	if needGateway {
-		// basic
+		// scope
 		v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
 		v1group.Handle(http.MethodDelete, "/repo", service.HandleRepoDelete)
 		v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
 		v1group.Handle(http.MethodDelete, "/rev", service.HandleRevDelete)
 		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
+		// basic
 		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
 		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionContextsQuery)
 		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzesQuery)

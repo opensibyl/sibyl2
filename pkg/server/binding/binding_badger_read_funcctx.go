@@ -46,8 +46,7 @@ func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, 
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			k := string(it.Item().Key())
-			flag := "funcctx|"
-			if !strings.Contains(k, flag) {
+			if !strings.Contains(k, funcctxEndPrefix) {
 				continue
 			}
 			err = it.Item().Value(func(val []byte) error {
@@ -92,9 +91,9 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 		it := txn.NewIterator(opts)
 
 		defer it.Close()
-		prefixStr := rk.ToScanPrefix() + "file_"
+		prefixStr := rk.ToScanPrefix() + fileSearchPrefix
 		prefix := []byte(prefixStr)
-		shouldContain := "funcctx|" + signature
+		shouldContain := funcctxEndPrefix + signature
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := string(item.Key())

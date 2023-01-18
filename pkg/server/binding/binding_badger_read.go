@@ -17,7 +17,7 @@ func (d *badgerDriver) readRawRevs() ([]*revKey, error) {
 		opts.PrefetchValues = false
 		it := txn.NewIterator(opts)
 		defer it.Close()
-		prefix := []byte(revPrefix)
+		prefix := []byte(revEndPrefix)
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := item.Key()
@@ -107,22 +107,21 @@ func (d *badgerDriver) ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Conte
 	rk := ToRevKey(key)
 
 	err = d.db.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.DefaultIteratorOptions)
-		defer it.Close()
-		prefix := []byte(rk.String())
-		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			item := it.Item()
-			err := item.Value(func(val []byte) error {
-				err := json.Unmarshal(val, ret)
-				if err != nil {
-					return fmt.Errorf("failed to unmarshal rev info: %w", err)
-				}
-				return nil
-			})
-			if err != nil {
-				return err
-			}
+		item, err := txn.Get([]byte(rk.String()))
+		if err != nil {
+			return err
 		}
+		err = item.Value(func(val []byte) error {
+			err := json.Unmarshal(val, ret)
+			if err != nil {
+				return fmt.Errorf("failed to unmarshal rev info: %w", err)
+			}
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+
 		return nil
 	})
 	if err != nil {

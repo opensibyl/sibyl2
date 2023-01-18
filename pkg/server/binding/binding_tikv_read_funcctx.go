@@ -36,8 +36,7 @@ func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, ru
 
 	for iter.Valid() {
 		k := string(iter.Key())
-		flag := "funcctx|"
-		if strings.Contains(k, flag) {
+		if strings.Contains(k, funcctxEndPrefix) {
 			rawFunc := iter.Value()
 			for rk, verify := range rule {
 				v := gjson.GetBytes(rawFunc, rk)
@@ -87,9 +86,9 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 	}
 	rk := ToRevKey(key)
 
-	prefixStr := rk.ToScanPrefix() + "file_"
+	prefixStr := rk.ToScanPrefix() + fileSearchPrefix
 	prefix := []byte(prefixStr)
-	shouldContain := "funcctx|" + signature
+	shouldContain := funcctxEndPrefix + signature
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))

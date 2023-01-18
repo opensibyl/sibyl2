@@ -22,7 +22,7 @@ func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 
 	searchResult := make([]*sibyl2.ClazzWithPath, 0)
 
-	prefixStr := fk.ToScanPrefix() + "clazz|"
+	prefixStr := fk.ToClazzScanPrefix()
 	prefix := []byte(prefixStr)
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
@@ -86,8 +86,7 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 
 	for iter.Valid() {
 		k := string(iter.Key())
-		flag := "clazz|"
-		if strings.Contains(k, flag) {
+		if strings.Contains(k, clazzEndPrefix) {
 			rawClazz := iter.Value()
 			for rk, verify := range rule {
 				v := gjson.GetBytes(rawClazz, rk)

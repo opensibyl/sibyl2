@@ -1,7 +1,6 @@
 package binding
 
 import (
-	"fmt"
 	"strings"
 )
 
@@ -17,18 +16,32 @@ mean:
 - _: connection
 */
 
-const revPrefix = "rev|"
+const (
+	revEndPrefix     = "rev" + flagEnd
+	revSearchPrefix  = "rev" + flagConnect
+	fileEndPrefix    = "file" + flagEnd
+	fileSearchPrefix = "file" + flagConnect
+	funcEndPrefix    = "func" + flagEnd
+	clazzEndPrefix   = "clazz" + flagEnd
+	funcctxEndPrefix = "funcctx" + flagEnd
+	flagConnect      = "_"
+	flagEnd          = "|"
+)
 
 type revKey struct {
 	Hash string
 }
 
 func (r *revKey) String() string {
-	return revPrefix + r.Hash
+	return revEndPrefix + r.Hash
 }
 
 func (r *revKey) ToScanPrefix() string {
-	return "rev_" + r.Hash + "_"
+	return revSearchPrefix + r.Hash + flagConnect
+}
+
+func (r *revKey) ToFileScanPrefix() string {
+	return r.ToScanPrefix() + fileSearchPrefix
 }
 
 func ToRevKey(revHash string) *revKey {
@@ -36,7 +49,7 @@ func ToRevKey(revHash string) *revKey {
 }
 
 func parseRevKey(raw string) *revKey {
-	return &revKey{strings.TrimPrefix(raw, revPrefix)}
+	return &revKey{strings.TrimPrefix(raw, revEndPrefix)}
 }
 
 type fileKey struct {
@@ -45,11 +58,19 @@ type fileKey struct {
 }
 
 func (f *fileKey) String() string {
-	return fmt.Sprintf("rev_%s_file|%s", f.RevHash, f.FileHash)
+	return revSearchPrefix + f.RevHash + flagConnect + fileEndPrefix + f.FileHash
 }
 
 func (f *fileKey) ToScanPrefix() string {
-	return fmt.Sprintf("rev_%s_file_%s_", f.RevHash, f.FileHash)
+	return revSearchPrefix + f.RevHash + flagConnect + fileSearchPrefix + f.FileHash + flagConnect
+}
+
+func (f *fileKey) ToClazzScanPrefix() string {
+	return f.ToScanPrefix() + clazzEndPrefix
+}
+
+func (f *fileKey) ToFuncScanPrefix() string {
+	return f.ToScanPrefix() + funcEndPrefix
 }
 
 func toFileKey(revHash string, fileHash string) *fileKey {
@@ -67,7 +88,7 @@ func toFuncKey(revHash string, fileHash string, funcHash string) *funcKey {
 }
 
 func (f *funcKey) String() string {
-	return fmt.Sprintf("rev_%s_file_%s_func|%s", f.revHash, f.fileHash, f.funcHash)
+	return revSearchPrefix + f.revHash + flagConnect + fileSearchPrefix + f.fileHash + flagConnect + funcEndPrefix + f.funcHash
 }
 
 type clazzKey struct {
@@ -81,7 +102,7 @@ func toClazzKey(revHash string, fileHash string, clazzHash string) *clazzKey {
 }
 
 func (c *clazzKey) String() string {
-	return fmt.Sprintf("rev_%s_file_%s_clazz|%s", c.revHash, c.fileHash, c.clazzHash)
+	return revSearchPrefix + c.revHash + flagConnect + fileSearchPrefix + c.fileHash + flagConnect + clazzEndPrefix + c.clazzHash
 }
 
 type funcCtxKey struct {
@@ -95,5 +116,5 @@ func toFuncCtxKey(revHash string, fileHash string, funcHash string) *funcCtxKey 
 }
 
 func (f *funcCtxKey) String() string {
-	return fmt.Sprintf("rev_%s_file_%s_funcctx|%s", f.revHash, f.fileHash, f.funcHash)
+	return revSearchPrefix + f.revHash + flagConnect + fileSearchPrefix + f.fileHash + flagConnect + funcctxEndPrefix + f.funcHash
 }

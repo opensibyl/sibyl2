@@ -13,7 +13,7 @@ import (
 
 func (t *tikvDriver) readRawRevs() ([]*revKey, error) {
 	snapshot := t.client.GetSnapshot(math.MaxUint64)
-	keyByte := []byte(revPrefix)
+	keyByte := []byte(revEndPrefix)
 	iter, err := snapshot.Iter(keyByte, nil)
 	if err != nil {
 		return nil, err

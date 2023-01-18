@@ -25,7 +25,7 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ co
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 
-		prefixStr := curFileKey.ToScanPrefix() + "clazz|"
+		prefixStr := curFileKey.ToClazzScanPrefix()
 		prefix := []byte(prefixStr)
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
@@ -84,8 +84,7 @@ func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			k := string(it.Item().Key())
-			flag := "clazz|"
-			if !strings.Contains(k, flag) {
+			if !strings.Contains(k, clazzEndPrefix) {
 				continue
 			}
 			err = it.Item().Value(func(val []byte) error {

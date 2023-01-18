@@ -32,9 +32,8 @@ func (t *tikvDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig,
 
 	for iter.Valid() {
 		k := string(iter.Key())
-		flag := "func|"
-		if strings.Contains(k, flag) {
-			_, after, _ := strings.Cut(k, flag)
+		if strings.Contains(k, funcEndPrefix) {
+			_, after, _ := strings.Cut(k, funcEndPrefix)
 			if compiled.MatchString(after) {
 				searchResult = append(searchResult, after)
 			}
@@ -50,6 +49,7 @@ func (t *tikvDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig,
 	}
 	return searchResult, nil
 }
+
 func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
@@ -57,9 +57,9 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	}
 	rk := ToRevKey(key)
 
-	prefixStr := rk.ToScanPrefix() + "file_"
+	prefixStr := rk.ToScanPrefix() + fileSearchPrefix
 	prefix := []byte(prefixStr)
-	shouldContain := "func|" + signature
+	shouldContain := funcEndPrefix + signature
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
@@ -88,6 +88,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	// did not find anything
 	return nil, nil
 }
+
 func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error) {
 	functions, err := t.ReadFunctions(wc, path, ctx)
 	if err != nil {
@@ -112,7 +113,7 @@ func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ co
 
 	searchResult := make([]*sibyl2.FunctionWithPath, 0)
 
-	prefixStr := fk.ToScanPrefix() + "func|"
+	prefixStr := fk.ToFuncScanPrefix()
 	prefix := []byte(prefixStr)
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
@@ -162,8 +163,7 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 
 	for iter.Valid() {
 		k := string(iter.Key())
-		flag := "func|"
-		if strings.Contains(k, flag) {
+		if strings.Contains(k, funcEndPrefix) {
 			rawFunc := iter.Value()
 			for rk, verify := range rule {
 				v := gjson.GetBytes(rawFunc, rk)

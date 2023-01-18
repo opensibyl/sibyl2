@@ -33,9 +33,8 @@ func (d *badgerDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfi
 		prefix := []byte(ToRevKey(key).ToScanPrefix())
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			k := string(it.Item().Key())
-			flag := "func|"
-			if strings.Contains(k, flag) {
-				_, after, _ := strings.Cut(k, flag)
+			if strings.Contains(k, funcEndPrefix) {
+				_, after, _ := strings.Cut(k, funcEndPrefix)
 				if compiled.MatchString(after) {
 					searchResult = append(searchResult, after)
 				}
@@ -60,7 +59,7 @@ func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ 
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
-		prefixStr := fk.ToScanPrefix() + "func|"
+		prefixStr := fk.ToFuncScanPrefix()
 		prefix := []byte(prefixStr)
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			f := &sibyl2.FunctionWithPath{}
@@ -103,8 +102,7 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 		prefix := []byte(ToRevKey(key).ToScanPrefix())
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			k := string(it.Item().Key())
-			flag := "func|"
-			if !strings.Contains(k, flag) {
+			if !strings.Contains(k, funcEndPrefix) {
 				continue
 			}
 			err = it.Item().Value(func(val []byte) error {
@@ -147,9 +145,9 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
-		prefixStr := rk.ToScanPrefix() + "file_"
+		prefixStr := rk.ToFileScanPrefix()
 		prefix := []byte(prefixStr)
-		shouldContain := "_func|" + signature
+		shouldContain := funcEndPrefix + signature
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := string(item.Key())

@@ -37,6 +37,8 @@ Rule
 Rule is a query structure implemented with regex and gjson syntax.
 - key: gjson path syntax
 - value: verify function
+
+full serialization is expensive.
 */
 type Rule = map[string]func(string) bool
 

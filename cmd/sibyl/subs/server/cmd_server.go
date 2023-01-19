@@ -59,7 +59,10 @@ func NewServerCmd() *cobra.Command {
 				core.Log.Warnf("failed to write config back")
 			}
 
-			server.Execute(config)
+			err = server.Execute(config)
+			if err != nil {
+				panic(err)
+			}
 		},
 	}
 

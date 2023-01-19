@@ -8,7 +8,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
-// @Summary repo query
+// @Summary query all the repos
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/repo [get]
@@ -51,7 +51,7 @@ func HandleRepoDelete(c *gin.Context) {
 	c.JSON(http.StatusOK, revs)
 }
 
-// @Summary rev query
+// @Summary rev query by repo name
 // @Param   repo query string true "rev search by repo"
 // @Produce json
 // @Success 200 {array} string
@@ -67,7 +67,7 @@ func HandleRevQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, revs)
 }
 
-// @Summary rev delte
+// @Summary rev delete
 // @Param   repo query string true "repo"
 // @Param   rev  query string true "rev"
 // @Produce json
@@ -94,7 +94,7 @@ func HandleRevDelete(c *gin.Context) {
 	c.JSON(http.StatusOK, nil)
 }
 
-// @Summary file query
+// @Summary file query by repo and rev
 // @Param   repo query string true "repo"
 // @Param   rev  query string true "rev"
 // @Param   includeRegex  query string false "includeRegex"

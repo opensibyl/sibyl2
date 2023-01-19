@@ -117,6 +117,7 @@ func injectV1Group(v1group *gin.RouterGroup) {
 	signatureGroup.Handle(http.MethodGet, "/regex/func", service.HandleSignatureRegexFunc)
 	signatureGroup.Handle(http.MethodGet, "/func", service.HandleSignatureFunc)
 	signatureGroup.Handle(http.MethodGet, "/funcctx", service.HandleSignatureFuncctx)
+	signatureGroup.Handle(http.MethodGet, "/funcctx/chain", service.HandleSignatureFuncctxChain)
 	signatureGroup.Handle(http.MethodGet, "/funcctx/rchain", service.HandleSignatureFuncctxReverseChain)
 	// query by regex
 	regexGroup := v1group.Group("regex")

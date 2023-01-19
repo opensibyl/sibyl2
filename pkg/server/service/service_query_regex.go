@@ -18,9 +18,9 @@ import (
 // @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionWithPath
-// @Router  /api/v1/func/with/regex [get]
+// @Router  /api/v1/regex/func [get]
 // @Tags RegexQuery
-func HandleFunctionQueryWithRegex(c *gin.Context) {
+func HandleRegexFunc(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	field := c.Query("field")
@@ -62,9 +62,9 @@ func HandleFunctionQueryWithRegex(c *gin.Context) {
 // @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.ClazzWithPath
-// @Router  /api/v1/clazz/with/regex [get]
+// @Router  /api/v1/regex/clazz [get]
 // @Tags RegexQuery
-func HandleClazzQueryWithRegex(c *gin.Context) {
+func HandleRegexClazz(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	field := c.Query("field")
@@ -106,9 +106,9 @@ func HandleClazzQueryWithRegex(c *gin.Context) {
 // @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContext
-// @Router  /api/v1/funcctx/with/regex [get]
+// @Router  /api/v1/regex/funcctx [get]
 // @Tags RegexQuery
-func HandleFuncCtxQueryWithRegex(c *gin.Context) {
+func HandleRegexFuncctx(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	field := c.Query("field")

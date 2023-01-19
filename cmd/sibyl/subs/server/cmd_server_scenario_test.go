@@ -123,7 +123,7 @@ func TestMainScenario(t *testing.T) {
 			// get all the calls details?
 			for _, eachCall := range each.Calls {
 				detail, _, err := apiClient.SignatureQueryApi.
-					ApiV1FuncWithSignatureGet(ctx).
+					ApiV1SignatureFuncGet(ctx).
 					Repo(projectName).
 					Rev(head.Hash().String()).
 					Signature(eachCall).
@@ -136,7 +136,7 @@ func TestMainScenario(t *testing.T) {
 
 	// scenario 2: specific global search
 	functionWithPaths, _, err := apiClient.RegexQueryApi.
-		ApiV1FuncWithRegexGet(ctx).
+		ApiV1RegexFuncGet(ctx).
 		Repo(projectName).
 		Rev(head.Hash().String()).
 		Field("name").
@@ -150,7 +150,7 @@ func TestMainScenario(t *testing.T) {
 
 	// scenario 3: hot functions
 	fc, _, err := apiClient.ReferenceQueryApi.
-		ApiV1FuncctxWithReferencedCountGet(ctx).
+		ApiV1ReferenceCountFuncctxReverseGet(ctx).
 		Repo(projectName).
 		Rev(head.Hash().String()).
 		MoreThan(10).

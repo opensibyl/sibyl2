@@ -13,9 +13,9 @@ import (
 // @Param   regex   query string true  "regex"
 // @Produce json
 // @Success 200 {array} string
-// @Router  /api/v1/func/signature [get]
+// @Router  /api/v1/signature/regex/func [get]
 // @Tags SignatureQuery
-func HandleFunctionSignaturesQuery(c *gin.Context) {
+func HandleSignatureRegexFunc(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	regex := c.Query("regex")
@@ -42,9 +42,9 @@ func HandleFunctionSignaturesQuery(c *gin.Context) {
 // @Param   signature   query string true  "signature"
 // @Produce json
 // @Success 200 {object} sibyl2.FunctionWithPath
-// @Router  /api/v1/func/with/signature [get]
+// @Router  /api/v1/signature/func [get]
 // @Tags SignatureQuery
-func HandleFunctionQueryWithSignature(c *gin.Context) {
+func HandleSignatureFunc(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	signature := c.Query("signature")
@@ -71,9 +71,9 @@ func HandleFunctionQueryWithSignature(c *gin.Context) {
 // @Param   signature   query string true  "signature"
 // @Produce json
 // @Success 200 {object} sibyl2.FunctionContextSlim
-// @Router  /api/v1/funcctx/with/signature [get]
+// @Router  /api/v1/signature/funcctx [get]
 // @Tags SignatureQuery
-func HandleFunctionContextQueryWithSignature(c *gin.Context) {
+func HandleSignatureFuncctx(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	signature := c.Query("signature")

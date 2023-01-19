@@ -54,9 +54,9 @@ func (t *ContextTree) AddChain(chain []string) {
 // @Param   depth   query string true  "depth"
 // @Produce json
 // @Success 200 {object} FunctionContextReverseChain
-// @Router  /api/v1/funcctx/rchain/with/signature [get]
+// @Router  /api/v1/signature/funcctx/rchain [get]
 // @Tags SignatureQuery
-func HandleFunctionContextReverseChainQueryWithSignature(c *gin.Context) {
+func HandleSignatureFuncctxReverseChain(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
 	signature := c.Query("signature")

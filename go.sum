@@ -373,8 +373,8 @@ github.com/modern-go/reflect2 v1.0.2/go.mod h1:yWuevngMOJpCy52FWWMvUC8ws7m/LJsjY
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
-github.com/opensibyl/sibyl-go-client v0.0.0-20230113154101-4e0d60c29a0d h1:SzNtGHdF09FvQHXF5Uz6E9XGZE9SqQ8UBmNW2zl7rHU=
-github.com/opensibyl/sibyl-go-client v0.0.0-20230113154101-4e0d60c29a0d/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
+github.com/opensibyl/sibyl-go-client v0.0.0-20230119061729-52bf01908f53 h1:9E3DQTMiKC3H8sCFUGEBBKUECN+JHiEoqQP/D6axxgY=
+github.com/opensibyl/sibyl-go-client v0.0.0-20230119061729-52bf01908f53/go.mod h1:JULBsQp2/F4n6/JXbisEkKxWVAfm/XL7qxESt2wkqQY=
 github.com/opentracing/opentracing-go v1.1.0/go.mod h1:UkNAQd3GIcIGf0SeVgPpRdFStlNbqXla1AfSYxPUl2o=
 github.com/opentracing/opentracing-go v1.2.0 h1:uEJPy/1a5RIPAJ0Ov+OIO8OxWu77jEv+1B0VhjKrZUs=
 github.com/opentracing/opentracing-go v1.2.0/go.mod h1:GxEUsuufX4nBwe+T+Wl9TAgYrxe9dPLANfrWvHYVTgc=

@@ -72,36 +72,48 @@ func Execute(config object.ExecuteConfig) {
 
 	// webserver start up
 	engine := gin.Default()
-	v1group := engine.Group("/api/v1")
 
 	// for CRUD
 	if needGateway {
+		// NOTICE:
+		// I did not maintain a controller layer like spring for clear arch.
+		// I will add it when we really need v2 api.
+		v1group := engine.Group("/api/v1")
+
 		// scope
-		v1group.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
-		v1group.Handle(http.MethodDelete, "/repo", service.HandleRepoDelete)
-		v1group.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
-		v1group.Handle(http.MethodDelete, "/rev", service.HandleRevDelete)
-		v1group.Handle(http.MethodGet, "/file", service.HandleFileQuery)
-		// basic
-		v1group.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
-		v1group.Handle(http.MethodGet, "/funcctx", service.HandleFunctionContextsQuery)
-		v1group.Handle(http.MethodGet, "/clazz", service.HandleClazzesQuery)
+		scopeGroup := v1group.Group("/")
+		scopeGroup.Handle(http.MethodGet, "/repo", service.HandleRepoQuery)
+		scopeGroup.Handle(http.MethodDelete, "/repo", service.HandleRepoDelete)
+		scopeGroup.Handle(http.MethodGet, "/rev", service.HandleRevQuery)
+		scopeGroup.Handle(http.MethodDelete, "/rev", service.HandleRevDelete)
+		scopeGroup.Handle(http.MethodGet, "/file", service.HandleFileQuery)
 		// upload
-		v1group.Handle(http.MethodPost, "/func", service.HandleFunctionUpload)
-		v1group.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
-		v1group.Handle(http.MethodPost, "/clazz", service.HandleClazzUpload)
+		uploadGroup := v1group.Group("/")
+		uploadGroup.Handle(http.MethodPost, "/func", service.HandleFunctionUpload)
+		uploadGroup.Handle(http.MethodPost, "/funcctx", service.HandleFunctionContextUpload)
+		uploadGroup.Handle(http.MethodPost, "/clazz", service.HandleClazzUpload)
+		// basic
+		basicGroup := v1group.Group("/")
+		basicGroup.Handle(http.MethodGet, "/func", service.HandleFunctionsQuery)
+		basicGroup.Handle(http.MethodGet, "/funcctx", service.HandleFunctionContextsQuery)
+		basicGroup.Handle(http.MethodGet, "/clazz", service.HandleClazzesQuery)
+
 		// query by signature
-		v1group.Handle(http.MethodGet, "/func/signature", service.HandleFunctionSignaturesQuery)
-		v1group.Handle(http.MethodGet, "/func/with/signature", service.HandleFunctionQueryWithSignature)
-		v1group.Handle(http.MethodGet, "/funcctx/with/signature", service.HandleFunctionContextQueryWithSignature)
-		v1group.Handle(http.MethodGet, "/funcctx/rchain/with/signature", service.HandleFunctionContextReverseChainQueryWithSignature)
+		signatureGroup := v1group.Group("signature")
+		signatureGroup.Handle(http.MethodGet, "/regex/func", service.HandleSignatureRegexFunc)
+		signatureGroup.Handle(http.MethodGet, "/func", service.HandleSignatureFunc)
+		signatureGroup.Handle(http.MethodGet, "/funcctx", service.HandleSignatureFuncctx)
+		signatureGroup.Handle(http.MethodGet, "/funcctx/rchain", service.HandleSignatureFuncctxReverseChain)
 		// query by regex
-		v1group.Handle(http.MethodGet, "/func/with/regex", service.HandleFunctionQueryWithRegex)
-		v1group.Handle(http.MethodGet, "/clazz/with/regex", service.HandleClazzQueryWithRegex)
-		v1group.Handle(http.MethodGet, "/funcctx/with/regex", service.HandleFuncCtxQueryWithRegex)
+		regexGroup := v1group.Group("regex")
+		regexGroup.Handle(http.MethodGet, "/func", service.HandleRegexFunc)
+		regexGroup.Handle(http.MethodGet, "/clazz", service.HandleRegexClazz)
+		regexGroup.Handle(http.MethodGet, "/funcctx", service.HandleRegexFuncctx)
 		// query by reference
-		v1group.Handle(http.MethodGet, "/funcctx/with/reference/count", service.HandleFunctionContextQueryWithReferenceCount)
-		v1group.Handle(http.MethodGet, "/funcctx/with/referenced/count", service.HandleFunctionContextQueryWithReferencedCount)
+		referenceGroup := v1group.Group("reference")
+		countGroup := referenceGroup.Group("count")
+		countGroup.Handle(http.MethodGet, "/funcctx", service.HandleReferenceCountFuncctx)
+		countGroup.Handle(http.MethodGet, "/funcctx/reverse", service.HandleReferenceCountFuncctxReverse)
 		// query by stat
 		v1group.Handle(http.MethodGet, "/rev/stat", service.HandleRevStatQuery)
 	}

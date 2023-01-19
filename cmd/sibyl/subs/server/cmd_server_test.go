@@ -79,16 +79,16 @@ func TestServer(t *testing.T) {
 		panic(err)
 	}
 
-	signatures, _, err := apiClient.SignatureQueryApi.ApiV1FuncSignatureGet(ctx).Repo(repo).Rev(rev).Regex(".*").Execute()
+	signatures, _, err := apiClient.SignatureQueryApi.ApiV1SignatureRegexFuncGet(ctx).Repo(repo).Rev(rev).Regex(".*").Execute()
 	assert.Nil(t, err)
 	assert.NotEqual(t, 0, len(signatures))
-	f, _, err := apiClient.SignatureQueryApi.ApiV1FuncWithSignatureGet(ctx).Repo(repo).Rev(rev).Signature(signatures[0]).Execute()
+	f, _, err := apiClient.SignatureQueryApi.ApiV1SignatureFuncGet(ctx).Repo(repo).Rev(rev).Signature(signatures[0]).Execute()
 	assert.Nil(t, err)
 	assert.NotNil(t, f)
 
 	assert.Nil(t, err)
 	fwr, _, err := apiClient.RegexQueryApi.
-		ApiV1FuncWithRegexGet(ctx).
+		ApiV1RegexFuncGet(ctx).
 		Repo(repo).
 		Rev(rev).
 		Field("name").
@@ -101,7 +101,7 @@ func TestServer(t *testing.T) {
 	}
 
 	cwr, _, err := apiClient.RegexQueryApi.
-		ApiV1ClazzWithRegexGet(ctx).
+		ApiV1RegexClazzGet(ctx).
 		Repo(repo).
 		Rev(rev).
 		Field("name").
@@ -111,7 +111,7 @@ func TestServer(t *testing.T) {
 	assert.NotEqual(t, 0, len(cwr))
 
 	fcwr, _, err := apiClient.RegexQueryApi.
-		ApiV1FuncctxWithRegexGet(ctx).
+		ApiV1RegexFuncctxGet(ctx).
 		Repo(repo).
 		Rev(rev).
 		Field("name").

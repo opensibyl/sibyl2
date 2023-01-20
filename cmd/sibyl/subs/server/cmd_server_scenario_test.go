@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os/signal"
 	"strconv"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 
@@ -63,13 +65,12 @@ diff --git a/pkg/core/unit.go b/pkg/core/unit.go
 `
 
 func TestMainScenario(t *testing.T) {
-	ctx := context.Background()
-
 	cmd := NewServerCmd()
 	b := bytes.NewBufferString("")
 	cmd.SetOut(b)
 
 	// run server
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	go cmd.ExecuteContext(ctx)
 
 	// git prepare
@@ -195,4 +196,9 @@ func TestMainScenario(t *testing.T) {
 		Execute()
 	assert.Nil(t, err)
 	assert.NotEmpty(t, fc)
+
+	t.Cleanup(func() {
+		stop()
+		time.Sleep(200 * time.Millisecond)
+	})
 }

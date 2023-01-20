@@ -3,6 +3,8 @@ package server
 import (
 	"bytes"
 	"context"
+	"os/signal"
+	"syscall"
 	"testing"
 	"time"
 
@@ -18,7 +20,7 @@ func TestServer(t *testing.T) {
 	cmd.SetOut(b)
 
 	// run server
-	ctx := context.Background()
+	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	go cmd.ExecuteContext(ctx)
 
 	// do the upload first
@@ -122,4 +124,9 @@ func TestServer(t *testing.T) {
 	for _, each := range fcwr {
 		assert.Contains(t, *each.Name, "Handle")
 	}
+
+	t.Cleanup(func() {
+		stop()
+		time.Sleep(200 * time.Millisecond)
+	})
 }

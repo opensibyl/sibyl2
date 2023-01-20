@@ -1,6 +1,9 @@
 package server
 
 import (
+	"os/signal"
+	"syscall"
+
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
@@ -59,7 +62,10 @@ func NewServerCmd() *cobra.Command {
 				core.Log.Warnf("failed to write config back")
 			}
 
-			err = server.Execute(config)
+			ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
+			defer stop()
+
+			err = server.Execute(config, ctx)
 			if err != nil {
 				panic(err)
 			}

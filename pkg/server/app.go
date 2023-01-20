@@ -25,16 +25,15 @@ import (
 // @contact.url    https://github.com/williamfzc
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
-func Execute(config object.ExecuteConfig) error {
+func Execute(config object.ExecuteConfig, ctx context.Context) error {
 	configStr, err := config.ToJson()
 	if err != nil {
 		core.Log.Errorf("parse config to string failed: %v", err)
 		return err
 	}
 
+	defer core.Log.Infof("sibyl everything down")
 	core.Log.Infof("started with config: %s", configStr)
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
 
 	/*
 		server mode: everything
@@ -59,10 +58,18 @@ func Execute(config object.ExecuteConfig) error {
 		core.Log.Errorf("failed to create binding: %v", err)
 		return err
 	}
-	defer sharedDriver.DeferDriver()
+	defer func() {
+		sharedDriver.DeferDriver()
+		core.Log.Infof("shared driver down")
+	}()
+
 	// queue is always required for submit
 	mq := queue.InitQueue(config, ctx)
-	defer mq.Defer()
+	defer func() {
+		mq.Defer()
+		core.Log.Infof("mq down")
+	}()
+
 	service.InitService(config, ctx, sharedDriver, mq)
 
 	// worker start up
@@ -85,9 +92,21 @@ func Execute(config object.ExecuteConfig) error {
 	opsGroup := engine.Group("/ops")
 	injectOpsGroup(opsGroup)
 
-	err = engine.Run(fmt.Sprintf(":%d", config.Port))
+	// https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/notify-with-context/server.go
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", config.Port),
+		Handler: engine,
+	}
+
+	go func() {
+		err = srv.ListenAndServe()
+		if err != nil {
+			core.Log.Errorf("sibyl server down: %s", err.Error())
+		}
+	}()
+	<-ctx.Done()
+	err = srv.Shutdown(context.Background())
 	if err != nil {
-		core.Log.Errorf("failed to start repoctor_receiver: %s", err.Error())
 		return err
 	}
 	return nil

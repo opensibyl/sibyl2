@@ -159,7 +159,7 @@ func TestMainScenario(t *testing.T) {
 
 	t.Cleanup(func() {
 		stop()
-		time.Sleep(200 * time.Millisecond)
+		time.Sleep(1000 * time.Millisecond)
 	})
 }
 

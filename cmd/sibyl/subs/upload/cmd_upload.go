@@ -7,6 +7,7 @@ import (
 )
 
 func NewUploadCmd() *cobra.Command {
+	var uploadConfigFile string
 	var uploadRepoId string
 	var uploadSrc string
 	var uploadLangType []string
@@ -27,16 +28,20 @@ func NewUploadCmd() *cobra.Command {
 			defaultConf := defaultConfig()
 
 			// read from config
-			viper.AddConfigPath(configPath)
-			viper.SetConfigFile(configFile)
 			viper.SetConfigType(configType)
+			if uploadConfigFile != "" {
+				core.Log.Infof("specific config file: %s", uploadConfigFile)
+				viper.SetConfigFile(uploadConfigFile)
+			} else {
+				viper.AddConfigPath(configPath)
+				viper.SetConfigName(configFile)
+			}
 
-			core.Log.Infof("trying to read config from: %s/%s", configPath, configFile)
 			err := viper.ReadInConfig()
 			if err != nil {
-				core.Log.Warnf("no config file found, use default")
+				core.Log.Warnf("no config file found, use default: %v", err)
 			} else {
-				core.Log.Infof("found config file")
+				core.Log.Infof("found config file: %s", viper.ConfigFileUsed())
 				err = viper.Unmarshal(config)
 				core.Log.Infof("config from file: %v", viper.AllSettings())
 
@@ -96,6 +101,7 @@ func NewUploadCmd() *cobra.Command {
 	}
 
 	config := defaultConfig()
+	uploadCmd.PersistentFlags().StringVar(&uploadConfigFile, "config", "", "config file path")
 	uploadCmd.PersistentFlags().StringVar(&uploadRepoId, "repoId", config.RepoId, "custom repo id")
 	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", config.Src, "src dir path")
 	uploadCmd.PersistentFlags().StringSliceVar(&uploadLangType, "lang", config.Lang, "lang type of your source code")

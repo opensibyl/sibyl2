@@ -8,7 +8,7 @@ import (
 
 const (
 	configPath = "."
-	configFile = "sibyl-upload-config.json"
+	configFile = "sibyl-upload-config"
 	configType = "json"
 )
 

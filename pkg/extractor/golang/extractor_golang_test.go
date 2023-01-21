@@ -33,6 +33,7 @@ func Abcd[T DataType](result *BaseFileResult[T]) []T {
 `
 
 func TestGolangExtractor_ExtractFunctions(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangGo)
 	units, err := parser.Parse([]byte(goCode))
 	if err != nil {
@@ -56,6 +57,7 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 }
 
 func TestGolangExtractor_Serialize(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangGo)
 	units, err := parser.Parse([]byte(goCode))
 	if err != nil {
@@ -91,6 +93,7 @@ func TestGolangExtractor_Serialize(t *testing.T) {
 }
 
 func TestExtractor_ExtractClasses(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangGo)
 	units, err := parser.Parse([]byte(goCode))
 	assert.Nil(t, err)

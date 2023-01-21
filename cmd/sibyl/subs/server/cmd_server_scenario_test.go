@@ -51,10 +51,13 @@ func TestMainScenario(t *testing.T) {
 
 	t.Run("scenario_1_diff_analysis", func(t *testing.T) {
 		// scenario 1: diff analysis
-		affectedFileMap, err := ext.Unified2Affected([]byte(diffPlain))
-		if err != nil {
-			panic(err)
+		// assume that we have edited these lines
+		affectedFileMap := map[string][]int{
+			"pkg/core/parser.go": {4, 89, 90, 91, 92, 93, 94, 95, 96},
+			"pkg/core/unit.go":   {27, 28, 29},
 		}
+		// or you can create this map from git diff easily
+		_, _ = ext.Unified2Affected([]byte(diffPlain))
 
 		for fileName, lineList := range affectedFileMap {
 			strLineList := make([]string, 0, len(lineList))
@@ -62,7 +65,7 @@ func TestMainScenario(t *testing.T) {
 				strLineList = append(strLineList, strconv.Itoa(each))
 			}
 
-			functionWithPaths, _, err := apiClient.BasicQueryApi.
+			affectedFunctions, _, err := apiClient.BasicQueryApi.
 				ApiV1FuncctxGet(ctx).
 				Repo(projectName).
 				Rev(head.Hash().String()).
@@ -70,15 +73,15 @@ func TestMainScenario(t *testing.T) {
 				Lines(strings.Join(strLineList, ",")).
 				Execute()
 			assert.Nil(t, err)
-			assert.NotEmpty(t, functionWithPaths)
+			assert.NotEmpty(t, affectedFunctions)
 
-			for _, eachFunc := range functionWithPaths {
+			for _, eachFunc := range affectedFunctions {
 				core.Log.Infof("file %s hit func %s, ref: %d, refed: %d",
 					fileName, *eachFunc.Name, len(eachFunc.Calls), len(eachFunc.ReverseCalls))
 			}
 
 			// query their reverse call chains?
-			for _, eachFunc := range functionWithPaths {
+			for _, eachFunc := range affectedFunctions {
 				chain, _, err := apiClient.SignatureQueryApi.
 					ApiV1SignatureFuncctxRchainGet(ctx).
 					Repo(projectName).
@@ -112,7 +115,7 @@ func TestMainScenario(t *testing.T) {
 				assert.NotNil(t, chain)
 			}
 
-			for _, eachFunc := range functionWithPaths {
+			for _, eachFunc := range affectedFunctions {
 				// get all the calls details?
 				for _, eachCall := range eachFunc.Calls {
 					detail, _, err := apiClient.SignatureQueryApi.

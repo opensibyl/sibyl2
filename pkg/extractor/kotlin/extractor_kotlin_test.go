@@ -50,6 +50,7 @@ func TestDfsOnly(t *testing.T) {
 }
 
 func TestExtractor_ExtractSymbols(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangKotlin)
 	units, err := parser.Parse([]byte(kotlinCode))
 	if err != nil {
@@ -63,6 +64,7 @@ func TestExtractor_ExtractSymbols(t *testing.T) {
 }
 
 func TestExtractor_ExtractFunctions(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangKotlin)
 	units, err := parser.Parse([]byte(kotlinCode))
 	if err != nil {
@@ -76,6 +78,7 @@ func TestExtractor_ExtractFunctions(t *testing.T) {
 }
 
 func TestExtractor_ExtractClasses(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangKotlin)
 	units, err := parser.Parse([]byte(kotlinCode))
 	if err != nil {

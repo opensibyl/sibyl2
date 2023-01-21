@@ -42,6 +42,7 @@ func NewParser(lang *sitter.Language) *Parser {
 `
 
 func TestParser_Parse_Java(t *testing.T) {
+	t.Parallel()
 	parser := NewParser(LangJava)
 	_, err := parser.Parse([]byte(javaCode))
 	if err != nil {
@@ -50,6 +51,7 @@ func TestParser_Parse_Java(t *testing.T) {
 }
 
 func TestParser_Parse_Golang(t *testing.T) {
+	t.Parallel()
 	parser := NewParser(LangGo)
 	_, err := parser.Parse([]byte(goCode))
 	if err != nil {

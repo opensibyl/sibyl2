@@ -42,6 +42,7 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
 `
 
 func TestJavaExtractor_ExtractSymbols(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangJava)
 	units, err := parser.Parse([]byte(javaCode))
 	if err != nil {
@@ -55,6 +56,7 @@ func TestJavaExtractor_ExtractSymbols(t *testing.T) {
 }
 
 func TestJavaExtractor_ExtractFunctions(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangJava)
 	units, err := parser.Parse([]byte(javaCode))
 	if err != nil {
@@ -77,6 +79,7 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 }
 
 func TestExtractor_ExtractClasses(t *testing.T) {
+	t.Parallel()
 	parser := core.NewParser(core.LangJava)
 	units, err := parser.Parse([]byte(javaCode))
 	if err != nil {

@@ -3,6 +3,7 @@ package core
 import "testing"
 
 func TestSpan_HasInteraction(t *testing.T) {
+	t.Parallel()
 	a := &Span{
 		Start: Point{
 			1,

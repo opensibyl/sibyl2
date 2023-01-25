@@ -4,6 +4,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/golang"
 	"github.com/opensibyl/sibyl2/pkg/extractor/java"
+	"github.com/opensibyl/sibyl2/pkg/extractor/javascript"
 	"github.com/opensibyl/sibyl2/pkg/extractor/kotlin"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 	"github.com/opensibyl/sibyl2/pkg/extractor/python"
@@ -67,6 +68,8 @@ func GetExtractor(lang core.LangType) Extractor {
 		return &python.Extractor{}
 	case core.LangKotlin:
 		return &kotlin.Extractor{}
+	case core.LangJavaScript:
+		return &javascript.Extractor{}
 	}
 	return nil
 }
@@ -75,5 +78,3 @@ type Function = object.Function
 type Symbol = object.Symbol
 type Call = object.Call
 type Clazz = object.Clazz
-
-var Map2Func = object.Map2Func

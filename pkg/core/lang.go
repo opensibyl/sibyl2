@@ -6,6 +6,7 @@ import (
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
 	"github.com/smacker/go-tree-sitter/java"
+	"github.com/smacker/go-tree-sitter/javascript"
 	"github.com/smacker/go-tree-sitter/kotlin"
 	"github.com/smacker/go-tree-sitter/python"
 	"golang.org/x/exp/slices"
@@ -14,11 +15,12 @@ import (
 type LangType string
 
 const (
-	LangJava    LangType = "JAVA"
-	LangGo      LangType = "GOLANG"
-	LangPython  LangType = "PYTHON"
-	LangKotlin  LangType = "KOTLIN"
-	LangUnknown LangType = "UNKNOWN"
+	LangJava       LangType = "JAVA"
+	LangGo         LangType = "GOLANG"
+	LangPython     LangType = "PYTHON"
+	LangKotlin     LangType = "KOTLIN"
+	LangJavaScript LangType = "JAVASCRIPT"
+	LangUnknown    LangType = "UNKNOWN"
 )
 
 var SupportedLangs = []LangType{
@@ -26,6 +28,7 @@ var SupportedLangs = []LangType{
 	LangGo,
 	LangPython,
 	LangKotlin,
+	LangJavaScript,
 }
 
 func (langType LangType) IsSupported() bool {
@@ -46,12 +49,15 @@ func LangTypeValueOf(raw string) LangType {
 		return LangPython
 	case LangKotlin.GetValue():
 		return LangKotlin
+	case LangJavaScript.GetValue():
+		return LangJavaScript
 	default:
 		return LangUnknown
 	}
 }
 
 func (langType LangType) GetLanguage() *sitter.Language {
+	// look up parser from tree-sitter
 	switch langType {
 	case LangJava:
 		return java.GetLanguage()
@@ -61,6 +67,8 @@ func (langType LangType) GetLanguage() *sitter.Language {
 		return python.GetLanguage()
 	case LangKotlin:
 		return kotlin.GetLanguage()
+	case LangJavaScript:
+		return javascript.GetLanguage()
 	}
 	return nil
 }
@@ -75,6 +83,8 @@ func (langType LangType) GetFileSuffix() string {
 		return ".py"
 	case LangKotlin:
 		return ".kt"
+	case LangJavaScript:
+		return ".js"
 	}
 	return ""
 }

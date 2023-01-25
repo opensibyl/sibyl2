@@ -23,7 +23,7 @@ jobs:
         run: |
           go install github.com/swaggo/swag/cmd/swag@v1.8.7
           make
-      
+
       - name: Start Sibyl
         run: |
           chmod +x ./sibyl
@@ -39,6 +39,8 @@ jobs:
           git clone --depth=1 https://github.com/psf/requests
           # kotlin
           git clone --depth=1 https://github.com/square/okhttp
+          # javascript
+          git clone --depth=1 https://github.com/axios/axios.git
 
       - name: Test Java
         run: |
@@ -55,3 +57,7 @@ jobs:
       - name: Test Kotlin
         run: |
           ./sibyl upload --src ./okhttp
+
+      - name: Test JavaScript
+        run: |
+          ./sibyl upload --src ./axios

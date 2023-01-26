@@ -58,6 +58,7 @@ func (extractor *Extractor) extractFromFunc(unit *core.Unit, function *object.Fu
 	}
 	function.Name = nameNode.Content
 
+	// params
 	parametersNode := core.FindFirstByFieldInSubs(unit, KindJavaScriptFormalParameters)
 	if parametersNode != nil {
 		for _, each := range core.FindAllByKindInSubs(parametersNode, KindJavaScriptIdentifier) {
@@ -79,6 +80,16 @@ func (extractor *Extractor) extractFromMethod(unit *core.Unit, function *object.
 	}
 	function.Name = nameNode.Content
 
+	// trace its class (the closest one
+	clazzDecl := core.FindFirstByOneOfKindInParent(unit, KindJavaScriptClassDeclaration)
+	clazzNameNode := core.FindFirstByKindInSubsWithBfs(clazzDecl, KindJavaScriptIdentifier)
+	if clazzNameNode == nil {
+		core.Log.Warnf("anonymous class: %v", unit)
+	} else {
+		function.Receiver = clazzNameNode.Content
+	}
+
+	// params
 	parametersNode := core.FindFirstByFieldInSubs(unit, FieldJavaScriptParameters)
 	if parametersNode != nil {
 		for _, each := range core.FindAllByKindInSubs(parametersNode, KindJavaScriptIdentifier) {

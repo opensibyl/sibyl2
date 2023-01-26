@@ -66,8 +66,9 @@ func TestExtractor_ExtractFunctions(t *testing.T) {
 	assert.NotEmpty(t, functions)
 
 	for _, each := range functions {
-		core.Log.Infof("func: %v", each.Name)
-		core.Log.Infof("func params: %v", each.Parameters)
+		core.Log.Debugf("func: %v", each.Name)
+		core.Log.Debugf("func params: %v", each.Parameters)
+		core.Log.Debugf("func receiver: %s", each.Receiver)
 	}
 }
 
@@ -85,6 +86,6 @@ func TestExtractor_ExtractClasses(t *testing.T) {
 	assert.NotEmpty(t, classes)
 
 	for _, each := range classes {
-		core.Log.Infof("class: %v", each.Name)
+		core.Log.Debugf("class: %v", each.Name)
 	}
 }

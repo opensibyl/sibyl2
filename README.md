@@ -1,6 +1,6 @@
 # sibyl 2
 
-> Bring your plain code alive with tiny effort.
+> An out-of-box codebase snapshot service, for everyone.
 
 [中文文档](https://opensibyl.github.io/doc/docs/intro)
 
@@ -47,12 +47,13 @@ See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opens
 
 ## Languages support
 
-| Languages | Function | Function Context | Class |
-|-----------|----------|------------------|-------|
-| Golang    | Yes      | Yes              | Yes   |
-| Java      | Yes      | Yes              | Yes   |
-| Python    | Yes      | Yes              | Yes   |
-| Kotlin    | Yes      | Yes              | Yes   |
+| Languages  | Function | Function Context | Class |
+|------------|----------|------------------|-------|
+| Golang     | Yes      | Yes              | Yes   |
+| Java       | Yes      | Yes              | Yes   |
+| Python     | Yes      | Yes              | Yes   |
+| Kotlin     | Yes      | Yes              | Yes   |
+| JavaScript | Yes      | Yes              | Yes   |
 
 ## Examples of Usage
 

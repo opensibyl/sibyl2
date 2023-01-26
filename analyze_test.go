@@ -8,6 +8,7 @@ import (
 )
 
 func TestAnalyzeFuncGraph(t *testing.T) {
+	t.Parallel()
 	symbols, _ := ExtractSymbol(".", DefaultConfig())
 	functions, _ := ExtractFunction(".", DefaultConfig())
 	g, err := AnalyzeFuncGraph(functions, symbols)
@@ -33,6 +34,7 @@ func TestAnalyzeFuncGraph(t *testing.T) {
 }
 
 func TestAnalyzeFuncGraph2(t *testing.T) {
+	t.Parallel()
 	symbols, _ := ExtractSymbol(".", DefaultConfig())
 	functions, _ := ExtractFunction(".", DefaultConfig())
 	g, err := AnalyzeFuncGraph(functions, symbols)

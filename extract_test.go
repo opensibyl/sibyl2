@@ -7,7 +7,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
-var javaCode = `
+var javaCodeForExtract = `
 package com.williamfzc.sibyl.core.listener.java8;
 
 import com.williamfzc.sibyl.core.listener.Java8Parser;
@@ -33,7 +33,7 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
 `
 
 func TestExtractString(t *testing.T) {
-	fileResult, err := ExtractFromString(javaCode, &ExtractConfig{
+	fileResult, err := ExtractFromString(javaCodeForExtract, &ExtractConfig{
 		LangType:    core.LangJava,
 		ExtractType: extractor.TypeExtractFunction,
 	})
@@ -49,7 +49,7 @@ func BenchmarkExtractFromString(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		// no   cache: 499267 ns/op
 		// with cache: 14275 ns/op
-		_, err := ExtractFromString(javaCode, &ExtractConfig{
+		_, err := ExtractFromString(javaCodeForExtract, &ExtractConfig{
 			LangType:    core.LangJava,
 			ExtractType: extractor.TypeExtractFunction,
 		})

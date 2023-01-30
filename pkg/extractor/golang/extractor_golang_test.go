@@ -30,6 +30,11 @@ func (*Parser) NormalMethod(lang *sitter.Language) string {
 func Abcd[T DataType](result *BaseFileResult[T]) []T {
 	return nil
 }
+
+func injectV1Group(v1group *gin.RouterGroup) {
+	// scope
+	scopeGroup := v1group.Group("/")
+}
 `
 
 func TestGolangExtractor_ExtractFunctions(t *testing.T) {
@@ -54,6 +59,9 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 		panic(fmt.Sprintf("%s != %s", target.BodySpan.String(), location))
 	}
 	assert.Equal(t, target.Lang, core.LangGo)
+
+	privateMethod := funcs[len(funcs)-1]
+	assert.NotEqual(t, privateMethod.BodySpan.Start.Row, 0)
 }
 
 func TestGolangExtractor_Serialize(t *testing.T) {

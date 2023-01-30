@@ -127,13 +127,14 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 				continue
 			}
 
-			for _, each := range refs {
-				targetFuncFile, ok := funcFileMap[each.Path]
+			for _, eachRefPoint := range refs {
+				// look up the file it appeared
+				targetFuncFile, ok := funcFileMap[eachRefPoint.Path]
 				if !ok {
 					continue
 				}
 				for _, eachMatchFunc := range targetFuncFile.Units {
-					if eachMatchFunc.BodySpan.HasInteraction(each.GetSpan()) {
+					if eachMatchFunc.BodySpan.HasInteraction(eachRefPoint.GetSpan()) {
 						// match
 						// exclude itself
 						if eachMatchFunc.GetDesc() == eachFunc.GetDesc() {

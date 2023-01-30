@@ -53,7 +53,7 @@ func (extractor *Extractor) methodUnit2Function(unit *core.Unit) (*object.Functi
 	funcUnit.Unit = unit
 
 	// body scope
-	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
+	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindGolangBlock)
 	if funcBody != nil {
 		funcUnit.BodySpan = funcBody.Span
 	}
@@ -140,7 +140,7 @@ func (extractor *Extractor) funcUnit2Function(unit *core.Unit) (*object.Function
 	funcUnit.Unit = unit
 
 	// body scope
-	funcBody := core.FindFirstByFieldInSubsWithBfs(unit, FieldGolangResult)
+	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindGolangBlock)
 	if funcBody != nil {
 		funcUnit.BodySpan = funcBody.Span
 	}

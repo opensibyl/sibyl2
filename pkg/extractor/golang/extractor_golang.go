@@ -20,12 +20,12 @@ const (
 	KindGolangFieldDecl         core.KindRepr = "field_declaration"
 	KindGolangPackageIdentifier core.KindRepr = "package_identifier"
 	KindGolangSourceFile        core.KindRepr = "source_file"
+	KindGolangBlock             core.KindRepr = "block"
 	FieldGolangType             core.KindRepr = "type"
 	FieldGolangName             core.KindRepr = "name"
 	FieldGolangParameters       core.KindRepr = "parameters"
 	FieldGolangFunction         core.KindRepr = "function"
 	FieldGolangArguments        core.KindRepr = "arguments"
-	FieldGolangResult           core.KindRepr = "result"
 )
 
 type Extractor struct {

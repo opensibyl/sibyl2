@@ -147,7 +147,7 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 		defer it.Close()
 		prefixStr := rk.ToFileScanPrefix()
 		prefix := []byte(prefixStr)
-		shouldContain := funcEndPrefix + signature
+		shouldContain := flagConnect + funcEndPrefix + signature
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := string(item.Key())

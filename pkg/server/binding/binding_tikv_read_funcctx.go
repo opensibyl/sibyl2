@@ -88,7 +88,7 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 
 	prefixStr := rk.ToScanPrefix() + fileSearchPrefix
 	prefix := []byte(prefixStr)
-	shouldContain := funcctxEndPrefix + signature
+	shouldContain := flagConnect + funcctxEndPrefix + signature
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))

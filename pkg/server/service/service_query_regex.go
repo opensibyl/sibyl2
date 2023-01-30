@@ -105,7 +105,7 @@ func HandleRegexClazz(c *gin.Context) {
 // @Param   field   query string true  "field"
 // @Param   regex   query string true  "regex"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionContext
+// @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/regex/funcctx [get]
 // @Tags RegexQuery
 func HandleRegexFuncctx(c *gin.Context) {

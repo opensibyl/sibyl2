@@ -319,12 +319,12 @@ func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, functions []
 			go func(funcFile *extractor.FunctionFileResult, waitGroup *sync.WaitGroup, graph *sibyl2.FuncGraph) {
 				defer waitGroup.Done()
 
-				var ctxs []*sibyl2.FunctionContext
+				contexts := make([]*sibyl2.FunctionContext, 0)
 				for _, eachFunc := range funcFile.Units {
 					related := graph.FindRelated(eachFunc)
-					ctxs = append(ctxs, related)
+					contexts = append(contexts, related)
 				}
-				uploadFunctionContextUnits(url, wc, ctxs)
+				uploadFunctionContextUnits(url, wc, contexts)
 			}(eachFuncFile, &wg, g)
 		}
 		wg.Wait()

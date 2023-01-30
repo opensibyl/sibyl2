@@ -73,7 +73,7 @@ func (fg *FuncGraph) FindRelated(f *extractor.Function) *FunctionContext {
 
 func (fg *FuncGraph) bfs(g *FuncGraphType, f *extractor.Function) []*FunctionWithPath {
 	selfDesc := f.GetDesc()
-	var ret []*FunctionWithPath
+	ret := make([]*FunctionWithPath, 0)
 
 	// if there is an edge (a, b),
 	// b is an adjacency of a.

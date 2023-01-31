@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/opensibyl/sibyl2/frontend"
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	_ "github.com/opensibyl/sibyl2/pkg/server/docs"
@@ -106,6 +107,28 @@ func Execute(config object.ExecuteConfig, ctx context.Context) error {
 	}()
 	<-ctx.Done()
 	err = srv.Shutdown(context.Background())
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func ExecuteFrontend(port int, ctx context.Context) error {
+	engine := gin.Default()
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%d", port),
+		Handler: engine,
+	}
+
+	engine.StaticFS("/", http.FS(frontend.Static))
+	go func() {
+		err := srv.ListenAndServe()
+		if err != nil {
+			core.Log.Errorf("sibyl server down: %s", err.Error())
+		}
+	}()
+	<-ctx.Done()
+	err := srv.Shutdown(context.Background())
 	if err != nil {
 		return err
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/diff"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/extract"
+	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/frontend"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/history"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/server"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
@@ -49,4 +50,7 @@ func init() {
 
 	historyCmd := history.NewHistoryCmd()
 	rootCmd.AddCommand(historyCmd)
+
+	frontendCmd := frontend.NewFrontendCmd()
+	rootCmd.AddCommand(frontendCmd)
 }

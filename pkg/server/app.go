@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/opensibyl/sibyl2/frontend"
 	"github.com/opensibyl/sibyl2/pkg/core"
@@ -80,6 +81,11 @@ func Execute(config object.ExecuteConfig, ctx context.Context) error {
 
 	// webserver start up
 	engine := gin.Default()
+
+	// todo: move it to config in the future
+	c := cors.DefaultConfig()
+	c.AllowOrigins = []string{"*"}
+	engine.Use(cors.New(c))
 
 	// for CRUD
 	if needGateway {

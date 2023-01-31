@@ -11,6 +11,7 @@ const (
 	KindJavaScriptFunctionDeclaration core.KindRepr = "function_declaration"
 	KindJavaScriptIdentifier          core.KindRepr = "identifier"
 	KindJavaScriptFormalParameters    core.KindRepr = "formal_parameters"
+	KindJavaScriptStatementBlock      core.KindRepr = "statement_block"
 	FieldJavaScriptName               core.KindRepr = "name"
 	FieldJavaScriptParameters         core.KindRepr = "parameters"
 )

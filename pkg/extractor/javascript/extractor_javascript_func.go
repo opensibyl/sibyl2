@@ -37,6 +37,11 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 	funcUnit.Unit = unit
 	funcUnit.Lang = extractor.GetLang()
 
+	bodyUnit := core.FindFirstByKindInSubsWithBfs(unit, KindJavaScriptStatementBlock)
+	if bodyUnit != nil {
+		funcUnit.BodySpan = bodyUnit.Span
+	}
+
 	var err error
 	switch unit.Kind {
 	case KindJavaScriptFunctionDeclaration:

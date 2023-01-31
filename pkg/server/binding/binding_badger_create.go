@@ -29,7 +29,11 @@ func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.
 
 		for _, eachClazz := range c.Units {
 			eachClazzKey := toClazzKey(fk.RevHash, fk.FileHash, eachClazz.GetSignature())
-			eachClazzValue, err := eachClazz.ToJson()
+			eachClazzWithPath := &sibyl2.ClazzWithPath{
+				Clazz: eachClazz,
+				Path:  c.Path,
+			}
+			eachClazzValue, err := json.Marshal(eachClazzWithPath)
 			if err != nil {
 				continue
 			}
@@ -64,7 +68,11 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 
 		for _, eachFunc := range f.Units {
 			eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-			eachFuncV, err := json.Marshal(eachFunc)
+			eachFuncWithPath := &sibyl2.FunctionWithPath{
+				Function: eachFunc,
+				Path:     f.Path,
+			}
+			eachFuncV, err := json.Marshal(eachFuncWithPath)
 			if err != nil {
 				continue
 			}

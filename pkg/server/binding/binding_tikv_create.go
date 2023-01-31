@@ -33,7 +33,11 @@ func (t *tikvDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.Cl
 
 	for _, eachClazz := range c.Units {
 		eachClazzKey := toClazzKey(fk.RevHash, fk.FileHash, eachClazz.GetSignature())
-		eachClazzValue, err := eachClazz.ToJson()
+		eachClazzWithPath := &sibyl2.ClazzWithPath{
+			Clazz: eachClazz,
+			Path:  c.Path,
+		}
+		eachClazzValue, err := json.Marshal(eachClazzWithPath)
 		if err != nil {
 			continue
 		}
@@ -74,7 +78,11 @@ func (t *tikvDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fun
 
 	for _, eachFunc := range f.Units {
 		eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-		eachFuncV, err := json.Marshal(eachFunc)
+		eachFuncWithPath := &sibyl2.FunctionWithPath{
+			Function: eachFunc,
+			Path:     f.Path,
+		}
+		eachFuncV, err := json.Marshal(eachFuncWithPath)
 		if err != nil {
 			continue
 		}

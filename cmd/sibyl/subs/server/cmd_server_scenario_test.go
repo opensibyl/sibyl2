@@ -3,8 +3,10 @@ package server
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"syscall"
@@ -16,6 +18,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/ext"
 	"github.com/stretchr/testify/assert"
+	"golang.org/x/exp/slices"
 )
 
 func TestMainScenario(t *testing.T) {
@@ -144,6 +147,8 @@ func TestMainScenario(t *testing.T) {
 		assert.NotEmpty(t, functionWithPaths)
 		for _, each := range functionWithPaths {
 			assert.True(t, strings.Contains(*each.Name, "Handle"))
+			// and see where it is
+			assert.NotEmpty(t, *each.Path)
 		}
 	})
 
@@ -158,6 +163,55 @@ func TestMainScenario(t *testing.T) {
 			Execute()
 		assert.Nil(t, err)
 		assert.NotEmpty(t, fc)
+	})
+
+	// scenario 4: file level relationship graph
+	t.Run("scenario_4_relationship_graph", func(t *testing.T) {
+		ecAll := &EcAll{}
+
+		files, _, err := apiClient.ScopeApi.ApiV1FileGet(ctx).Repo(projectName).Rev(head.Hash().String()).Execute()
+		assert.Nil(t, err)
+
+		// create nodes
+		category := make([]string, 0)
+		for _, eachFile := range files {
+			dirName := filepath.ToSlash(filepath.Dir(eachFile))
+
+			if !slices.Contains(category, dirName) {
+				category = append(category, dirName)
+			}
+			loc := slices.Index(category, dirName)
+
+			ecAll.Nodes = append(ecAll.Nodes, &ECNode{
+				Id:       eachFile,
+				Category: loc,
+				Name:     eachFile,
+			})
+		}
+		for _, eachCategory := range category {
+			ecAll.Categories = append(ecAll.Categories, &ECCategory{Name: eachCategory})
+		}
+
+		// create edges
+		for _, eachFile := range files {
+			ctxs, _, err := apiClient.BasicQueryApi.ApiV1FuncctxGet(ctx).Repo(projectName).Rev(head.Hash().String()).File(eachFile).Execute()
+			assert.Nil(t, err)
+			for _, each := range ctxs {
+				for _, eachCall := range each.Calls {
+					f, _, err := apiClient.SignatureQueryApi.ApiV1SignatureFuncGet(ctx).Repo(projectName).Rev(head.Hash().String()).Signature(eachCall).Execute()
+					assert.Nil(t, err)
+					// create edge between eachFile and f.Path
+					ecAll.Links = append(ecAll.Links, &ECLink{
+						Source: eachFile,
+						Target: *f.Path,
+					})
+				}
+			}
+		}
+
+		// export
+		_, err = json.Marshal(ecAll)
+		assert.Nil(t, err)
 	})
 
 	t.Cleanup(func() {
@@ -211,3 +265,25 @@ diff --git a/pkg/core/unit.go b/pkg/core/unit.go
  
  func (s *Span) ContainAnyLine(lineNums ...int) bool {
 `
+
+// created from https://echarts.apache.org/examples/zh/editor.html?c=graph-circular-layout
+type ECNode struct {
+	Id       string `json:"id"`
+	Category int    `json:"category"`
+	Name     string `json:"name"`
+}
+
+type ECLink struct {
+	Source string `json:"source"`
+	Target string `json:"target"`
+}
+
+type ECCategory struct {
+	Name string `json:"name"`
+}
+
+type EcAll struct {
+	Nodes      []*ECNode     `json:"nodes"`
+	Links      []*ECLink     `json:"links"`
+	Categories []*ECCategory `json:"categories"`
+}

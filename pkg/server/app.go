@@ -15,6 +15,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/queue"
 	"github.com/opensibyl/sibyl2/pkg/server/service"
 	"github.com/opensibyl/sibyl2/pkg/server/worker"
+	"github.com/pkg/browser"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -133,8 +134,14 @@ func ExecuteFrontend(port int, ctx context.Context) error {
 			core.Log.Errorf("sibyl server down: %s", err.Error())
 		}
 	}()
+	// automatically start up
+	err := browser.OpenURL(fmt.Sprintf("http://127.0.0.1:%d", port))
+	if err != nil {
+		core.Log.Warnf("failed to open frontend automatically")
+	}
+
 	<-ctx.Done()
-	err := srv.Shutdown(context.Background())
+	err = srv.Shutdown(context.Background())
 	if err != nil {
 		return err
 	}

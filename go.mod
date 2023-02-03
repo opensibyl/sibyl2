@@ -7,11 +7,13 @@ require (
 	github.com/bluekeyes/go-gitdiff v0.7.0
 	github.com/dgraph-io/badger/v3 v3.2103.4
 	github.com/dominikbraun/graph v0.13.0
+	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-git/go-git/v5 v5.4.2
 	github.com/hashicorp/go-retryablehttp v0.7.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/opensibyl/sibyl-go-client v0.0.0-20230130154839-e18a00666b15
+	github.com/pkg/browser v0.0.0-20210911075715-681adbf594b8
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
 	github.com/segmentio/kafka-go v0.4.38
@@ -47,7 +49,6 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
-	github.com/gin-contrib/cors v1.4.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-git/gcfg v1.5.0 // indirect
 	github.com/go-git/go-billy/v5 v5.3.1 // indirect

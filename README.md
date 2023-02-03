@@ -17,7 +17,7 @@
 
 ## Overview
 
-sibyl2 is a static code analyzer, for extracting, managing and offering codebase snapshot. Inspired
+sibyl2 is a static code analyze service, for extracting, managing and offering codebase snapshot. Inspired
 by [semantic](https://github.com/github/semantic) of GitHub.
 
 - Easy to use
@@ -41,6 +41,8 @@ Code snapshot is the logical metadata of your code:
 
 ![](./docs/sample.svg)
 
+We can do series of things based on it. Such as logical diff, function relationship analysis.
+
 ## Purpose & Principles
 
 See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
@@ -55,9 +57,9 @@ See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opens
 | Kotlin     | Yes      | Yes              | Yes   |
 | JavaScript | Yes      | Yes              | Yes   |
 
-## Examples of Usage
+## Try it in 3 minutes
 
-### One-file-installation
+### Deployment
 
 For now, we are aiming at offering an out-of-box service.
 Users can access all the features with a simple binary file, without any extra dependencies and scripts.
@@ -70,9 +72,7 @@ Or directly download with `wget` (linux only):
 curl https://raw.githubusercontent.com/opensibyl/sibyl2/master/scripts/download_latest.sh | bash
 ```
 
-### Use as a service (recommend)
-
-#### Deploy
+Now you can start it:
 
 ```bash
 ./sibyl server
@@ -90,204 +90,29 @@ Data will be persisted in `./sibyl2Storage`.
 ./sibyl upload --src . --url http://127.0.0.1:9876
 ```
 
-You can upload from different machines.
+You can upload from different machines. Usually it only takes a few seconds.
 
 #### Access
 
-After uploading, you can access your data via http api.
-
-![](https://opensibyl.github.io/doc/assets/images/usage-swagger-82e6fbaf8ae27f8cf697eb77cad56210.png)
-
-Tree-like storage:
-
-- repo
-    - rev1
-        - file
-            - function
-    - rev2
-        - file
-            - function
-
-Try with swagger: http://127.0.0.1:9876/ops/swagger/index.html#/
-
-#### Access with sdk
-
-Easily combine with other systems:
-
-- golang: https://github.com/opensibyl/sibyl-go-client
-- java: https://github.com/opensibyl/sibyl-java-client
-
-We use [openapi-generator](https://github.com/OpenAPITools/openapi-generator) for creating clients automatically.
-Also, you can easily create your own one.
+We have a built-in dashboard for visualization. Start it with:
 
 ```bash
-java -jar ~/Downloads/openapi-generator-cli-6.2.1.jar generate -i pkg/server/docs/swagger.yaml -g go -o ~/github_workspace/sibyl-go-client
+./sibyl frontend
 ```
 
-### Use as a commandline tool
+And open `localhost:3000` you will see:
 
-#### Basic Functions
+<img width="877" alt="image" src="https://user-images.githubusercontent.com/13421694/216641341-c01bbcd1-349f-4934-bd35-2fa6b2c48cb4.png">
 
-```
-./sibyl extract --src . --output hello.json
-```
+Also, you can access all the datas via different kinds of languages, to build your own tools:
 
-You will see:
+| Language   | Link                                                 |
+|------------|------------------------------------------------------|
+| Golang     | https://github.com/opensibyl/sibyl-go-client         |
+| Java       | https://github.com/opensibyl/sibyl-java-client       |
+| JavaScript | https://github.com/opensibyl/sibyl-javascript-client |
 
-```
-$ ./sibyl extract --src . --output hello.json
-{"level":"info","ts":1670138890.5306911,"caller":"sibyl2/extract_fs.go:92","msg":"no specific lang found, do the guess in: /Users/fengzhangchi/github_workspace/sibyl2"}
-{"level":"info","ts":1670138890.5596569,"caller":"sibyl2/extract_fs.go:97","msg":"I think it is: GOLANG"}
-{"level":"info","ts":1670138890.5836658,"caller":"core/runner.go:22","msg":"valid file count: 55"}
-{"level":"info","ts":1670138890.6657321,"caller":"sibyl2/extract_fs.go:76","msg":"cost: 135 ms"}
-{"level":"info","ts":1670138890.669896,"caller":"extract/cmd_extract.go:60","msg":"file has been saved to: hello.json"}
-```
-
-<details>
-<summary> ... Result will be generated in seconds. </summary>
-
-```json title="hello.json"
-[
-  {
-    "path": "analyze.go",
-    "language": "GOLANG",
-    "type": "func",
-    "units": [
-      {
-        "name": "AnalyzeFuncGraph",
-        "receiver": "",
-        "parameters": [
-          {
-            "type": "[]*extractor.FunctionFileResult",
-            "name": "funcFiles"
-          },
-          {
-            "type": "[]*extractor.SymbolFileResult",
-            "name": "symbolFiles"
-          }
-        ],
-        "returns": [
-          {
-            "type": "*FuncGraph",
-            "name": ""
-          },
-          {
-            "type": "error",
-            "name": ""
-          }
-        ],
-        "span": {
-          "start": {
-            "row": 11,
-            "column": 0
-          },
-          "end": {
-            "row": 80,
-            "column": 1
-          }
-        },
-        "extras": {}
-      }
-    ]
-  },
-  ...
-]
-```
-
-</details>
-
-#### Source Code History Visualization
-
-Source code history visualization, inspired by https://github.com/acaudwell/Gource
-
-One line command to see how your repository grow up, with no heavy dependencies like OpenGL, with logic level messages.
-
-```bash
-./sibyl history --src . --output hello.html --full
-```
-
-https://user-images.githubusercontent.com/13421694/207089314-21b0d48d-00d1-4de5-951c-415fed74c78f.mp4
-
-> You can remove the `full` flag for better performance.
-
-#### Smart Git Diff
-
-Normal git diff has only text level messages.
-
-```bash
-./sibyl diff --from HEAD~1 --to HEAD --output hello1.json
-```
-
-<details><summary>And you can get a structural one with sibyl, which contains method level messages and callgraphs.</summary>
-
-```bash
-{
-  "fragments": [
-    {
-      "path": "pkg/server/admin_s.go",
-      "functions": [
-        {
-          "name": "HandleStatusUpload",
-          "receiver": "",
-          "parameters": [
-            {
-              "type": "*gin.Context",
-              "name": "c"
-            }
-          ],
-          "returns": null,
-          "span": {
-            "start": {
-              "row": 17,
-              "column": 0
-            },
-            "end": {
-              "row": 23,
-              "column": 1
-            }
-          },
-          "extras": {},
-          "path": "pkg/server/admin_s.go",
-          "language": "GOLANG",
-          "calls": null,
-          "reverseCalls": [
-            {
-              "name": "Execute",
-              "receiver": "",
-              "parameters": [
-                {
-                  "type": "ExecuteConfig",
-                  "name": "config"
-                }
-              ],
-              "returns": null,
-              "span": {
-                "start": {
-                  "row": 67,
-                  "column": 0
-                },
-                "end": {
-                  "row": 96,
-                  "column": 1
-                }
-              },
-              "extras": {},
-              "path": "pkg/server/app.go",
-              "language": "GOLANG"
-            }
-          ]
-        }
-      ]
-    },
-    ...
-```
-
-</details>
-
-You can easily build some `smart test` tools above it.
-For example, Google 's unittest speed up:
-
-![intro-google](https://user-images.githubusercontent.com/13421694/207057947-894c1fb9-8ce4-4f7b-b5d3-88d220003e82.png)
+See our [examples](./_examples) about how to use for details.
 
 ## Performance
 
@@ -319,7 +144,7 @@ Workflow:
 
 Issues / PRs are welcome!
 
-## Refs
+## References
 
 - basic grammar: https://tree-sitter.github.io/tree-sitter/creating-parsers#the-grammar-dsl
 - language parser (for example, golang): https://github.com/tree-sitter/tree-sitter-go/blob/master/src/parser.c

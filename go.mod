@@ -17,7 +17,7 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.14.0
 	github.com/segmentio/kafka-go v0.4.38
-	github.com/smacker/go-tree-sitter v0.0.0-20221031025734-03a9c97d8039
+	github.com/smacker/go-tree-sitter v0.0.0-20230113054119-af7e2ef5fed6
 	github.com/spf13/cobra v1.5.0
 	github.com/spf13/viper v1.14.0
 	github.com/stretchr/testify v1.8.1
@@ -136,5 +136,3 @@ require (
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
-
-replace github.com/smacker/go-tree-sitter v0.0.0-20221031025734-03a9c97d8039 => github.com/williamfzc/go-tree-sitter v0.0.0-20230112040556-1c6a3ce73d7c

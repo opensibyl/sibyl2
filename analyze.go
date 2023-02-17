@@ -98,10 +98,12 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			}
 			err := reverseCallGraph.AddVertex(fwp)
 			if err != nil {
+				core.Log.Errorf("add vertex failed: %v", fwp.GetDesc())
 				return nil, err
 			}
 			err = callGraph.AddVertex(fwp)
 			if err != nil {
+				core.Log.Errorf("add vertex failed: %v", fwp.GetDesc())
 				return nil, err
 			}
 		}

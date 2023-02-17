@@ -2,6 +2,7 @@ package sibyl2
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/dominikbraun/graph"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
@@ -18,6 +19,10 @@ type SymbolWithPath struct {
 type FunctionWithPath struct {
 	*extractor.Function
 	Path string `json:"path"`
+}
+
+func (fwp *FunctionWithPath) GetDesc() string {
+	return fmt.Sprintf("<fwp %s %s>", fwp.Path, fwp.Function.GetDesc())
 }
 
 type FunctionContext struct {

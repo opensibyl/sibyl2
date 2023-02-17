@@ -27,13 +27,14 @@ func NewUploadCmd() *cobra.Command {
 			config := defaultConfig()
 			defaultConf := defaultConfig()
 
-			// read from config
+			// specific config file?
 			viper.SetConfigType(configType)
 			if uploadConfigFile != "" {
 				core.Log.Infof("specific config file: %s", uploadConfigFile)
 				viper.SetConfigFile(uploadConfigFile)
 			} else {
-				viper.AddConfigPath(configPath)
+				// always search in src dir
+				viper.AddConfigPath(uploadSrc)
 				viper.SetConfigName(configFile)
 			}
 

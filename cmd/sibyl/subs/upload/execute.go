@@ -36,7 +36,7 @@ func panicIfErr(err error) {
 	}
 }
 
-func execWithConfig(c *uploadConfig) {
+func ExecWithConfig(c *UploadConfig) {
 	startTime := time.Now()
 	defer func() {
 		core.Log.Infof("upload total cost: %d ms", time.Since(startTime).Milliseconds())
@@ -47,6 +47,24 @@ func execWithConfig(c *uploadConfig) {
 	core.Log.Infof("upload with config: %s", configStr)
 	uploadSrc, err := filepath.Abs(c.Src)
 	panicIfErr(err)
+
+	// if repo id and rev hash has been set, do not access git.
+	// https://github.com/opensibyl/sibyl2/issues/44
+	if c.RepoId != "" && c.RevHash != "" {
+		wc := &object.WorkspaceConfig{
+			RepoId:  c.RepoId,
+			RevHash: c.RevHash,
+		}
+		execCurRevWithConfig(uploadSrc, wc, c)
+	} else {
+		execWithGit(uploadSrc, c)
+	}
+
+	core.Log.Infof("upload finished")
+}
+
+func execWithGit(uploadSrc string, c *UploadConfig) {
+	// extract from git
 	repo, err := loadRepo(uploadSrc)
 	panicIfErr(err)
 	head, err := repo.Head()
@@ -101,11 +119,9 @@ func execWithConfig(c *uploadConfig) {
 		})
 		panicIfErr(err)
 	}
-
-	core.Log.Infof("upload finished")
 }
 
-func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploadConfig) {
+func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *UploadConfig) {
 	filterFunc, err := createFileFilter(c)
 	panicIfErr(err)
 
@@ -133,7 +149,7 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *uploa
 	}
 }
 
-func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *uploadConfig) {
+func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *UploadConfig) {
 	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
 		FileFilter: filterFunc,
 		LangType:   lang,
@@ -188,7 +204,7 @@ func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFun
 	}
 }
 
-func createFileFilter(c *uploadConfig) (func(path string) bool, error) {
+func createFileFilter(c *UploadConfig) (func(path string) bool, error) {
 	if c.IncludeRegex == "" && c.ExcludeRegex == "" {
 		// need no filter
 		return nil, nil

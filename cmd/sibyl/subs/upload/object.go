@@ -7,13 +7,13 @@ import (
 )
 
 const (
-	configPath = "."
 	configFile = "sibyl-upload-config"
 	configType = "json"
 )
 
 type SrcConfigPart struct {
 	RepoId       string   `mapstructure:"repoId"`
+	RevHash      string   `mapstructure:"revHash"`
 	Src          string   `mapstructure:"src"`
 	Lang         []string `mapstructure:"lang"`
 	WithCtx      bool     `mapstructure:"withCtx"`
@@ -29,12 +29,12 @@ type ServerConfigPart struct {
 	Depth int    `mapstructure:"depth"`
 }
 
-type uploadConfig struct {
+type UploadConfig struct {
 	*SrcConfigPart    `mapstructure:"src"`
 	*ServerConfigPart `mapstructure:"server"`
 }
 
-func (config *uploadConfig) ToMap() (map[string]any, error) {
+func (config *UploadConfig) ToMap() (map[string]any, error) {
 	var m map[string]interface{}
 	err := mapstructure.Decode(config, &m)
 	if err != nil {
@@ -43,7 +43,7 @@ func (config *uploadConfig) ToMap() (map[string]any, error) {
 	return m, nil
 }
 
-func (config *uploadConfig) ToJson() ([]byte, error) {
+func (config *UploadConfig) ToJson() ([]byte, error) {
 	toMap, err := config.ToMap()
 	if err != nil {
 		return nil, err
@@ -51,10 +51,11 @@ func (config *uploadConfig) ToJson() ([]byte, error) {
 	return json.Marshal(toMap)
 }
 
-func defaultConfig() *uploadConfig {
-	return &uploadConfig{
+func DefaultConfig() *UploadConfig {
+	return &UploadConfig{
 		&SrcConfigPart{
 			RepoId:       "",
+			RevHash:      "",
 			Src:          ".",
 			Lang:         []string{},
 			WithCtx:      true,

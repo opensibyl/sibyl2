@@ -9,6 +9,7 @@ import (
 func NewUploadCmd() *cobra.Command {
 	var uploadConfigFile string
 	var uploadRepoId string
+	var uploadRevHash string
 	var uploadSrc string
 	var uploadLangType []string
 	var uploadUrl string
@@ -24,8 +25,8 @@ func NewUploadCmd() *cobra.Command {
 		Long:   `test`,
 		Hidden: false,
 		Run: func(cmd *cobra.Command, args []string) {
-			config := defaultConfig()
-			defaultConf := defaultConfig()
+			config := DefaultConfig()
+			defaultConf := DefaultConfig()
 
 			// specific config file?
 			viper.SetConfigType(configType)
@@ -57,6 +58,9 @@ func NewUploadCmd() *cobra.Command {
 			if uploadRepoId != defaultConf.RepoId {
 				config.RepoId = uploadRepoId
 			}
+			if uploadRevHash != defaultConf.RevHash {
+				config.RevHash = uploadRevHash
+			}
 			if uploadSrc != defaultConf.Src {
 				config.Src = uploadSrc
 			}
@@ -83,7 +87,7 @@ func NewUploadCmd() *cobra.Command {
 			}
 
 			// execute
-			execWithConfig(config)
+			ExecWithConfig(config)
 
 			// save it back
 			usedConfigMap, err := config.ToMap()
@@ -101,9 +105,10 @@ func NewUploadCmd() *cobra.Command {
 		},
 	}
 
-	config := defaultConfig()
+	config := DefaultConfig()
 	uploadCmd.PersistentFlags().StringVar(&uploadConfigFile, "config", "", "config file path")
 	uploadCmd.PersistentFlags().StringVar(&uploadRepoId, "repoId", config.RepoId, "custom repo id")
+	uploadCmd.PersistentFlags().StringVar(&uploadRevHash, "revHash", config.RevHash, "custom rev hash")
 	uploadCmd.PersistentFlags().StringVar(&uploadSrc, "src", config.Src, "src dir path")
 	uploadCmd.PersistentFlags().StringSliceVar(&uploadLangType, "lang", config.Lang, "lang type of your source code")
 	uploadCmd.PersistentFlags().StringVar(&uploadUrl, "url", config.Url, "backend url")

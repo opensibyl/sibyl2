@@ -321,7 +321,8 @@ func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, functions []
 
 				contexts := make([]*sibyl2.FunctionContext, 0)
 				for _, eachFunc := range funcFile.Units {
-					related := graph.FindRelated(eachFunc)
+					eachFileWithPath := sibyl2.WrapFuncWithPath(eachFunc, funcFile.Path)
+					related := graph.FindRelated(eachFileWithPath)
 					contexts = append(contexts, related)
 				}
 				uploadFunctionContextUnits(url, wc, contexts)

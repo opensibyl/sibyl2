@@ -17,13 +17,14 @@ func TestAnalyzeFuncGraph(t *testing.T) {
 	}
 
 	targetFuncName := "unit2Call"
+	path := "pkg/extractor/golang/extractor_golang.go"
 	target := QueryUnitsByIndexNamesInFiles(functions, targetFuncName)
 	if len(target) == 0 {
 		panic(errors.New("func not found"))
 	}
 
-	references := g.FindReverseCalls(target[0])
-	calls := g.FindCalls(target[0])
+	references := g.FindReverseCalls(WrapFuncWithPath(target[0], path))
+	calls := g.FindCalls(WrapFuncWithPath(target[0], path))
 	core.Log.Debugf("search func %s", targetFuncName)
 	for _, each := range references {
 		core.Log.Debugf("found ref %s in %s", each.GetIndexName(), each.Path)
@@ -43,12 +44,13 @@ func TestAnalyzeFuncGraph2(t *testing.T) {
 	}
 
 	targetFuncName := "unit2Call"
+	path := "pkg/extractor/golang/extractor_golang.go"
 	target := QueryUnitsByIndexNamesInFiles(functions, targetFuncName)
 	if len(target) == 0 {
 		panic(errors.New("func not found"))
 	}
 
-	ctx := g.FindRelated(target[0])
+	ctx := g.FindRelated(WrapFuncWithPath(target[0], path))
 	for _, each := range ctx.Calls {
 		core.Log.Infof("call: %s", each.Name)
 	}

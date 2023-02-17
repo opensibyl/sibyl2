@@ -21,8 +21,8 @@ func isFuncNameInvalid(funcName string) bool {
 }
 
 func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*extractor.SymbolFileResult) (*FuncGraph, error) {
-	reverseCallGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
-	callGraph := graph.New((*FunctionWithPath).GetDesc, graph.Directed())
+	reverseCallGraph := graph.New((*FunctionWithPath).GetDescWithPath, graph.Directed())
+	callGraph := graph.New((*FunctionWithPath).GetDescWithPath, graph.Directed())
 
 	// speed up cache
 	funcFileMap := make(map[string]*extractor.FunctionFileResult, len(funcFiles))
@@ -98,12 +98,12 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 			}
 			err := reverseCallGraph.AddVertex(fwp)
 			if err != nil {
-				core.Log.Errorf("add vertex failed: %v", fwp.GetDesc())
+				core.Log.Errorf("add vertex failed: %v", fwp.GetDescWithPath())
 				return nil, err
 			}
 			err = callGraph.AddVertex(fwp)
 			if err != nil {
-				core.Log.Errorf("add vertex failed: %v", fwp.GetDesc())
+				core.Log.Errorf("add vertex failed: %v", fwp.GetDescWithPath())
 				return nil, err
 			}
 		}
@@ -144,8 +144,10 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 						}
 
 						// eachFunc referenced by eachMatchFunc
-						reverseCallGraph.AddEdge(eachFunc.GetDesc(), eachMatchFunc.GetDesc())
-						callGraph.AddEdge(eachMatchFunc.GetDesc(), eachFunc.GetDesc())
+						eachFuncWithPath := WrapFuncWithPath(eachFunc, eachFuncFile.Path)
+						eachMatchFuncWithPath := WrapFuncWithPath(eachMatchFunc, targetFuncFile.Path)
+						reverseCallGraph.AddEdge(eachFuncWithPath.GetDescWithPath(), eachMatchFuncWithPath.GetDescWithPath())
+						callGraph.AddEdge(eachMatchFuncWithPath.GetDescWithPath(), eachFuncWithPath.GetDescWithPath())
 						break
 					}
 				}

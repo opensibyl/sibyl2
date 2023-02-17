@@ -120,7 +120,7 @@ func affectedLines2Functions(srcDir string, m *ext.AffectedLineMap) (*ParseResul
 			if eachFuncFile.Path == fileName {
 				for _, eachFuncUnit := range eachFuncFile.Units {
 					if eachFuncUnit.GetSpan().ContainAnyLine(lines...) {
-						related := g.FindRelated(eachFuncUnit)
+						related := g.FindRelated(sibyl2.WrapFuncWithPath(eachFuncUnit, fileName))
 						fragment.Functions = append(fragment.Functions, related)
 					}
 				}

@@ -21,8 +21,15 @@ type FunctionWithPath struct {
 	Path string `json:"path"`
 }
 
-func (fwp *FunctionWithPath) GetDesc() string {
+func (fwp *FunctionWithPath) GetDescWithPath() string {
 	return fmt.Sprintf("<fwp %s %s>", fwp.Path, fwp.Function.GetDesc())
+}
+
+func WrapFuncWithPath(f *extractor.Function, p string) *FunctionWithPath {
+	return &FunctionWithPath{
+		Function: f,
+		Path:     p,
+	}
 }
 
 type FunctionContext struct {

@@ -1,2 +1,8 @@
 .idea
+
+# doc
 pkg/server/docs
+
+# frontend
+frontend/*
+!frontend/embed.go

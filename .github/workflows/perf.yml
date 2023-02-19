@@ -34,10 +34,13 @@ jobs:
         run: |
           # java
           git clone --depth=1 https://github.com/spring-projects/spring-boot.git
+          git clone --depth=1 https://github.com/jacoco/jacoco.git
           # golang
           git clone --depth=1 https://github.com/gin-gonic/gin.git
+          git clone --depth=1 https://github.com/spf13/cobra
           # python
           git clone --depth=1 https://github.com/psf/requests
+          git clone --depth=1 https://github.com/tiangolo/fastapi.git
           # kotlin
           git clone --depth=1 https://github.com/square/okhttp
           # javascript
@@ -46,14 +49,17 @@ jobs:
       - name: Test Java
         run: |
           ./sibyl upload --src ./spring-boot
+          ./sibyl upload --src ./jacoco
 
       - name: Test Golang
         run: |
           ./sibyl upload --src ./gin
+          ./sibyl upload --src ./cobra
 
       - name: Test Python
         run: |
           ./sibyl upload --src ./requests
+          ./sibyl upload --src ./fastapi
 
       - name: Test Kotlin
         run: |

@@ -2,6 +2,8 @@ package golang
 
 import (
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
@@ -73,7 +75,22 @@ func (extractor *Extractor) methodUnit2Function(unit *core.Unit) (*object.Functi
 	if typeDecl == nil {
 		return nil, errors.New("no receiver found in: " + typeDecl.Content)
 	}
-	funcUnit.Receiver = typeDecl.Content
+	// add package info too
+	// https://github.com/opensibyl/sibyl2/issues/48
+	// package name
+	root := core.FindFirstByKindInParent(unit, KindGolangSourceFile)
+	pkgName := core.FindFirstByKindInSubsWithDfs(root, KindGolangPackageIdentifier)
+	typeDeclName := typeDecl.Content
+	if pkgName != nil {
+		if strings.HasPrefix(typeDeclName, "*") {
+			typeDeclName = strings.TrimPrefix(typeDeclName, "*")
+			funcUnit.Receiver = fmt.Sprintf("*%s.%s", pkgName.Content, typeDeclName)
+		} else {
+			funcUnit.Receiver = fmt.Sprintf("%s.%s", pkgName.Content, typeDeclName)
+		}
+	} else {
+		funcUnit.Receiver = typeDeclName
+	}
 
 	// params
 	paramListList := core.FindAllByKindInSubsWithDfs(unit, KindGolangParameterList)

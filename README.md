@@ -37,9 +37,13 @@ func ExtractFunction(targetFile string, config *ExtractConfig) ([]*extractor.Fun
 }
 ```
 
-Code snapshot is the logical metadata of your code:
+Code snapshot is the logical metadata (method/class/context, etc.) of your code:
 
 ![](./docs/sample.svg)
+
+And your codebase:
+
+![](https://user-images.githubusercontent.com/13421694/219916928-14e8eb69-fe67-45a1-80a7-1b3c1b8163b2.png)
 
 We can do series of things based on it. Such as logical diff, function relationship analysis.
 

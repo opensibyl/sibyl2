@@ -39,6 +39,19 @@ public class Java8SnapshotListener extends Java8MethodLayerListener<Method> {
         this.storage.save(curMethodStack.peekLast());
     }
 }
+
+class D extends B {}
+
+class B implements A, C {
+	void abcd() {
+	}
+}
+
+interface A {
+	void abcd();
+}
+
+interface C {}
 `
 
 func TestJavaExtractor_ExtractSymbols(t *testing.T) {
@@ -90,9 +103,11 @@ func TestExtractor_ExtractClasses(t *testing.T) {
 	data, err := extractor.ExtractClasses(units)
 	assert.Nil(t, err)
 	for _, each := range data {
-		core.Log.Infof("find class: %v", each.GetSignature())
+		core.Log.Debugf("find class: %v", each.GetSignature())
 		for _, field := range each.Extras.(*ClassExtras).Fields {
 			core.Log.Infof("field: %v", field)
 		}
+		core.Log.Debugf("class extends: %v", each.Extras.(*ClassExtras).Extends)
+		core.Log.Debugf("class implements: %v", each.Extras.(*ClassExtras).Implements)
 	}
 }

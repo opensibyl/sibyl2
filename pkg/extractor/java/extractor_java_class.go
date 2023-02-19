@@ -18,17 +18,20 @@ type ClassField struct {
 type ClassExtras struct {
 	Annotations []string      `json:"annotations"`
 	Fields      []*ClassField `json:"fields"`
+	Modifiers   []string      `json:"modifiers"`
+	Extends     string        `json:"extends"`
+	Implements  []string      `json:"implements"`
 }
 
 func (extractor *Extractor) IsClass(unit *core.Unit) bool {
-	if unit.Kind == KindJavaClassDeclaration || unit.Kind == KindJavaEnumDeclaration {
+	if unit.Kind == KindJavaClassDeclaration || unit.Kind == KindJavaEnumDeclaration || unit.Kind == KindJavaInterfaceDeclaration {
 		return true
 	}
 	return false
 }
 
 func (extractor *Extractor) ExtractClasses(units []*core.Unit) ([]*object.Clazz, error) {
-	var ret []*object.Clazz
+	ret := make([]*object.Clazz, 0)
 	for _, eachUnit := range units {
 		if !extractor.IsClass(eachUnit) {
 			continue
@@ -115,6 +118,26 @@ func (extractor *Extractor) ExtractClass(unit *core.Unit) (*object.Clazz, error)
 			field.Modifiers = strings.Split(strings.TrimSpace(modifiersStr), " ")
 		}
 	}
+	// extends and implements
+	extends := core.FindFirstByKindInSubsWithBfs(unit, KindJavaSuperClass)
+	if extends != nil {
+		typeIdentifier := core.FindFirstByOneOfKindInParent(unit, KindJavaTypeIdentifier, KindJavaGenericType)
+		if typeIdentifier != nil {
+			extras.Extends = typeIdentifier.Content
+		}
+	}
+	implements := core.FindFirstByKindInSubsWithBfs(unit, KindJavaSuperInterface)
+	if implements != nil {
+		typeList := core.FindFirstByKindInSubsWithBfs(implements, KindJavaTypeList)
+		// should not nil
+		if typeList == nil {
+			return nil, errors.New("implements but not decl")
+		}
+		for _, each := range core.FindAllByKindInSubs(typeList, KindJavaTypeIdentifier) {
+			extras.Implements = append(extras.Implements, each.Content)
+		}
+	}
+
 	clazz.Extras = extras
 
 	return clazz, nil

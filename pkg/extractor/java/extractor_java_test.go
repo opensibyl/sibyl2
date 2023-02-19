@@ -85,9 +85,8 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		// check base info
 		if each.Name == "enterMethodDeclarationWithoutMethodBody" {
 			assert.Equal(t, each.BodySpan.String(), "21:71,24:5")
+			assert.NotNil(t, each.Extras.(*FunctionExtras).ClassInfo.Annotations)
 		}
-
-		assert.NotNil(t, each.Extras.(*FunctionExtras).ClassInfo.Annotations)
 	}
 }
 

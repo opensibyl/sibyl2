@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"math"
+	"sort"
 	"strings"
 
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tikv/client-go/v2/kv"
 )
 
-func (t *tikvDriver) readRawRevs() ([]*revKey, error) {
+func (t *tikvDriver) readRawRevs() ([]*revKV, error) {
 	snapshot := t.client.GetSnapshot(math.MaxUint64)
 	keyByte := []byte(revEndPrefix)
 	iter, err := snapshot.Iter(keyByte, nil)
@@ -19,9 +20,19 @@ func (t *tikvDriver) readRawRevs() ([]*revKey, error) {
 		return nil, err
 	}
 	defer iter.Close()
-	ret := make([]*revKey, 0)
+	ret := make([]*revKV, 0)
 	for iter.Valid() {
-		ret = append(ret, parseRevKey(string(iter.Key())))
+		kv := &revKV{}
+		kv.k = parseRevKey(string(iter.Key()))
+		v := &object.RevInfo{}
+		err = json.Unmarshal(iter.Value(), v)
+		if err != nil {
+			return nil, err
+		}
+		kv.v = v
+
+		// ok
+		ret = append(ret, kv)
 		err := iter.Next()
 		if err != nil {
 			return nil, err
@@ -37,7 +48,7 @@ func (t *tikvDriver) ReadRepos(_ context.Context) ([]string, error) {
 	}
 	m := make(map[string]struct{}, 0)
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.k.Hash)
 		if err != nil {
 			return nil, err
 		}
@@ -57,8 +68,14 @@ func (t *tikvDriver) ReadRevs(repoId string, _ context.Context) ([]string, error
 		return nil, err
 	}
 	ret := make([]string, 0)
+
+	// order by create time desc
+	sort.Slice(revs, func(i, j int) bool {
+		return revs[i].v.CreateTime > revs[j].v.CreateTime
+	})
+
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.k.Hash)
 		if err != nil {
 			return nil, err
 		}

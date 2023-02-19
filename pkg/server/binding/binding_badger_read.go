@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
-func (d *badgerDriver) readRawRevs() ([]*revKey, error) {
-	ret := make([]*revKey, 0)
+func (d *badgerDriver) readRawRevs() ([]*revKV, error) {
+	ret := make([]*revKV, 0)
 	err := d.db.View(func(txn *badger.Txn) error {
 		opts := badger.DefaultIteratorOptions
 		opts.PrefetchValues = false
@@ -21,7 +22,23 @@ func (d *badgerDriver) readRawRevs() ([]*revKey, error) {
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			item := it.Item()
 			k := item.Key()
-			ret = append(ret, parseRevKey(string(k)))
+			kv := &revKV{}
+			kv.k = parseRevKey(string(k))
+			err := it.Item().Value(func(val []byte) error {
+				v := &object.RevInfo{}
+				err := json.Unmarshal(val, v)
+				if err != nil {
+					return fmt.Errorf("unmarshal rev info failed: %w", err)
+				}
+				kv.v = v
+				return nil
+			})
+			if err != nil {
+				return err
+			}
+
+			// ok
+			ret = append(ret, kv)
 		}
 		return nil
 	})
@@ -38,7 +55,7 @@ func (d *badgerDriver) ReadRepos(_ context.Context) ([]string, error) {
 	}
 	m := make(map[string]struct{}, 0)
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.k.Hash)
 		if err != nil {
 			return nil, err
 		}
@@ -58,8 +75,14 @@ func (d *badgerDriver) ReadRevs(repoId string, _ context.Context) ([]string, err
 		return nil, err
 	}
 	ret := make([]string, 0)
+
+	// order by create time desc
+	sort.Slice(revs, func(i, j int) bool {
+		return revs[i].v.CreateTime > revs[j].v.CreateTime
+	})
+
 	for _, eachRev := range revs {
-		wc, err := WorkspaceConfigFromKey(eachRev.Hash)
+		wc, err := WorkspaceConfigFromKey(eachRev.k.Hash)
 		if err != nil {
 			return nil, err
 		}

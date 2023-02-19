@@ -2,6 +2,8 @@ package binding
 
 import (
 	"strings"
+
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 /*
@@ -50,6 +52,11 @@ func ToRevKey(revHash string) *revKey {
 
 func parseRevKey(raw string) *revKey {
 	return &revKey{strings.TrimPrefix(raw, revEndPrefix)}
+}
+
+type revKV struct {
+	k *revKey
+	v *object.RevInfo
 }
 
 type fileKey struct {

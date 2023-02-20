@@ -167,6 +167,37 @@ func (t *tikvDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Con
 }
 
 func (t *tikvDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	f, err := t.ReadFunctionWithSignature(wc, signature, ctx)
+	if err != nil {
+		return err
+	}
+	f.AddTag(tag)
+
+	// key
+	key, err := wc.Key()
+	if err != nil {
+		return err
+	}
+	fk := toFileKey(key, f.Path)
+	curFuncKey := toFuncKey(fk.RevHash, fk.FileHash, f.GetSignature())
+
+	// write
+	newFuncBytes, err := json.Marshal(f)
+	if err != nil {
+		return err
+	}
+	txn, err := t.client.Begin()
+	if err != nil {
+		return err
+	}
+
+	err = txn.Set([]byte(curFuncKey.String()), newFuncBytes)
+	if err != nil {
+		return err
+	}
+	err = txn.Commit(ctx)
+	if err != nil {
+		return err
+	}
+	return nil
 }

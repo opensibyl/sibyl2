@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
@@ -112,7 +113,8 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 				return nil
 			}
 		}
-		return nil
+		// not found
+		return fmt.Errorf("func ctx not found: %v, %v", wc, signature)
 	})
 	if err != nil {
 		return nil, err

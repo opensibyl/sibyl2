@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"strings"
 
@@ -114,5 +115,5 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 		}
 	}
 	// did not find anything
-	return nil, nil
+	return nil, fmt.Errorf("func not found: %v, %v", wc, signature)
 }

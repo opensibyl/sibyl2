@@ -150,6 +150,35 @@ func (d *badgerDriver) CreateWorkspace(wc *object.WorkspaceConfig, _ context.Con
 }
 
 func (d *badgerDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
-	//TODO implement me
-	panic("implement me")
+	f, err := d.ReadFunctionWithSignature(wc, signature, ctx)
+	if err != nil {
+		return err
+	}
+	f.AddTag(tag)
+
+	// key
+	key, err := wc.Key()
+	if err != nil {
+		return err
+	}
+	fk := toFileKey(key, f.Path)
+	curFuncKey := toFuncKey(fk.RevHash, fk.FileHash, f.GetSignature())
+
+	// write
+	newFuncBytes, err := json.Marshal(f)
+	if err != nil {
+		return err
+	}
+	err = d.db.Update(func(txn *badger.Txn) error {
+		byteKey := []byte(curFuncKey.String())
+		err = txn.Set(byteKey, newFuncBytes)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	return nil
 }

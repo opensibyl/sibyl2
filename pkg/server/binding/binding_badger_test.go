@@ -114,6 +114,17 @@ func TestBadgerFunc(t *testing.T) {
 	funcs, err := d.ReadFunctionsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))
+
+	// tag
+	f := funcs[0]
+	assert.Empty(t, f.Tags)
+	newTag := "THIS_IS_A_TAG"
+	err = d.CreateFuncTag(wc, f.GetSignature(), newTag, ctx)
+	assert.Nil(t, err)
+	newF, err := d.ReadFunctionWithSignature(wc, f.GetSignature(), ctx)
+	assert.Nil(t, err)
+	assert.Len(t, newF.Tags, 1)
+	assert.Equal(t, newF.Tags[0], newTag)
 }
 
 func TestBadgerClazz(t *testing.T) {

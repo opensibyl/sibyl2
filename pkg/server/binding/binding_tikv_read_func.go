@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"regexp"
 	"strings"
@@ -86,7 +87,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 		}
 	}
 	// did not find anything
-	return nil, nil
+	return nil, fmt.Errorf("func not found: %v, %v", wc, signature)
 }
 
 func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithTag, error) {

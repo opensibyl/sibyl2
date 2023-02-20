@@ -124,6 +124,17 @@ func TestTikvFunc(t *testing.T) {
 	funcs, err := tikvTestDriver.ReadFunctionsWithRule(wc, rule, ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, 1, len(funcs))
+
+	// tag
+	f := funcs[0]
+	assert.Empty(t, f.Tags)
+	newTag := "THIS_IS_A_TAG"
+	err = tikvTestDriver.CreateFuncTag(wc, f.GetSignature(), newTag, ctx)
+	assert.Nil(t, err)
+	newF, err := tikvTestDriver.ReadFunctionWithSignature(wc, f.GetSignature(), ctx)
+	assert.Nil(t, err)
+	assert.Len(t, newF.Tags, 1)
+	assert.Equal(t, newF.Tags[0], newTag)
 }
 
 func TestTikvClazz(t *testing.T) {

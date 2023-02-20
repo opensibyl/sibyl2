@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -135,7 +136,7 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 	return searchResult, nil
 }
 
-func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithTag, error) {
+func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionWithTag, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -167,7 +168,8 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 				return nil
 			}
 		}
-		return nil
+		// not found
+		return fmt.Errorf("func not found: %v, %v", wc, signature)
 	})
 	if err != nil {
 		return nil, err

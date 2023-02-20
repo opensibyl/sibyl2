@@ -51,7 +51,7 @@ func (t *tikvDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig,
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*sibyl2.FunctionWithTag, error) {
+func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*object.FunctionWithSignature, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -69,7 +69,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	}
 	defer iter.Close()
 
-	ret := &sibyl2.FunctionWithTag{}
+	ret := &object.FunctionWithSignature{}
 	for iter.Valid() {
 		k := string(iter.Key())
 		if strings.Contains(k, shouldContain) {
@@ -79,6 +79,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 			}
 			fp, _, _ := strings.Cut(strings.TrimPrefix(k, prefixStr), shouldContain)
 			ret.Path = fp
+			ret.Signature = ret.GetSignature()
 			return ret, nil
 		}
 		err = iter.Next()
@@ -90,13 +91,13 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	return nil, fmt.Errorf("func not found: %v, %v", wc, signature)
 }
 
-func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithTag, error) {
+func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionWithSignature, error) {
 	functions, err := t.ReadFunctions(wc, path, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	searchResult := make([]*sibyl2.FunctionWithTag, 0)
+	searchResult := make([]*object.FunctionWithSignature, 0)
 	for _, each := range functions {
 		if each.Span.ContainAnyLine(lines...) {
 			searchResult = append(searchResult, each)
@@ -105,14 +106,14 @@ func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path str
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*sibyl2.FunctionWithTag, error) {
+func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionWithSignature, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	fk := toFileKey(key, path)
 
-	searchResult := make([]*sibyl2.FunctionWithTag, 0)
+	searchResult := make([]*object.FunctionWithSignature, 0)
 
 	prefixStr := fk.ToFuncScanPrefix()
 	prefix := []byte(prefixStr)
@@ -125,11 +126,12 @@ func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ co
 	defer iter.Close()
 
 	for iter.Valid() {
-		f := &sibyl2.FunctionWithTag{}
+		f := &object.FunctionWithSignature{}
 		err := json.Unmarshal(iter.Value(), f)
 		if err != nil {
 			return nil, err
 		}
+		f.Signature = f.GetSignature()
 		f.Path = path
 		searchResult = append(searchResult, f)
 		err = iter.Next()
@@ -141,7 +143,7 @@ func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ co
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*sibyl2.FunctionWithTag, error) {
+func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionWithSignature, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -151,7 +153,7 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 		return nil, err
 	}
 
-	searchResult := make([]*sibyl2.FunctionWithTag, 0)
+	searchResult := make([]*object.FunctionWithSignature, 0)
 
 	prefix := []byte(ToRevKey(key).ToScanPrefix())
 
@@ -174,11 +176,12 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 				}
 			}
 			// all the rules passed
-			f := &sibyl2.FunctionWithTag{}
+			f := &object.FunctionWithSignature{}
 			err = json.Unmarshal(rawFunc, f)
 			if err != nil {
 				return nil, err
 			}
+			f.Signature = f.GetSignature()
 			searchResult = append(searchResult, f)
 		}
 
@@ -189,4 +192,23 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 		}
 	}
 	return searchResult, nil
+}
+
+func (t *tikvDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error) {
+	// Actually, tags is a list. Deserialize is required.
+	// But for performance we use strings.Contains.
+	rule := make(Rule)
+	rule["tags"] = func(s string) bool {
+		return strings.Contains(s, tag)
+	}
+	functionWithTags, err := t.ReadFunctionsWithRule(wc, rule, ctx)
+	if err != nil {
+		return nil, err
+	}
+	// return only signature for avoiding huge io cost
+	ret := make([]string, 0, len(functionWithTags))
+	for _, each := range functionWithTags {
+		ret = append(ret, each.GetSignature())
+	}
+	return ret, nil
 }

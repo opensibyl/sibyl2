@@ -125,6 +125,19 @@ func TestServer(t *testing.T) {
 		assert.Contains(t, *each.Name, "Handle")
 	}
 
+	// tag
+	newTag := "NEW_TAG"
+	_, err = apiClient.TagApi.ApiV1TagFuncPost(ctx).Payload(openapi.ServiceTagUpload{
+		RepoId:    &repo,
+		RevHash:   &rev,
+		Signature: f.Signature,
+		Tag:       &newTag,
+	}).Execute()
+	assert.Nil(t, err)
+	strings, _, err := apiClient.TagApi.ApiV1TagFuncGet(ctx).Repo(repo).Rev(rev).Tag(newTag).Execute()
+	assert.Nil(t, err)
+	assert.Len(t, strings, 1)
+
 	t.Cleanup(func() {
 		stop()
 		time.Sleep(1000 * time.Millisecond)

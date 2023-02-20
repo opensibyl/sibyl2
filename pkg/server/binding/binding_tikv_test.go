@@ -135,6 +135,9 @@ func TestTikvFunc(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, newF.Tags, 1)
 	assert.Equal(t, newF.Tags[0], newTag)
+	fs, err := tikvTestDriver.ReadFunctionsWithTag(wc, newTag, ctx)
+	assert.Nil(t, err)
+	assert.Len(t, fs, 1)
 }
 
 func TestTikvClazz(t *testing.T) {

@@ -1,7 +1,12 @@
 package service
 
 import (
+	"fmt"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
 type tagUpload struct {
@@ -20,7 +25,24 @@ type tagUpload struct {
 // @Router  /api/v1/tag/func [get]
 // @Tags    Tag
 func HandleFuncTagQuery(c *gin.Context) {
+	repo := c.Query("repo")
+	rev := c.Query("rev")
+	tag := c.Query("tag")
 
+	wc := &object.WorkspaceConfig{
+		RepoId:  repo,
+		RevHash: rev,
+	}
+	if err := wc.Verify(); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	fs, err := sharedDriver.ReadFunctionsWithTag(wc, tag, sharedContext)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, fs)
 }
 
 // @Summary create func tag
@@ -31,5 +53,26 @@ func HandleFuncTagQuery(c *gin.Context) {
 // @Router  /api/v1/tag/func [post]
 // @Tags    Tag
 func HandleFuncTagCreate(c *gin.Context) {
+	result := &tagUpload{}
+	err := c.BindJSON(result)
+	if err != nil {
+		core.Log.Errorf("error when parse: %v\n", err)
+		c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
+		return
+	}
 
+	wc := &object.WorkspaceConfig{
+		RepoId:  result.RepoId,
+		RevHash: result.RevHash,
+	}
+	if err := wc.Verify(); err != nil {
+		c.JSON(http.StatusBadRequest, err)
+		return
+	}
+	err = sharedDriver.CreateFuncTag(wc, result.Signature, result.Tag, sharedContext)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, err)
+		return
+	}
+	c.JSON(http.StatusOK, nil)
 }

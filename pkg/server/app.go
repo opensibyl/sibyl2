@@ -186,8 +186,8 @@ func injectV1Group(v1group *gin.RouterGroup) {
 	countGroup.Handle(http.MethodGet, "/funcctx/reverse", service.HandleReferenceCountFuncctxReverse)
 	// tag
 	tagGroup := v1group.Group("tag")
-	tagGroup.Handle(http.MethodPost, "/func", service.HandleFuncTagQuery)
-	tagGroup.Handle(http.MethodGet, "/func", service.HandleFuncTagCreate)
+	tagGroup.Handle(http.MethodGet, "/func", service.HandleFuncTagQuery)
+	tagGroup.Handle(http.MethodPost, "/func", service.HandleFuncTagCreate)
 	// query by stat
 	v1group.Handle(http.MethodGet, "/rev/stat", service.HandleRevStatQuery)
 }

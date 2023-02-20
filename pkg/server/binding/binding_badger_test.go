@@ -125,6 +125,9 @@ func TestBadgerFunc(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Len(t, newF.Tags, 1)
 	assert.Equal(t, newF.Tags[0], newTag)
+	fs, err := d.ReadFunctionsWithTag(wc, newTag, ctx)
+	assert.Nil(t, err)
+	assert.Len(t, fs, 1)
 }
 
 func TestBadgerClazz(t *testing.T) {

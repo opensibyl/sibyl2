@@ -148,3 +148,8 @@ func (d *badgerDriver) CreateWorkspace(wc *object.WorkspaceConfig, _ context.Con
 	}
 	return nil
 }
+
+func (d *badgerDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
+	//TODO implement me
+	panic("implement me")
+}

@@ -8,7 +8,7 @@ import (
 )
 
 type FunctionWithSignature struct {
-	*sibyl2.FunctionWithPath
+	*sibyl2.FunctionWithTag
 	Signature string `json:"signature"`
 }
 

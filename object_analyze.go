@@ -32,6 +32,24 @@ func WrapFuncWithPath(f *extractor.Function, p string) *FunctionWithPath {
 	}
 }
 
+type FuncTag = string
+
+type FunctionWithTag struct {
+	*FunctionWithPath
+	Tags []FuncTag `json:"tags"`
+}
+
+func WrapFuncWithTag(f *FunctionWithPath) *FunctionWithTag {
+	return &FunctionWithTag{
+		FunctionWithPath: f,
+		Tags:             make([]FuncTag, 0),
+	}
+}
+
+func (fwt *FunctionWithTag) AddTag(tag FuncTag) {
+	fwt.Tags = append(fwt.Tags, tag)
+}
+
 type FunctionContext struct {
 	*FunctionWithPath
 	Calls        []*FunctionWithPath `json:"calls"`

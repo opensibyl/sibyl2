@@ -50,7 +50,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	var functions []*sibyl2.FunctionWithPath
+	var functions []*sibyl2.FunctionWithTag
 	var err error
 	if lines == "" {
 		functions, err = sharedDriver.ReadFunctions(wc, file, sharedContext)
@@ -74,8 +74,8 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	ret := make([]*object.FunctionWithSignature, 0, len(functions))
 	for _, each := range functions {
 		fws := &object.FunctionWithSignature{
-			FunctionWithPath: each,
-			Signature:        each.GetSignature(),
+			FunctionWithTag: each,
+			Signature:       each.GetSignature(),
 		}
 		ret = append(ret, fws)
 	}

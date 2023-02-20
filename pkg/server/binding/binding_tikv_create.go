@@ -165,3 +165,8 @@ func (t *tikvDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Con
 	}
 	return nil
 }
+
+func (t *tikvDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
+	//TODO implement me
+	panic("implement me")
+}

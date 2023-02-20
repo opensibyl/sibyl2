@@ -44,6 +44,7 @@ type Rule = map[string]func(string) bool
 
 type driverCreate interface {
 	CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
+	CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error
 	CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error
 	CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error
 	CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error
@@ -55,11 +56,11 @@ type driverRead interface {
 	ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Context) (*object.RevInfo, error)
 	ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error)
 
-	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
-	ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
-	ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithPath, error)
+	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.FunctionWithTag, error)
+	ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionWithTag, error)
+	ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionWithTag, error)
 	ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error)
-	ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithPath, error)
+	ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionWithTag, error)
 
 	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
 	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)

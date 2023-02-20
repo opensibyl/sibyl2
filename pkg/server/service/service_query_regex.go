@@ -12,14 +12,14 @@ import (
 )
 
 // @Summary func query
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   field   query string true  "field"
-// @Param   regex   query string true  "regex"
+// @Param   repo  query string true "repo"
+// @Param   rev   query string true "rev"
+// @Param   field query string true "field"
+// @Param   regex query string true "regex"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionWithPath
+// @Success 200 {array} sibyl2.FunctionWithTag
 // @Router  /api/v1/regex/func [get]
-// @Tags RegexQuery
+// @Tags    RegexQuery
 func HandleRegexFunc(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -56,14 +56,14 @@ func HandleRegexFunc(c *gin.Context) {
 }
 
 // @Summary clazz query
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   field   query string true  "field"
-// @Param   regex   query string true  "regex"
+// @Param   repo  query string true "repo"
+// @Param   rev   query string true "rev"
+// @Param   field query string true "field"
+// @Param   regex query string true "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.ClazzWithPath
 // @Router  /api/v1/regex/clazz [get]
-// @Tags RegexQuery
+// @Tags    RegexQuery
 func HandleRegexClazz(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -100,14 +100,14 @@ func HandleRegexClazz(c *gin.Context) {
 }
 
 // @Summary func ctx query
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   field   query string true  "field"
-// @Param   regex   query string true  "regex"
+// @Param   repo  query string true "repo"
+// @Param   rev   query string true "rev"
+// @Param   field query string true "field"
+// @Param   regex query string true "regex"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/regex/funcctx [get]
-// @Tags RegexQuery
+// @Tags    RegexQuery
 func HandleRegexFuncctx(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

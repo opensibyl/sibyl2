@@ -10,14 +10,14 @@ import (
 )
 
 // @Summary funcctx query by ref
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   moreThan   query int true  "moreThan"
-// @Param   lessThan   query int true  "lessThan"
+// @Param   repo     query string true "repo"
+// @Param   rev      query string true "rev"
+// @Param   moreThan query int    true "moreThan"
+// @Param   lessThan query int    true "lessThan"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/reference/count/funcctx [get]
-// @Tags ReferenceQuery
+// @Tags    ReferenceQuery
 func HandleReferenceCountFuncctx(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -68,14 +68,14 @@ func HandleReferenceCountFuncctx(c *gin.Context) {
 }
 
 // @Summary funcctx query by referenced
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   moreThan   query int true  "moreThan"
-// @Param   lessThan   query int true  "lessThan"
+// @Param   repo     query string true "repo"
+// @Param   rev      query string true "rev"
+// @Param   moreThan query int    true "moreThan"
+// @Param   lessThan query int    true "lessThan"
 // @Produce json
 // @Success 200 {array} sibyl2.FunctionContextSlim
 // @Router  /api/v1/reference/count/funcctx/reverse [get]
-// @Tags ReferenceQuery
+// @Tags    ReferenceQuery
 func HandleReferenceCountFuncctxReverse(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

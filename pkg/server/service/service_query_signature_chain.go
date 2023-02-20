@@ -49,14 +49,14 @@ func (t *ContextTree) AddChain(chain []string) {
 }
 
 // @Summary funcctx reverse chain query
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   signature   query string true  "signature"
-// @Param   depth   query int true  "depth"
+// @Param   repo      query string true "repo"
+// @Param   rev       query string true "rev"
+// @Param   signature query string true "signature"
+// @Param   depth     query int    true "depth"
 // @Produce json
 // @Success 200 {object} FunctionContextChain
 // @Router  /api/v1/signature/funcctx/rchain [get]
-// @Tags SignatureQuery
+// @Tags    SignatureQuery
 func HandleSignatureFuncctxReverseChain(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -134,14 +134,14 @@ func searchReverseCallChains(wc *object.WorkspaceConfig, startPoint string, curC
 }
 
 // @Summary funcctx chain query
-// @Param   repo  query string true  "repo"
-// @Param   rev   query string true  "rev"
-// @Param   signature   query string true  "signature"
-// @Param   depth   query int true  "depth"
+// @Param   repo      query string true "repo"
+// @Param   rev       query string true "rev"
+// @Param   signature query string true "signature"
+// @Param   depth     query int    true "depth"
 // @Produce json
 // @Success 200 {object} FunctionContextChain
 // @Router  /api/v1/signature/funcctx/chain [get]
-// @Tags SignatureQuery
+// @Tags    SignatureQuery
 func HandleSignatureFuncctxChain(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

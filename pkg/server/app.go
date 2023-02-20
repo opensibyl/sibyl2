@@ -21,13 +21,13 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title openapi for sibyl2 server
-// @version         1.0
-// @termsOfService  http://swagger.io/terms/
+// @title          openapi for sibyl2 server
+// @version        1.0
+// @termsOfService http://swagger.io/terms/
 // @contact.name   williamfzc
 // @contact.url    https://github.com/williamfzc
-// @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.name   Apache 2.0
+// @license.url    http://www.apache.org/licenses/LICENSE-2.0.html
 func Execute(config object.ExecuteConfig, ctx context.Context) error {
 	configStr, err := config.ToJson()
 	if err != nil {
@@ -184,6 +184,10 @@ func injectV1Group(v1group *gin.RouterGroup) {
 	countGroup := referenceGroup.Group("count")
 	countGroup.Handle(http.MethodGet, "/funcctx", service.HandleReferenceCountFuncctx)
 	countGroup.Handle(http.MethodGet, "/funcctx/reverse", service.HandleReferenceCountFuncctxReverse)
+	// tag
+	tagGroup := v1group.Group("tag")
+	tagGroup.Handle(http.MethodPost, "/func", service.HandleFuncTagQuery)
+	tagGroup.Handle(http.MethodGet, "/func", service.HandleFuncTagCreate)
 	// query by stat
 	v1group.Handle(http.MethodGet, "/rev/stat", service.HandleRevStatQuery)
 }

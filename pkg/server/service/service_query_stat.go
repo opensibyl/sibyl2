@@ -19,7 +19,7 @@ type RevStat struct {
 // @Produce json
 // @Success 200 {object} RevStat
 // @Router  /api/v1/rev/stat [get]
-// @Tags StatQuery
+// @Tags    StatQuery
 func HandleRevStatQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

@@ -12,7 +12,7 @@ import (
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/repo [get]
-// @Tags Scope
+// @Tags    Scope
 func HandleRepoQuery(c *gin.Context) {
 	repos, err := sharedDriver.ReadRepos(sharedContext)
 	if err != nil {
@@ -27,7 +27,7 @@ func HandleRepoQuery(c *gin.Context) {
 // @Produce json
 // @Success 200
 // @Router  /api/v1/repo [delete]
-// @Tags Scope
+// @Tags    Scope
 func HandleRepoDelete(c *gin.Context) {
 	repo := c.Query("repo")
 	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
@@ -56,7 +56,7 @@ func HandleRepoDelete(c *gin.Context) {
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/rev [get]
-// @Tags Scope
+// @Tags    Scope
 func HandleRevQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	revs, err := sharedDriver.ReadRevs(repo, sharedContext)
@@ -73,7 +73,7 @@ func HandleRevQuery(c *gin.Context) {
 // @Produce json
 // @Success 200
 // @Router  /api/v1/rev [delete]
-// @Tags Scope
+// @Tags    Scope
 func HandleRevDelete(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")
@@ -95,13 +95,13 @@ func HandleRevDelete(c *gin.Context) {
 }
 
 // @Summary file query by repo and rev
-// @Param   repo query string true "repo"
-// @Param   rev  query string true "rev"
-// @Param   includeRegex  query string false "includeRegex"
+// @Param   repo         query string true  "repo"
+// @Param   rev          query string true  "rev"
+// @Param   includeRegex query string false "includeRegex"
 // @Produce json
 // @Success 200 {array} string
 // @Router  /api/v1/file [get]
-// @Tags Scope
+// @Tags    Scope
 func HandleFileQuery(c *gin.Context) {
 	repo := c.Query("repo")
 	rev := c.Query("rev")

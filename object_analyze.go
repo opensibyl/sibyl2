@@ -37,13 +37,6 @@ type FunctionWithTag struct {
 	Tags []FuncTag `json:"tags"`
 }
 
-func WrapFuncWithTag(f *FunctionWithPath) *FunctionWithTag {
-	return &FunctionWithTag{
-		FunctionWithPath: f,
-		Tags:             make([]FuncTag, 0),
-	}
-}
-
 func (fwt *FunctionWithTag) AddTag(tag FuncTag) {
 	fwt.Tags = append(fwt.Tags, tag)
 }

@@ -10,7 +10,6 @@ import (
 type DriverType = string
 
 const (
-	DriverTypeNeo4j    DriverType = "NEO4J"
 	DriverTypeInMemory DriverType = "INMEM"
 	DriverTypeBadger   DriverType = "BADGER"
 	DriverTypeTikv     DriverType = "TIKV"

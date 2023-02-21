@@ -7,16 +7,6 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
-type FunctionWithSignature struct {
-	*sibyl2.FunctionWithTag
-	Signature string `json:"signature"`
-}
-
-type FunctionContextSlimWithSignature struct {
-	*sibyl2.FunctionContextSlim
-	Signature string `json:"signature"`
-}
-
 type FunctionUploadUnit struct {
 	WorkspaceConfig *WorkspaceConfig              `json:"workspace"`
 	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`

@@ -2,8 +2,6 @@ package golang
 
 import (
 	"errors"
-	"fmt"
-	"strings"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
@@ -75,21 +73,13 @@ func (extractor *Extractor) methodUnit2Function(unit *core.Unit) (*object.Functi
 	if typeDecl == nil {
 		return nil, errors.New("no receiver found in: " + typeDecl.Content)
 	}
-	// add package info too
-	// https://github.com/opensibyl/sibyl2/issues/48
-	// package name
+	funcUnit.Receiver = typeDecl.Content
+
+	// namespace: package
 	root := core.FindFirstByKindInParent(unit, KindGolangSourceFile)
 	pkgName := core.FindFirstByKindInSubsWithDfs(root, KindGolangPackageIdentifier)
-	typeDeclName := typeDecl.Content
 	if pkgName != nil {
-		if strings.HasPrefix(typeDeclName, "*") {
-			typeDeclName = strings.TrimPrefix(typeDeclName, "*")
-			funcUnit.Receiver = fmt.Sprintf("*%s.%s", pkgName.Content, typeDeclName)
-		} else {
-			funcUnit.Receiver = fmt.Sprintf("%s.%s", pkgName.Content, typeDeclName)
-		}
-	} else {
-		funcUnit.Receiver = typeDeclName
+		funcUnit.Namespace = pkgName.Content
 	}
 
 	// params
@@ -168,6 +158,13 @@ func (extractor *Extractor) funcUnit2Function(unit *core.Unit) (*object.Function
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
+
+	// namespace: package
+	root := core.FindFirstByKindInParent(unit, KindGolangSourceFile)
+	pkgName := core.FindFirstByKindInSubsWithDfs(root, KindGolangPackageIdentifier)
+	if pkgName != nil {
+		funcUnit.Namespace = pkgName.Content
+	}
 
 	// params
 	// no param == empty slice, never nil

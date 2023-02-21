@@ -17,6 +17,7 @@ type ValueUnit struct {
 type Function struct {
 	Name       string       `json:"name"`
 	Receiver   string       `json:"receiver"`
+	Namespace  string       `json:"namespace"`
 	Parameters []*ValueUnit `json:"parameters"`
 	Returns    []*ValueUnit `json:"returns"`
 	// this span will include header and content
@@ -49,7 +50,7 @@ func Map2Func(exported map[string]any) (*Function, error) {
 }
 
 func (f *Function) GetSignature() FuncSignature {
-	prefix := fmt.Sprintf("%s::%s", f.Receiver, f.Name)
+	prefix := fmt.Sprintf("%s|%s|%s", f.Namespace, f.Receiver, f.Name)
 
 	params := make([]string, len(f.Parameters))
 	for i, each := range f.Parameters {

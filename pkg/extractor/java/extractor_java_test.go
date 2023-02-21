@@ -86,6 +86,7 @@ func TestJavaExtractor_ExtractFunctions(t *testing.T) {
 		if each.Name == "enterMethodDeclarationWithoutMethodBody" {
 			assert.Equal(t, each.BodySpan.String(), "21:71,24:5")
 			assert.NotNil(t, each.Extras.(*FunctionExtras).ClassInfo.Annotations)
+			assert.Equal(t, each.Namespace, "com.williamfzc.sibyl.core.listener.java8")
 		}
 	}
 }

@@ -62,6 +62,7 @@ func TestGolangExtractor_ExtractFunctions(t *testing.T) {
 
 	privateMethod := funcs[len(funcs)-1]
 	assert.NotEqual(t, privateMethod.BodySpan.Start.Row, 0)
+	assert.Equal(t, privateMethod.Namespace, "abc")
 }
 
 func TestGolangExtractor_Serialize(t *testing.T) {

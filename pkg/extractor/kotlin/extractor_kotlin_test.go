@@ -75,6 +75,7 @@ func TestExtractor_ExtractFunctions(t *testing.T) {
 	funcs, err := extractor.ExtractFunctions(units)
 	assert.Nil(t, err)
 	assert.Equal(t, 3, len(funcs))
+	assert.Equal(t, funcs[0].Namespace, "pa.ck.age")
 }
 
 func TestExtractor_ExtractClasses(t *testing.T) {

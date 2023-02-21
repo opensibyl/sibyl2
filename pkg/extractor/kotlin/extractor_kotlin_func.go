@@ -60,6 +60,7 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 		clazzName = clazzIdentifier.Content
 		funcUnit.Receiver = pkgName + "." + clazzName
 	}
+	funcUnit.Namespace = pkgName
 
 	return funcUnit, nil
 }

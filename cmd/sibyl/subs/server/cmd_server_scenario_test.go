@@ -214,6 +214,41 @@ func TestMainScenario(t *testing.T) {
 		assert.Nil(t, err)
 	})
 
+	// scenario 5: tag test functions, and query by tag
+	t.Run("scenario_5_tag_test_function", func(t *testing.T) {
+		rev := head.Hash().String()
+		functions, _, err := apiClient.RegexQueryApi.
+			ApiV1RegexFuncGet(ctx).
+			Repo(projectName).
+			Rev(rev).
+			Field("name").
+			Regex("^Test.*").
+			Execute()
+		assert.Nil(t, err)
+		assert.NotEmpty(t, functions)
+		// tag these functions with `TEST_METHOD`
+		TagForCases := "TEST_METHOD"
+		for _, eachFunc := range functions {
+			eachFuncSign := eachFunc.GetSignature()
+			_, err := apiClient.TagApi.ApiV1TagFuncPost(ctx).Payload(openapi.ServiceTagUpload{
+				RepoId:    &projectName,
+				RevHash:   &rev,
+				Signature: &eachFuncSign,
+				Tag:       &TagForCases,
+			}).Execute()
+			assert.Nil(t, err)
+		}
+
+		// query
+		functionsFromQuery, _, err := apiClient.TagApi.ApiV1TagFuncGet(ctx).Repo(projectName).Rev(rev).Tag(TagForCases).Execute()
+		for _, eachFunc := range functionsFromQuery {
+			core.Log.Infof("tag from query: %v", eachFunc)
+		}
+		assert.Nil(t, err)
+		assert.NotEmpty(t, functionsFromQuery)
+		assert.Equal(t, len(functions), len(functionsFromQuery))
+	})
+
 	t.Cleanup(func() {
 		stop()
 		time.Sleep(2000 * time.Millisecond)

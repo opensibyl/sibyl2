@@ -49,7 +49,7 @@ func HandleFuncTagQuery(c *gin.Context) {
 // @Accept  json
 // @Produce json
 // @Success 200
-// @Param   payload body tagUpload true "Payload description"
+// @Param   payload body tagUpload true "tag upload payload"
 // @Router  /api/v1/tag/func [post]
 // @Tags    Tag
 func HandleFuncTagCreate(c *gin.Context) {

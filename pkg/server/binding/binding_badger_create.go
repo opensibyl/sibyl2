@@ -9,6 +9,7 @@ import (
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"golang.org/x/exp/slices"
 )
 
 func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, _ context.Context) error {
@@ -150,26 +151,33 @@ func (d *badgerDriver) CreateWorkspace(wc *object.WorkspaceConfig, _ context.Con
 }
 
 func (d *badgerDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
-	f, err := d.ReadFunctionWithSignature(wc, signature, ctx)
-	if err != nil {
-		return err
-	}
-	f.AddTag(tag)
+	err := d.db.Update(func(txn *badger.Txn) error {
+		// request inside the transaction
+		f, err := d.ReadFunctionWithSignature(wc, signature, ctx)
+		if err != nil {
+			return err
+		}
 
-	// key
-	key, err := wc.Key()
-	if err != nil {
-		return err
-	}
-	fk := toFileKey(key, f.Path)
-	curFuncKey := toFuncKey(fk.RevHash, fk.FileHash, f.GetSignature())
+		if slices.Contains(f.Tags, tag) {
+			// duplicated
+			return nil
+		}
+		f.AddTag(tag)
 
-	// write
-	newFuncBytes, err := json.Marshal(f)
-	if err != nil {
-		return err
-	}
-	err = d.db.Update(func(txn *badger.Txn) error {
+		// key
+		key, err := wc.Key()
+		if err != nil {
+			return err
+		}
+		fk := toFileKey(key, f.Path)
+		curFuncKey := toFuncKey(fk.RevHash, fk.FileHash, f.GetSignature())
+
+		// write
+		newFuncBytes, err := json.Marshal(f)
+		if err != nil {
+			return err
+		}
+
 		byteKey := []byte(curFuncKey.String())
 		err = txn.Set(byteKey, newFuncBytes)
 		if err != nil {

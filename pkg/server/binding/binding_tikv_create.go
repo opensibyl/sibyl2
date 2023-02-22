@@ -8,6 +8,7 @@ import (
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"golang.org/x/exp/slices"
 )
 
 func (t *tikvDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
@@ -167,9 +168,19 @@ func (t *tikvDriver) CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Con
 }
 
 func (t *tikvDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
+	txn, err := t.client.Begin()
+	if err != nil {
+		return err
+	}
+
 	f, err := t.ReadFunctionWithSignature(wc, signature, ctx)
 	if err != nil {
 		return err
+	}
+
+	// duplicated
+	if slices.Contains(f.Tags, tag) {
+		return nil
 	}
 	f.AddTag(tag)
 
@@ -183,10 +194,6 @@ func (t *tikvDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string,
 
 	// write
 	newFuncBytes, err := json.Marshal(f)
-	if err != nil {
-		return err
-	}
-	txn, err := t.client.Begin()
 	if err != nil {
 		return err
 	}

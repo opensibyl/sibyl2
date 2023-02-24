@@ -2,6 +2,7 @@ package core
 
 import (
 	"strings"
+	"sync"
 
 	sitter "github.com/smacker/go-tree-sitter"
 	"github.com/smacker/go-tree-sitter/golang"
@@ -31,6 +32,16 @@ var SupportedLangs = []LangType{
 	LangJavaScript,
 }
 
+type auxiliaryLang struct {
+	lang   *sitter.Language
+	suffix string
+}
+
+var (
+	langMu          sync.RWMutex
+	additionalLangs = make(map[LangType]auxiliaryLang)
+)
+
 func (langType LangType) IsSupported() bool {
 	return slices.Contains(SupportedLangs, langType)
 }
@@ -51,9 +62,11 @@ func LangTypeValueOf(raw string) LangType {
 		return LangKotlin
 	case LangJavaScript.GetValue():
 		return LangJavaScript
-	default:
-		return LangUnknown
 	}
+	if _, ok := additionalLangs[LangType(raw)]; ok {
+		return LangType(raw)
+	}
+	return LangUnknown
 }
 
 func (langType LangType) GetLanguage() *sitter.Language {
@@ -69,6 +82,9 @@ func (langType LangType) GetLanguage() *sitter.Language {
 		return kotlin.GetLanguage()
 	case LangJavaScript:
 		return javascript.GetLanguage()
+	}
+	if l, ok := additionalLangs[langType]; ok {
+		return l.lang
 	}
 	return nil
 }
@@ -91,4 +107,21 @@ func (langType LangType) GetFileSuffix() string {
 
 func (langType LangType) MatchName(name string) bool {
 	return strings.HasSuffix(name, langType.GetFileSuffix())
+}
+
+func RegisterLang(langType LangType, lang *sitter.Language, suffix string) {
+	langMu.Lock()
+	defer langMu.Unlock()
+	if lang == nil {
+		panic("lang is nil")
+	}
+	if _, dup := additionalLangs[langType]; dup {
+		panic("Register called twice for lang " + langType)
+	}
+	additionalLangs[langType] = auxiliaryLang{
+		lang:   lang,
+		suffix: suffix,
+	}
+
+	SupportedLangs = append(SupportedLangs, langType)
 }

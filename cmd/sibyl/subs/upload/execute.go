@@ -2,7 +2,6 @@ package upload
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -19,6 +18,7 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/vmihailenco/msgpack/v5"
 )
 
 var httpClient = retryablehttp.NewClient()
@@ -34,6 +34,17 @@ func panicIfErr(err error) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func msgpack2bytes(o interface{}) ([]byte, error) {
+	var output bytes.Buffer
+	enc := msgpack.NewEncoder(&output)
+	enc.SetCustomStructTag("json")
+	err := enc.Encode(o)
+	if err != nil {
+		return nil, err
+	}
+	return output.Bytes(), nil
 }
 
 func ExecWithConfig(c *UploadConfig) {
@@ -294,14 +305,12 @@ func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
 		go func(u *object.FunctionUploadUnit, waitGroup *sync.WaitGroup) {
 			defer waitGroup.Done()
 
-			jsonStr, err := json.Marshal(u)
-			if err != nil {
-				panic(err)
-			}
+			uploadData, err := msgpack2bytes(u)
+			panicIfErr(err)
 			resp, err := httpClient.Post(
 				url,
-				"application/json",
-				bytes.NewBuffer(jsonStr))
+				object.BodyTypeMsgpack,
+				uploadData)
 			panicIfErr(err)
 			data, err := io.ReadAll(resp.Body)
 			panicIfErr(err)
@@ -351,12 +360,12 @@ func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, functions []
 
 func uploadFunctionContextUnits(url string, wc *object.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
 	uploadUnit := &object.FunctionContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
-	jsonStr, err := json.Marshal(uploadUnit)
+	uploadData, err := msgpack2bytes(uploadUnit)
 	panicIfErr(err)
 	resp, err := httpClient.Post(
 		url,
-		"application/json",
-		bytes.NewBuffer(jsonStr))
+		object.BodyTypeMsgpack,
+		uploadData)
 	panicIfErr(err)
 	data, err := io.ReadAll(resp.Body)
 	panicIfErr(err)
@@ -400,17 +409,14 @@ func uploadClazzUnits(url string, units []*object.ClazzUploadUnit) {
 			continue
 		}
 		wg.Add(1)
-		go func(u *object.ClazzUploadUnit, waitGroup *sync.WaitGroup) {
+		go func(uploadUnit *object.ClazzUploadUnit, waitGroup *sync.WaitGroup) {
 			defer waitGroup.Done()
-
-			jsonStr, err := json.Marshal(u)
-			if err != nil {
-				panic(err)
-			}
+			uploadData, err := msgpack2bytes(uploadUnit)
+			panicIfErr(err)
 			resp, err := httpClient.Post(
 				url,
-				"application/json",
-				bytes.NewBuffer(jsonStr))
+				object.BodyTypeMsgpack,
+				uploadData)
 			panicIfErr(err)
 			data, err := io.ReadAll(resp.Body)
 			panicIfErr(err)

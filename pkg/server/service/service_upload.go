@@ -2,12 +2,24 @@ package service
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/vmihailenco/msgpack/v5"
 )
+
+func extractBodyWithMsgpack(body io.ReadCloser, o interface{}) error {
+	d := msgpack.NewDecoder(body)
+	d.SetCustomStructTag("json")
+	err := d.Decode(o)
+	if err != nil {
+		return err
+	}
+	return nil
+}
 
 // @Summary upload functions
 // @Accept  json
@@ -18,12 +30,22 @@ import (
 // @Tags    Upload
 func HandleFunctionUpload(c *gin.Context) {
 	result := &object.FunctionUploadUnit{}
-	err := c.BindJSON(result)
-	if err != nil {
-		core.Log.Errorf("error when parse: %v\n", err)
-		c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
-		return
+	if c.GetHeader("Content-Type") == object.BodyTypeMsgpack {
+		err := extractBodyWithMsgpack(c.Request.Body, result)
+		if err != nil {
+			core.Log.Errorf("error when parse msgpack: %v\n", err)
+			c.JSON(http.StatusBadRequest, fmt.Sprintf("parse msgpack error: %v", err))
+			return
+		}
+	} else {
+		err := c.BindJSON(result)
+		if err != nil {
+			core.Log.Errorf("error when parse json: %v\n", err)
+			c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
+			return
+		}
 	}
+
 	if err := result.WorkspaceConfig.Verify(); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -41,12 +63,22 @@ func HandleFunctionUpload(c *gin.Context) {
 // @Tags    Upload
 func HandleFunctionContextUpload(c *gin.Context) {
 	result := &object.FunctionContextUploadUnit{}
-	err := c.BindJSON(result)
-	if err != nil {
-		core.Log.Errorf("error when parse: %v\n", err)
-		c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
-		return
+	if c.GetHeader("Content-Type") == object.BodyTypeMsgpack {
+		err := extractBodyWithMsgpack(c.Request.Body, result)
+		if err != nil {
+			core.Log.Errorf("error when parse msgpack: %v\n", err)
+			c.JSON(http.StatusBadRequest, fmt.Sprintf("parse msgpack error: %v", err))
+			return
+		}
+	} else {
+		err := c.BindJSON(result)
+		if err != nil {
+			core.Log.Errorf("error when parse json: %v\n", err)
+			c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
+			return
+		}
 	}
+
 	if err := result.WorkspaceConfig.Verify(); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return
@@ -64,12 +96,22 @@ func HandleFunctionContextUpload(c *gin.Context) {
 // @Tags    Upload
 func HandleClazzUpload(c *gin.Context) {
 	result := &object.ClazzUploadUnit{}
-	err := c.BindJSON(result)
-	if err != nil {
-		core.Log.Errorf("error when parse: %v\n", err)
-		c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
-		return
+	if c.GetHeader("Content-Type") == object.BodyTypeMsgpack {
+		err := extractBodyWithMsgpack(c.Request.Body, result)
+		if err != nil {
+			core.Log.Errorf("error when parse msgpack: %v\n", err)
+			c.JSON(http.StatusBadRequest, fmt.Sprintf("parse msgpack error: %v", err))
+			return
+		}
+	} else {
+		err := c.BindJSON(result)
+		if err != nil {
+			core.Log.Errorf("error when parse json: %v\n", err)
+			c.JSON(http.StatusBadRequest, fmt.Sprintf("parse json error: %v", err))
+			return
+		}
 	}
+
 	if err := result.WorkspaceConfig.Verify(); err != nil {
 		c.JSON(http.StatusBadRequest, err)
 		return

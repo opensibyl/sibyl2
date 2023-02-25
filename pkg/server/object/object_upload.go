@@ -7,6 +7,8 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
+const BodyTypeMsgpack = "application/msgpack"
+
 type FunctionUploadUnit struct {
 	WorkspaceConfig *WorkspaceConfig              `json:"workspace"`
 	FunctionResult  *extractor.FunctionFileResult `json:"funcResult"`

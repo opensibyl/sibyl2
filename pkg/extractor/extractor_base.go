@@ -1,6 +1,8 @@
 package extractor
 
 import (
+	"sync"
+
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/golang"
 	"github.com/opensibyl/sibyl2/pkg/extractor/java"
@@ -27,6 +29,11 @@ type Extractor interface {
 }
 
 type ExtractType = string
+
+var (
+	extractorMu          sync.RWMutex
+	additionalExtractors = make(map[core.LangType]Extractor)
+)
 
 // these extractors are independent with each other
 const (
@@ -71,7 +78,22 @@ func GetExtractor(lang core.LangType) Extractor {
 	case core.LangJavaScript:
 		return &javascript.Extractor{}
 	}
+	if e, ok := additionalExtractors[lang]; ok {
+		return e
+	}
 	return nil
+}
+
+func RegisterExtractor(langType core.LangType, extractor Extractor) {
+	extractorMu.Lock()
+	defer extractorMu.Unlock()
+	if extractor == nil {
+		panic("extractor is nil")
+	}
+	if _, dup := additionalExtractors[langType]; dup {
+		panic("Register called twice for lang " + langType)
+	}
+	additionalExtractors[langType] = extractor
 }
 
 type Function = object.Function

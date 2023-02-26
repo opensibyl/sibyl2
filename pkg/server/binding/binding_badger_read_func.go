@@ -12,6 +12,7 @@ import (
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
+	"golang.org/x/exp/slices"
 )
 
 func (d *badgerDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, _ context.Context) ([]string, error) {
@@ -196,11 +197,23 @@ func (d *badgerDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path s
 }
 
 func (d *badgerDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error) {
-	// Actually, tags is a list. Deserialize is required.
-	// But for performance we use strings.Contains.
 	rule := make(Rule)
+	requiredTags := strings.Split(tag, ";")
 	rule["tags"] = func(s string) bool {
-		return strings.Contains(s, tag)
+		// json string list
+		tags := make([]string, 0)
+		err := json.Unmarshal([]byte(s), &tags)
+		if err != nil {
+			// should not happen
+			return false
+		}
+		// all the tags should exist
+		for _, each := range requiredTags {
+			if !slices.Contains(tags, each) {
+				return false
+			}
+		}
+		return true
 	}
 	functionWithTags, err := d.ReadFunctionsWithRule(wc, rule, ctx)
 	if err != nil {

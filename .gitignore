@@ -2,6 +2,7 @@
 
 # doc
 pkg/server/docs
+!pkg/server/docs/empty.go
 
 # frontend
 frontend/*

@@ -1,63 +1,33 @@
 package upload
 
 import (
-	"bytes"
 	"errors"
-	"fmt"
-	"io"
-	"net/http"
 	"path/filepath"
 	"regexp"
-	"sync"
 	"time"
 
 	"github.com/go-git/go-git/v5"
 	object2 "github.com/go-git/go-git/v5/plumbing/object"
-	"github.com/hashicorp/go-retryablehttp"
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/core"
-	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
-	"github.com/vmihailenco/msgpack/v5"
 )
 
-var httpClient = retryablehttp.NewClient()
-
-func init() {
-	httpClient.RetryMax = 3
-	httpClient.RetryWaitMin = 500 * time.Millisecond
-	httpClient.RetryWaitMax = 10 * time.Second
-	httpClient.Logger = nil
-}
-
-func panicIfErr(err error) {
-	if err != nil {
-		panic(err)
-	}
-}
-
-func msgpack2bytes(o interface{}) ([]byte, error) {
-	var output bytes.Buffer
-	enc := msgpack.NewEncoder(&output)
-	enc.SetCustomStructTag("json")
-	err := enc.Encode(o)
-	if err != nil {
-		return nil, err
-	}
-	return output.Bytes(), nil
-}
-
-func ExecWithConfig(c *UploadConfig) {
+func ExecWithConfig(c *Config) error {
 	startTime := time.Now()
 	defer func() {
 		core.Log.Infof("upload total cost: %d ms", time.Since(startTime).Milliseconds())
 	}()
 
 	configStr, err := c.ToJson()
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 	core.Log.Infof("upload with config: %s", configStr)
 	uploadSrc, err := filepath.Abs(c.Src)
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	// if repo id and rev hash has been set, do not access git.
 	// https://github.com/opensibyl/sibyl2/issues/44
@@ -66,20 +36,30 @@ func ExecWithConfig(c *UploadConfig) {
 			RepoId:  c.RepoId,
 			RevHash: c.RevHash,
 		}
-		execCurRevWithConfig(uploadSrc, wc, c)
+		err := execCurRevWithConfig(uploadSrc, wc, c)
+		if err != nil {
+			return err
+		}
 	} else {
-		execWithGit(uploadSrc, c)
+		err := execWithGit(uploadSrc, c)
+		if err != nil {
+			return err
+		}
 	}
-
 	core.Log.Infof("upload finished")
+	return nil
 }
 
-func execWithGit(uploadSrc string, c *UploadConfig) {
+func execWithGit(uploadSrc string, c *Config) error {
 	// extract from git
 	repo, err := loadRepo(uploadSrc)
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 	head, err := repo.Head()
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	var curRepo string
 	if c.RepoId == "" {
@@ -89,7 +69,9 @@ func execWithGit(uploadSrc string, c *UploadConfig) {
 	}
 
 	cIter, err := repo.Log(&git.LogOptions{From: head.Hash()})
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 	var commits = make([]*object2.Commit, 0, c.Depth)
 	count := 0
 	_ = cIter.ForEach(func(commit *object2.Commit) error {
@@ -102,7 +84,9 @@ func execWithGit(uploadSrc string, c *UploadConfig) {
 	})
 
 	tree, err := repo.Worktree()
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	for _, eachRev := range commits {
 		if eachRev.Hash != head.Hash() {
@@ -111,14 +95,19 @@ func execWithGit(uploadSrc string, c *UploadConfig) {
 				Hash: eachRev.Hash,
 				Keep: true,
 			})
-			panicIfErr(err)
+			if err != nil {
+				return err
+			}
 		}
 
 		wc := &object.WorkspaceConfig{
 			RepoId:  curRepo,
 			RevHash: eachRev.Hash.String(),
 		}
-		execCurRevWithConfig(uploadSrc, wc, c)
+		err := execCurRevWithConfig(uploadSrc, wc, c)
+		if err != nil {
+			return err
+		}
 	}
 
 	// recover
@@ -128,25 +117,32 @@ func execWithGit(uploadSrc string, c *UploadConfig) {
 			Hash: head.Hash(),
 			Keep: true,
 		})
-		panicIfErr(err)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *UploadConfig) {
+func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *Config) error {
 	filterFunc, err := createFileFilter(c)
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 
 	runner := &core.Runner{}
 	var lang []string
 	if len(c.Lang) == 0 {
 		langFromDir, err := runner.GuessLangFromDir(c.Src, filterFunc)
-		panicIfErr(err)
+		if err != nil {
+			return err
+		}
 		lang = []string{string(langFromDir)}
 	} else {
 		lang = c.Lang
 	}
 	if len(lang) == 0 {
-		panic(errors.New("no valid lang found"))
+		return errors.New("no valid lang found")
 	}
 
 	for _, eachLang := range lang {
@@ -156,20 +152,26 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *Uploa
 			continue
 		}
 		core.Log.Infof("scan lang: %v", eachLang)
-		execCurRevCurLangWithConfig(uploadSrc, core.LangType(eachLang), filterFunc, wc, c)
+		err := execCurRevCurLangWithConfig(uploadSrc, core.LangType(eachLang), filterFunc, wc, c)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
-func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *UploadConfig) {
+func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *Config) error {
 	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
 		FileFilter: filterFunc,
 		LangType:   lang,
 	})
-	panicIfErr(err)
+	if err != nil {
+		return err
+	}
 
-	funcUrl := fmt.Sprintf("%s/api/v1/func", c.Url)
-	funcCtxUrl := fmt.Sprintf("%s/api/v1/funcctx", c.Url)
-	clazzUrl := fmt.Sprintf("%s/api/v1/clazz", c.Url)
+	funcUrl := c.GetFuncUploadUrl()
+	funcCtxUrl := c.GetFuncCtxUploadUrl()
+	clazzUrl := c.GetClazzUploadUrl()
 
 	core.Log.Infof("upload backend: %s", funcUrl)
 	if !c.Dry {
@@ -185,14 +187,17 @@ func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFun
 			LangType:   lang,
 		})
 		if err != nil {
-			panic(err)
+			return err
 		}
 
 		core.Log.Infof("start calculating func graph")
 		g, err := sibyl2.AnalyzeFuncGraph(f, s)
 		if err != nil {
-			panic(err)
+			return err
 		}
+		// save to cache (expensive
+		c.BizContext.GraphCache = g
+
 		core.Log.Infof("graph ready")
 		if !c.Dry {
 			uploadFunctionContexts(funcCtxUrl, wc, f, g, c.Batch)
@@ -206,16 +211,18 @@ func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFun
 			LangType:   lang,
 		})
 		if err != nil {
-			panic(err)
+			return err
 		}
 		core.Log.Infof("classes ready")
 		if !c.Dry {
 			uploadClazz(clazzUrl, wc, s, c.Batch)
 		}
 	}
+
+	return nil
 }
 
-func createFileFilter(c *UploadConfig) (func(path string) bool, error) {
+func createFileFilter(c *Config) (func(path string) bool, error) {
 	if c.IncludeRegex == "" && c.ExcludeRegex == "" {
 		// need no filter
 		return nil, nil
@@ -265,165 +272,4 @@ func loadRepo(gitDir string) (*git.Repository, error) {
 		return nil, err
 	}
 	return repo, nil
-}
-
-func uploadFunctions(url string, wc *object.WorkspaceConfig, f []*extractor.FunctionFileResult, batch int) {
-	core.Log.Infof("uploading %v with files %d ...", wc, len(f))
-
-	// pack
-	fullUnits := make([]*object.FunctionUploadUnit, 0, len(f))
-	for _, each := range f {
-		unit := &object.FunctionUploadUnit{
-			WorkspaceConfig: wc,
-			FunctionResult:  each,
-		}
-		fullUnits = append(fullUnits, unit)
-	}
-	// submit
-	ptr := 0
-	for ptr < len(fullUnits) {
-		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
-
-		newPtr := ptr + batch
-		if newPtr < len(fullUnits) {
-			uploadFuncUnits(url, fullUnits[ptr:ptr+batch])
-		} else {
-			uploadFuncUnits(url, fullUnits[ptr:])
-		}
-
-		ptr = newPtr
-	}
-}
-
-func uploadFuncUnits(url string, units []*object.FunctionUploadUnit) {
-	var wg sync.WaitGroup
-	for _, unit := range units {
-		if unit == nil {
-			continue
-		}
-		wg.Add(1)
-		go func(u *object.FunctionUploadUnit, waitGroup *sync.WaitGroup) {
-			defer waitGroup.Done()
-
-			uploadData, err := msgpack2bytes(u)
-			panicIfErr(err)
-			resp, err := httpClient.Post(
-				url,
-				object.BodyTypeMsgpack,
-				uploadData)
-			panicIfErr(err)
-			data, err := io.ReadAll(resp.Body)
-			panicIfErr(err)
-			if resp.StatusCode != http.StatusOK {
-				core.Log.Errorf("upload failed: %v", string(data))
-			}
-		}(unit, &wg)
-	}
-	wg.Wait()
-}
-
-func uploadFunctionContexts(url string, wc *object.WorkspaceConfig, functions []*extractor.FunctionFileResult, g *sibyl2.FuncGraph, batch int) {
-	var wg sync.WaitGroup
-	ptr := 0
-	for ptr < len(functions) {
-		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
-
-		newPtr := ptr + batch
-		var todoFuncs []*extractor.FunctionFileResult
-		if newPtr < len(functions) {
-			todoFuncs = functions[ptr:newPtr]
-		} else {
-			todoFuncs = functions[ptr:]
-		}
-
-		for _, eachFuncFile := range todoFuncs {
-			if eachFuncFile == nil {
-				continue
-			}
-			wg.Add(1)
-			go func(funcFile *extractor.FunctionFileResult, waitGroup *sync.WaitGroup, graph *sibyl2.FuncGraph) {
-				defer waitGroup.Done()
-
-				contexts := make([]*sibyl2.FunctionContext, 0)
-				for _, eachFunc := range funcFile.Units {
-					eachFileWithPath := sibyl2.WrapFuncWithPath(eachFunc, funcFile.Path)
-					related := graph.FindRelated(eachFileWithPath)
-					contexts = append(contexts, related)
-				}
-				uploadFunctionContextUnits(url, wc, contexts)
-			}(eachFuncFile, &wg, g)
-		}
-		wg.Wait()
-		ptr = newPtr
-	}
-}
-
-func uploadFunctionContextUnits(url string, wc *object.WorkspaceConfig, ctxs []*sibyl2.FunctionContext) {
-	uploadUnit := &object.FunctionContextUploadUnit{WorkspaceConfig: wc, FunctionContexts: ctxs}
-	uploadData, err := msgpack2bytes(uploadUnit)
-	panicIfErr(err)
-	resp, err := httpClient.Post(
-		url,
-		object.BodyTypeMsgpack,
-		uploadData)
-	panicIfErr(err)
-	data, err := io.ReadAll(resp.Body)
-	panicIfErr(err)
-	if resp.StatusCode != http.StatusOK {
-		core.Log.Errorf("upload resp: %v", string(data))
-	}
-}
-
-func uploadClazz(url string, wc *object.WorkspaceConfig, classes []*extractor.ClazzFileResult, batch int) {
-	core.Log.Infof("uploading %v with files %d ...", wc, len(classes))
-
-	// pack
-	fullUnits := make([]*object.ClazzUploadUnit, 0, len(classes))
-	for _, each := range classes {
-		unit := &object.ClazzUploadUnit{
-			WorkspaceConfig: wc,
-			ClazzFileResult: each,
-		}
-		fullUnits = append(fullUnits, unit)
-	}
-	// submit
-	ptr := 0
-	for ptr < len(fullUnits) {
-		core.Log.Infof("upload batch: %d - %d", ptr, ptr+batch)
-
-		newPtr := ptr + batch
-		if newPtr < len(fullUnits) {
-			uploadClazzUnits(url, fullUnits[ptr:ptr+batch])
-		} else {
-			uploadClazzUnits(url, fullUnits[ptr:])
-		}
-
-		ptr = newPtr
-	}
-}
-
-func uploadClazzUnits(url string, units []*object.ClazzUploadUnit) {
-	var wg sync.WaitGroup
-	for _, unit := range units {
-		if unit == nil {
-			continue
-		}
-		wg.Add(1)
-		go func(uploadUnit *object.ClazzUploadUnit, waitGroup *sync.WaitGroup) {
-			defer waitGroup.Done()
-			uploadData, err := msgpack2bytes(uploadUnit)
-			panicIfErr(err)
-			resp, err := httpClient.Post(
-				url,
-				object.BodyTypeMsgpack,
-				uploadData)
-			panicIfErr(err)
-			data, err := io.ReadAll(resp.Body)
-			panicIfErr(err)
-			if resp.StatusCode != http.StatusOK {
-				core.Log.Errorf("upload failed: %v", string(data))
-			}
-		}(unit, &wg)
-	}
-	wg.Wait()
 }

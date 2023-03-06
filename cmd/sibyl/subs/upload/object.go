@@ -2,8 +2,10 @@ package upload
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/mitchellh/mapstructure"
+	"github.com/opensibyl/sibyl2"
 )
 
 const (
@@ -29,12 +31,17 @@ type ServerConfigPart struct {
 	Depth int    `mapstructure:"depth"`
 }
 
-type UploadConfig struct {
-	*SrcConfigPart    `mapstructure:"src"`
-	*ServerConfigPart `mapstructure:"server"`
+type ContextPart struct {
+	GraphCache *sibyl2.FuncGraph
 }
 
-func (config *UploadConfig) ToMap() (map[string]any, error) {
+type Config struct {
+	*SrcConfigPart    `mapstructure:"src"`
+	*ServerConfigPart `mapstructure:"server"`
+	BizContext        *ContextPart `mapstructure:"bizContext"`
+}
+
+func (config *Config) ToMap() (map[string]any, error) {
 	var m map[string]interface{}
 	err := mapstructure.Decode(config, &m)
 	if err != nil {
@@ -43,7 +50,7 @@ func (config *UploadConfig) ToMap() (map[string]any, error) {
 	return m, nil
 }
 
-func (config *UploadConfig) ToJson() ([]byte, error) {
+func (config *Config) ToJson() ([]byte, error) {
 	toMap, err := config.ToMap()
 	if err != nil {
 		return nil, err
@@ -51,8 +58,20 @@ func (config *UploadConfig) ToJson() ([]byte, error) {
 	return json.Marshal(toMap)
 }
 
-func DefaultConfig() *UploadConfig {
-	return &UploadConfig{
+func (config *Config) GetFuncUploadUrl() string {
+	return fmt.Sprintf("%s/api/v1/func", config.Url)
+}
+
+func (config *Config) GetClazzUploadUrl() string {
+	return fmt.Sprintf("%s/api/v1/clazz", config.Url)
+}
+
+func (config *Config) GetFuncCtxUploadUrl() string {
+	return fmt.Sprintf("%s/api/v1/funcctx", config.Url)
+}
+
+func DefaultConfig() *Config {
+	return &Config{
 		&SrcConfigPart{
 			RepoId:       "",
 			RevHash:      "",
@@ -69,5 +88,6 @@ func DefaultConfig() *UploadConfig {
 			Dry:   false,
 			Depth: 1,
 		},
+		&ContextPart{nil},
 	}
 }

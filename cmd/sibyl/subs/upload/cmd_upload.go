@@ -87,7 +87,10 @@ func NewUploadCmd() *cobra.Command {
 			}
 
 			// execute
-			ExecWithConfig(config)
+			err = ExecWithConfig(config)
+			if err != nil {
+				panic(err)
+			}
 
 			// save it back
 			usedConfigMap, err := config.ToMap()

@@ -14,6 +14,8 @@ type ValueUnit struct {
 	Name string `json:"name"`
 }
 
+const DescSplit = "|,|"
+
 type Function struct {
 	Name       string       `json:"name"`
 	Receiver   string       `json:"receiver"`
@@ -72,7 +74,7 @@ func (f *Function) GetIndexName() string {
 }
 
 func (f *Function) GetDesc() string {
-	return fmt.Sprintf("<function %s %v>", f.GetSignature(), f.GetSpan())
+	return fmt.Sprintf("%v%s%v", f.GetSpan(), DescSplit, f.GetSignature())
 }
 
 func (f *Function) GetSpan() *core.Span {

@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/opensibyl/sibyl2/pkg/extractor"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
 type SymbolWithPath struct {
@@ -20,7 +21,7 @@ type FunctionWithPath struct {
 }
 
 func (fwp *FunctionWithPath) GetDescWithPath() string {
-	return fmt.Sprintf("<fwp %s %s>", fwp.Path, fwp.Function.GetDesc())
+	return fmt.Sprintf("%s%s%s", fwp.Path, object.DescSplit, fwp.Function.GetDesc())
 }
 
 func WrapFuncWithPath(f *extractor.Function, p string) *FunctionWithPath {

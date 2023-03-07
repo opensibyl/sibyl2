@@ -81,7 +81,11 @@ func Execute(config object.ExecuteConfig, ctx context.Context) error {
 	}
 
 	// webserver start up
-	engine := gin.Default()
+	engine := gin.New()
+	engine.Use(gin.Recovery())
+	if config.EnableLog {
+		engine.Use(gin.Logger())
+	}
 
 	// todo: move it to config in the future
 	c := cors.DefaultConfig()

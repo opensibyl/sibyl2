@@ -16,8 +16,9 @@ const (
 
 type ServerConfigPart struct {
 	// server
-	Port int        `mapstructure:"port"`
-	Mode ServerType `mapstructure:"mode"`
+	Port      int        `mapstructure:"port"`
+	Mode      ServerType `mapstructure:"mode"`
+	EnableLog bool       `mapstructure:"mode"`
 }
 
 type BindingConfigPart struct {
@@ -57,6 +58,7 @@ func DefaultExecuteConfig() ExecuteConfig {
 		ServerConfigPart: &ServerConfigPart{
 			9876,
 			ServerTypeAll,
+			true,
 		},
 		BindingConfigPart: &BindingConfigPart{
 			DriverTypeBadger,

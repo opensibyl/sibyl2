@@ -23,6 +23,7 @@ const (
 	revSearchPrefix  = "rev" + flagConnect
 	fileEndPrefix    = "file" + flagEnd
 	fileSearchPrefix = "file" + flagConnect
+	ptrSearchPrefix  = "ptr" + flagConnect
 	funcEndPrefix    = "func" + flagEnd
 	clazzEndPrefix   = "clazz" + flagEnd
 	funcctxEndPrefix = "funcctx" + flagEnd
@@ -44,6 +45,10 @@ func (r *revKey) ToScanPrefix() string {
 
 func (r *revKey) ToFileScanPrefix() string {
 	return r.ToScanPrefix() + fileSearchPrefix
+}
+
+func (r *revKey) ToFuncCtxPtrPrefix() string {
+	return r.ToScanPrefix() + ptrSearchPrefix + funcctxEndPrefix
 }
 
 func ToRevKey(revHash string) *revKey {
@@ -124,4 +129,8 @@ func toFuncCtxKey(revHash string, fileHash string, funcHash string) *funcCtxKey 
 
 func (f *funcCtxKey) String() string {
 	return revSearchPrefix + f.revHash + flagConnect + fileSearchPrefix + f.fileHash + flagConnect + funcctxEndPrefix + f.funcHash
+}
+
+func (f *funcCtxKey) StringWithoutFile() string {
+	return revSearchPrefix + f.revHash + flagConnect + ptrSearchPrefix + funcctxEndPrefix + f.funcHash
 }

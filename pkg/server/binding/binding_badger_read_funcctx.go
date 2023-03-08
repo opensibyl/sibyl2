@@ -88,33 +88,39 @@ func (d *badgerDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConf
 	rk := ToRevKey(key)
 	ret := &sibyl2.FunctionContextSlim{}
 	err = d.db.View(func(txn *badger.Txn) error {
-		opts := badger.DefaultIteratorOptions
-		it := txn.NewIterator(opts)
-
-		defer it.Close()
-		prefixStr := rk.ToScanPrefix() + fileSearchPrefix
-		prefix := []byte(prefixStr)
-		shouldContain := flagConnect + funcctxEndPrefix + signature
-		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			item := it.Item()
-			k := string(item.Key())
-			if strings.Contains(k, shouldContain) {
-				err := item.Value(func(val []byte) error {
-					err = json.Unmarshal(val, ret)
-					if err != nil {
-						return err
-					}
-					return nil
-				})
+		k := rk.ToFuncCtxPtrPrefix() + signature
+		item, err := txn.Get([]byte(k))
+		if err != nil {
+			return fmt.Errorf("func ctx not found: %v, %v, %w", wc, signature, err)
+		}
+		mappingList := make([]string, 0)
+		err = item.Value(func(val []byte) error {
+			err = json.Unmarshal(val, &mappingList)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		// currently we will only return the first one
+		for _, each := range mappingList {
+			realItem, err := txn.Get([]byte(each))
+			if err != nil {
+				return err
+			}
+			err = realItem.Value(func(val []byte) error {
+				err = json.Unmarshal(val, &ret)
 				if err != nil {
 					return err
 				}
-				// break scan
 				return nil
+			})
+			if err != nil {
+				return err
 			}
+			return nil
 		}
-		// not found
-		return fmt.Errorf("func ctx not found: %v, %v", wc, signature)
+
+		return nil
 	})
 	if err != nil {
 		return nil, err

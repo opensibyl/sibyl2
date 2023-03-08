@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"os/signal"
 	"syscall"
@@ -11,17 +10,25 @@ import (
 	openapi "github.com/opensibyl/sibyl-go-client"
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/server"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestServer(t *testing.T) {
-	cmd := NewServerCmd()
-	b := bytes.NewBufferString("")
-	cmd.SetOut(b)
+	ctx := context.Background()
+	sibylContext, cancel := context.WithCancel(ctx)
+	defer cancel()
 
-	// run server
-	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	go cmd.ExecuteContext(ctx)
+	sibylContext, stop := signal.NotifyContext(sibylContext, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		config := object.DefaultExecuteConfig()
+		// for performance
+		config.BindingConfigPart.DbType = object.DriverTypeInMemory
+		config.EnableLog = true
+		_ = server.Execute(config, sibylContext)
+	}()
+	defer stop()
 
 	// do the upload first
 	uploadCmd := upload.NewUploadCmd()

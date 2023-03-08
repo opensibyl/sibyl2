@@ -38,7 +38,6 @@ type ContextPart struct {
 type Config struct {
 	*SrcConfigPart    `mapstructure:"src"`
 	*ServerConfigPart `mapstructure:"server"`
-	BizContext        *ContextPart `mapstructure:"bizContext"`
 }
 
 func (config *Config) ToMap() (map[string]any, error) {
@@ -88,6 +87,5 @@ func DefaultConfig() *Config {
 			Dry:   false,
 			Depth: 1,
 		},
-		&ContextPart{nil},
 	}
 }

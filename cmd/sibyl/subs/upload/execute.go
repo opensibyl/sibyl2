@@ -195,8 +195,6 @@ func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFun
 		if err != nil {
 			return err
 		}
-		// save to cache (expensive
-		c.BizContext.GraphCache = g
 
 		core.Log.Infof("graph ready")
 		if !c.Dry {

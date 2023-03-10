@@ -61,13 +61,14 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 		fk := toFileKey(key, f.Path)
 		byteKey := []byte(fk.String())
 
-		// todo: keep origin value
+		// write file key
 		err = txn.Set(byteKey, nil)
 		if err != nil {
 			return err
 		}
 
 		for _, eachFunc := range f.Units {
+			// write func fact
 			eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
 			eachFuncWithPath := &sibyl2.FunctionWithPath{
 				Function: eachFunc,
@@ -79,6 +80,37 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 			}
 			err = txn.Set([]byte(eachFuncKey.String()), eachFuncV)
 			if err != nil {
+				return err
+			}
+
+			// write func ptr
+			ptrKey := []byte(eachFuncKey.StringWithoutFile())
+			factListBytes, err := txn.Get(ptrKey)
+			switch err {
+			case badger.ErrKeyNotFound:
+				sl := []string{eachFuncKey.String()}
+				bytes, err := json.Marshal(sl)
+				if err != nil {
+					return err
+				}
+				err = txn.Set(ptrKey, bytes)
+				if err != nil {
+					return err
+				}
+			case nil:
+				// one signature can map more than one
+				factList := make([]string, 0)
+				err = factListBytes.Value(func(val []byte) error {
+					err := json.Unmarshal(val, &factList)
+					if err != nil {
+						return err
+					}
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			default:
 				return err
 			}
 		}

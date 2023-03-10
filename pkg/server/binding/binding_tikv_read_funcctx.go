@@ -26,7 +26,7 @@ func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, ru
 
 	searchResult := make([]*sibyl2.FunctionContextSlim, 0)
 
-	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
@@ -87,7 +87,7 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 	}
 	rk := ToRevKey(key)
 
-	prefixStr := rk.ToScanPrefix() + fileSearchPrefix
+	prefixStr := rk.ToFileScanPrefix()
 	prefix := []byte(prefixStr)
 	shouldContain := flagConnect + funcctxEndPrefix + signature
 

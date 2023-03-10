@@ -38,7 +38,7 @@ func (d *badgerDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, 
 	if err != nil {
 		return nil, err
 	}
-	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
 	searchResult := make([]*sibyl2.FunctionContextSlim, 0)
 	err = d.db.View(func(txn *badger.Txn) error {

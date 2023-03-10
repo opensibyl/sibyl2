@@ -32,7 +32,7 @@ func (d *badgerDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfi
 		opts.PrefetchValues = false
 		it := txn.NewIterator(opts)
 		defer it.Close()
-		prefix := []byte(ToRevKey(key).ToScanPrefix())
+		prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			k := string(it.Item().Key())
 			if strings.Contains(k, funcEndPrefix) {
@@ -102,7 +102,7 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
-		prefix := []byte(ToRevKey(key).ToScanPrefix())
+		prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
 			k := string(it.Item().Key())
 			if !strings.Contains(k, funcEndPrefix) {
@@ -147,33 +147,38 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 	rk := ToRevKey(key)
 	ret := &object.FunctionWithSignature{}
 	err = d.db.View(func(txn *badger.Txn) error {
-		it := txn.NewIterator(badger.DefaultIteratorOptions)
-		defer it.Close()
-		prefixStr := rk.ToFileScanPrefix()
-		prefix := []byte(prefixStr)
-		shouldContain := flagConnect + funcEndPrefix + signature
-		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			item := it.Item()
-			k := string(item.Key())
-			if strings.Contains(k, shouldContain) {
-				err := item.Value(func(val []byte) error {
-					err := json.Unmarshal(val, ret)
-					if err != nil {
-						return err
-					}
-					return nil
-				})
+		k := rk.ToFuncPtrPrefix() + signature
+		item, err := txn.Get([]byte(k))
+		if err != nil {
+			return fmt.Errorf("func not found: %v, %v, %w", wc, signature, err)
+		}
+		mappingList := make([]string, 0)
+		err = item.Value(func(val []byte) error {
+			err = json.Unmarshal(val, &mappingList)
+			if err != nil {
+				return err
+			}
+			return nil
+		})
+		// currently we will only return the first one
+		for _, each := range mappingList {
+			realItem, err := txn.Get([]byte(each))
+			if err != nil {
+				return err
+			}
+			err = realItem.Value(func(val []byte) error {
+				err = json.Unmarshal(val, &ret)
 				if err != nil {
 					return err
 				}
-				fp, _, _ := strings.Cut(strings.TrimPrefix(k, prefixStr), shouldContain)
-				ret.Path = fp
-				ret.Signature = ret.GetSignature()
 				return nil
+			})
+			if err != nil {
+				return err
 			}
+			return nil
 		}
-		// not found
-		return fmt.Errorf("func not found: %v, %v", wc, signature)
+		return nil
 	})
 	if err != nil {
 		return nil, err

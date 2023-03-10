@@ -75,7 +75,7 @@ func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule
 	if err != nil {
 		return nil, err
 	}
-	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
 	searchResult := make([]*sibyl2.ClazzWithPath, 0)
 	err = d.db.View(func(txn *badger.Txn) error {

@@ -29,7 +29,7 @@ func (t *tikvDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig,
 
 	searchResult := make([]string, 0)
 	txn := t.client.GetSnapshot(math.MaxUint64)
-	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))
 
 	for iter.Valid() {
@@ -59,7 +59,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	}
 	rk := ToRevKey(key)
 
-	prefixStr := rk.ToScanPrefix() + fileSearchPrefix
+	prefixStr := rk.ToFileScanPrefix()
 	prefix := []byte(prefixStr)
 	shouldContain := flagConnect + funcEndPrefix + signature
 
@@ -156,7 +156,7 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 
 	searchResult := make([]*object.FunctionWithSignature, 0)
 
-	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))

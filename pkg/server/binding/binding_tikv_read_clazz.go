@@ -75,7 +75,7 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 
 	searchResult := make([]*sibyl2.ClazzWithPath, 0)
 
-	prefix := []byte(ToRevKey(key).ToScanPrefix())
+	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
 	txn := t.client.GetSnapshot(math.MaxUint64)
 	iter, err := txn.Iter(prefix, kv.PrefixNextKey(prefix))

@@ -13,6 +13,11 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
+type ExecuteCache struct {
+	AnalyzeGraph *sibyl2.FuncGraph
+}
+type ExecuteCacheMap = map[core.LangType]*ExecuteCache
+
 func ExecWithConfig(c *Config) error {
 	startTime := time.Now()
 	defer func() {
@@ -36,7 +41,7 @@ func ExecWithConfig(c *Config) error {
 			RepoId:  c.RepoId,
 			RevHash: c.RevHash,
 		}
-		err := execCurRevWithConfig(uploadSrc, wc, c)
+		_, err := ExecCurRevWithConfig(uploadSrc, wc, c)
 		if err != nil {
 			return err
 		}
@@ -104,7 +109,7 @@ func execWithGit(uploadSrc string, c *Config) error {
 			RepoId:  curRepo,
 			RevHash: eachRev.Hash.String(),
 		}
-		err := execCurRevWithConfig(uploadSrc, wc, c)
+		_, err := ExecCurRevWithConfig(uploadSrc, wc, c)
 		if err != nil {
 			return err
 		}
@@ -124,10 +129,11 @@ func execWithGit(uploadSrc string, c *Config) error {
 	return nil
 }
 
-func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *Config) error {
+func ExecCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *Config) (ExecuteCacheMap, error) {
+	cacheMap := make(ExecuteCacheMap)
 	filterFunc, err := createFileFilter(c)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	runner := &core.Runner{}
@@ -135,14 +141,14 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *Confi
 	if len(c.Lang) == 0 {
 		langFromDir, err := runner.GuessLangFromDir(c.Src, filterFunc)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		lang = []string{string(langFromDir)}
 	} else {
 		lang = c.Lang
 	}
 	if len(lang) == 0 {
-		return errors.New("no valid lang found")
+		return nil, errors.New("no valid lang found")
 	}
 
 	for _, eachLang := range lang {
@@ -152,21 +158,23 @@ func execCurRevWithConfig(uploadSrc string, wc *object.WorkspaceConfig, c *Confi
 			continue
 		}
 		core.Log.Infof("scan lang: %v", eachLang)
-		err := execCurRevCurLangWithConfig(uploadSrc, core.LangType(eachLang), filterFunc, wc, c)
+		cache, err := execCurRevCurLangWithConfig(uploadSrc, eachLangType, filterFunc, wc, c)
+		cacheMap[eachLangType] = cache
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
-	return nil
+	return cacheMap, nil
 }
 
-func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *Config) error {
+func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFunc func(path string) bool, wc *object.WorkspaceConfig, c *Config) (*ExecuteCache, error) {
+	cache := &ExecuteCache{}
 	f, err := sibyl2.ExtractFunction(uploadSrc, &sibyl2.ExtractConfig{
 		FileFilter: filterFunc,
 		LangType:   lang,
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	funcUrl := c.GetFuncUploadUrl()
@@ -187,14 +195,15 @@ func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFun
 			LangType:   lang,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 
 		core.Log.Infof("start calculating func graph")
 		g, err := sibyl2.AnalyzeFuncGraph(f, s)
 		if err != nil {
-			return err
+			return nil, err
 		}
+		cache.AnalyzeGraph = g
 
 		core.Log.Infof("graph ready")
 		if !c.Dry {
@@ -209,15 +218,14 @@ func execCurRevCurLangWithConfig(uploadSrc string, lang core.LangType, filterFun
 			LangType:   lang,
 		})
 		if err != nil {
-			return err
+			return nil, err
 		}
 		core.Log.Infof("classes ready")
 		if !c.Dry {
 			uploadClazz(clazzUrl, wc, s, c.Batch)
 		}
 	}
-
-	return nil
+	return cache, nil
 }
 
 func createFileFilter(c *Config) (func(path string) bool, error) {

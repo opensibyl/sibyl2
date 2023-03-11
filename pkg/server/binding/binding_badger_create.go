@@ -70,11 +70,17 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 		for _, eachFunc := range f.Units {
 			// write func fact
 			eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-			eachFuncWithPath := &sibyl2.FunctionWithPath{
-				Function: eachFunc,
-				Path:     f.Path,
+			eachFuncWithSignature := &object.FunctionWithSignature{
+				FunctionWithTag: &sibyl2.FunctionWithTag{
+					FunctionWithPath: &sibyl2.FunctionWithPath{
+						Function: eachFunc,
+						Path:     f.Path,
+					},
+					Tags: make([]string, 0),
+				},
+				Signature: eachFunc.GetSignature(),
 			}
-			eachFuncV, err := json.Marshal(eachFuncWithPath)
+			eachFuncV, err := json.Marshal(eachFuncWithSignature)
 			if err != nil {
 				continue
 			}
@@ -219,7 +225,7 @@ func (d *badgerDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature strin
 		// request inside the transaction
 		f, err := d.ReadFunctionWithSignature(wc, signature, ctx)
 		if err != nil {
-			return err
+			return fmt.Errorf("failed to read func with signature: %w", err)
 		}
 
 		if slices.Contains(f.Tags, tag) {

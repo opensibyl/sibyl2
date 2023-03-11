@@ -71,6 +71,7 @@ func HandleFuncTagCreate(c *gin.Context) {
 	}
 	err = sharedDriver.CreateFuncTag(wc, result.Signature, result.Tag, sharedContext)
 	if err != nil {
+		core.Log.Errorf("create func tag failed: %v", err)
 		c.JSON(http.StatusInternalServerError, err)
 		return
 	}

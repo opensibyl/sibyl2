@@ -22,24 +22,59 @@ func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.
 		fk := toFileKey(key, c.Path)
 		byteKey := []byte(fk.String())
 
-		// todo: keep origin value
+		// write file key
 		err = txn.Set(byteKey, nil)
 		if err != nil {
 			return err
 		}
 
 		for _, eachClazz := range c.Units {
+			// write class fact
 			eachClazzKey := toClazzKey(fk.RevHash, fk.FileHash, eachClazz.GetSignature())
-			eachClazzWithPath := &sibyl2.ClazzWithPath{
-				Clazz: eachClazz,
-				Path:  c.Path,
+			eachClazzWithSignature := &object.ClazzWithSignature{
+				ClazzWithPath: &sibyl2.ClazzWithPath{
+					Clazz: eachClazz,
+					Path:  c.Path,
+				},
+				Signature: eachClazz.GetSignature(),
 			}
-			eachClazzValue, err := json.Marshal(eachClazzWithPath)
+			eachClazzV, err := json.Marshal(eachClazzWithSignature)
 			if err != nil {
 				continue
 			}
-			err = txn.Set([]byte(eachClazzKey.String()), eachClazzValue)
+			err = txn.Set([]byte(eachClazzKey.String()), eachClazzV)
 			if err != nil {
+				return err
+			}
+
+			// write func ptr
+			ptrKey := []byte(eachClazzKey.StringWithoutFile())
+			factListBytes, err := txn.Get(ptrKey)
+			switch err {
+			case badger.ErrKeyNotFound:
+				sl := []string{eachClazzKey.String()}
+				bytes, err := json.Marshal(sl)
+				if err != nil {
+					return err
+				}
+				err = txn.Set(ptrKey, bytes)
+				if err != nil {
+					return err
+				}
+			case nil:
+				// one signature can map more than one
+				factList := make([]string, 0)
+				err = factListBytes.Value(func(val []byte) error {
+					err := json.Unmarshal(val, &factList)
+					if err != nil {
+						return err
+					}
+					return nil
+				})
+				if err != nil {
+					return err
+				}
+			default:
 				return err
 			}
 		}

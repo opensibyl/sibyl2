@@ -51,6 +51,10 @@ func (r *revKey) ToFuncPtrPrefix() string {
 	return r.ToScanPrefix() + ptrSearchPrefix + funcEndPrefix
 }
 
+func (r *revKey) ToClazzPtrPrefix() string {
+	return r.ToScanPrefix() + ptrSearchPrefix + clazzEndPrefix
+}
+
 func (r *revKey) ToFuncCtxPtrPrefix() string {
 	return r.ToScanPrefix() + ptrSearchPrefix + funcctxEndPrefix
 }
@@ -123,6 +127,10 @@ func toClazzKey(revHash string, fileHash string, clazzHash string) *clazzKey {
 
 func (c *clazzKey) String() string {
 	return revSearchPrefix + c.revHash + flagConnect + fileSearchPrefix + c.fileHash + flagConnect + clazzEndPrefix + c.clazzHash
+}
+
+func (c *clazzKey) StringWithoutFile() string {
+	return revSearchPrefix + c.revHash + flagConnect + ptrSearchPrefix + clazzEndPrefix + c.clazzHash
 }
 
 type funcCtxKey struct {

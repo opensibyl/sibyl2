@@ -13,3 +13,8 @@ type FunctionContextSlimWithSignature struct {
 	*sibyl2.FunctionContextSlim
 	Signature string `json:"signature"`
 }
+
+type ClazzWithSignature struct {
+	*sibyl2.ClazzWithPath
+	Signature string `json:"signature"`
+}

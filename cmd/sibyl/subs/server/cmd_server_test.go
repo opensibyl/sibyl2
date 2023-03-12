@@ -34,7 +34,7 @@ func TestServer(t *testing.T) {
 	uploadCmd := upload.NewUploadCmd()
 	uploadCmd.SetArgs([]string{"--src", "../../../..", "--withCtx", "--withClass", "--lang", "GOLANG"})
 	uploadCmd.Execute()
-	time.Sleep(1 * time.Second)
+	time.Sleep(1200 * time.Millisecond)
 
 	configuration := openapi.NewConfiguration()
 	configuration.Scheme = "http"

@@ -8,6 +8,8 @@ import (
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
 
+const conflictRetryLimitMs = 10
+
 type badgerDriver struct {
 	db     *badger.DB
 	config object.ExecuteConfig

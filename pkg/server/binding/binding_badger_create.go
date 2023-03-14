@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/dgraph-io/badger/v3"
 	"github.com/opensibyl/sibyl2"
@@ -12,7 +14,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, _ context.Context) error {
+func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -81,13 +83,21 @@ func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.
 
 		return nil
 	})
+
+	// retry
+	if err == badger.ErrConflict {
+		r := rand.Intn(conflictRetryLimitMs)
+		time.Sleep(time.Duration(r) * time.Microsecond)
+		return d.CreateClazzFile(wc, c, ctx)
+	}
+
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, _ context.Context) error {
+func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -158,13 +168,21 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 
 		return nil
 	})
+
+	// retry
+	if err == badger.ErrConflict {
+		r := rand.Intn(conflictRetryLimitMs)
+		time.Sleep(time.Duration(r) * time.Microsecond)
+		return d.CreateFuncFile(wc, f, ctx)
+	}
+
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, _ context.Context) error {
+func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err
@@ -223,6 +241,13 @@ func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.F
 		}
 		return nil
 	})
+	// retry
+	if err == badger.ErrConflict {
+		r := rand.Intn(conflictRetryLimitMs)
+		time.Sleep(time.Duration(r) * time.Microsecond)
+		return d.CreateFuncContext(wc, f, ctx)
+	}
+
 	if err != nil {
 		return err
 	}

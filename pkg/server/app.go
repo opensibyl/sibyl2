@@ -110,7 +110,7 @@ func Execute(config object.ExecuteConfig, ctx context.Context) error {
 	go func() {
 		err = srv.ListenAndServe()
 		if err != nil {
-			core.Log.Errorf("sibyl server down: %s", err.Error())
+			core.Log.Infof("sibyl server down: %s", err.Error())
 		}
 	}()
 	<-ctx.Done()

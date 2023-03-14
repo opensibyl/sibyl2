@@ -19,7 +19,9 @@ func (d *badgerDriver) InitDriver(_ context.Context) error {
 
 	switch d.config.DbType {
 	case object.DriverTypeInMemory:
-		dbInst, err = badger.Open(badger.DefaultOptions("").WithInMemory(true))
+		ops := badger.DefaultOptions("")
+		ops.Logger = nil
+		dbInst, err = badger.Open(ops.WithInMemory(true))
 	case object.DriverTypeBadger:
 		core.Log.Infof("trying to open: %s", d.config.BadgerPath)
 		dbInst, err = badger.Open(badger.DefaultOptions(d.config.BadgerPath))

@@ -18,7 +18,7 @@ type ServerConfigPart struct {
 	// server
 	Port      int        `mapstructure:"port"`
 	Mode      ServerType `mapstructure:"mode"`
-	EnableLog bool       `mapstructure:"mode"`
+	EnableLog bool       `mapstructure:"enableLog"`
 }
 
 type BindingConfigPart struct {

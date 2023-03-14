@@ -36,6 +36,13 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 	funcUnit.Unit = unit
 	funcUnit.Lang = extractor.GetLang()
 
+	// receiver
+	clazz := core.FindFirstByKindInParent(unit, KindPythonClassDefinition)
+	if clazz != nil {
+		clazzName := core.FindFirstByKindInSubsWithBfs(clazz, KindPythonIdentifier)
+		funcUnit.Receiver = clazzName.Content
+	}
+
 	// body scope
 	funcBody := core.FindFirstByKindInSubsWithBfs(unit, KindPythonBlock)
 	if funcBody != nil {

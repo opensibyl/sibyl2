@@ -114,6 +114,8 @@ func InitDriver(config object.ExecuteConfig, ctx context.Context) (Driver, error
 		driver = initBadgerDriver(config)
 	case object.DriverTypeTikv:
 		driver = initTikvDriver(config)
+	case object.DriverTypeMongoDB:
+		driver = initMongoDriver(config)
 
 	default:
 		return nil, errors.New("invalid driver: " + string(config.DbType))

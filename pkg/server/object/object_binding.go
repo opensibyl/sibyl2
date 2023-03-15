@@ -13,6 +13,7 @@ const (
 	DriverTypeInMemory DriverType = "INMEM"
 	DriverTypeBadger   DriverType = "BADGER"
 	DriverTypeTikv     DriverType = "TIKV"
+	DriverTypeMongoDB  DriverType = "MONGO"
 
 	FlagWcKeySplit = "|,,|"
 )

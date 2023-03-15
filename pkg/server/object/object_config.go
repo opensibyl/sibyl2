@@ -23,9 +23,11 @@ type ServerConfigPart struct {
 
 type BindingConfigPart struct {
 	// binding
-	DbType     DriverType `mapstructure:"dbType"`
-	BadgerPath string     `mapstructure:"badgerPath"`
-	TikvAddrs  string     `mapstructure:"tikvAddrs"`
+	DbType      DriverType `mapstructure:"dbType"`
+	BadgerPath  string     `mapstructure:"badgerPath"`
+	TikvAddrs   string     `mapstructure:"tikvAddrs"`
+	MongoURI    string     `mapstructure:"mongoUri"`
+	MongoDbName string     `mapstructure:"mongoDbName"`
 }
 
 type WorkerConfigPart struct {
@@ -64,6 +66,8 @@ func DefaultExecuteConfig() ExecuteConfig {
 			DriverTypeBadger,
 			"./sibyl2-badger-storage",
 			"127.0.0.1:2379",
+			"mongodb://127.0.0.1:27017/?connect=direct",
+			"sibyl2",
 		},
 		WorkerConfigPart: &WorkerConfigPart{
 			64,

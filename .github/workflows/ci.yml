@@ -32,6 +32,9 @@ jobs:
           source /home/runner/.profile
           tiup playground --mode tikv-slim &
 
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.8.0
+
       - name: Build frontend
         run: |
           git clone --depth=1 https://github.com/opensibyl/sibyl-frontend.git

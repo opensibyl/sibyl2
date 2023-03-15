@@ -8,20 +8,22 @@ import (
 )
 
 type ClazzSignature = string
+
 type Clazz struct {
-	Name   string `json:"name"`
-	Module string `json:"module"`
+	Name   string `json:"name" bson:"name"`
+	Module string `json:"module" bson:"module"`
+
 	// this span will include header and content
-	Span core.Span `json:"span"`
+	Span core.Span `json:"span" bson:"span"`
 
 	// which contains language-specific contents
-	Extras interface{} `json:"extras"`
+	Extras interface{} `json:"extras" bson:"extras"`
 
 	// ptr to origin Unit
-	Unit *core.Unit `json:"-"`
+	Unit *core.Unit `json:"-" bson:"-"`
 
 	// language
-	Lang core.LangType `json:"lang"`
+	Lang core.LangType `json:"lang" bson:"lang"`
 }
 
 func (c *Clazz) GetSignature() ClazzSignature {

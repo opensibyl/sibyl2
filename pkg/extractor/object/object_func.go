@@ -17,24 +17,26 @@ type ValueUnit struct {
 const DescSplit = "|,|"
 
 type Function struct {
-	Name       string       `json:"name"`
-	Receiver   string       `json:"receiver"`
-	Namespace  string       `json:"namespace"`
-	Parameters []*ValueUnit `json:"parameters"`
-	Returns    []*ValueUnit `json:"returns"`
+	Name       string       `json:"name" bson:"name"`
+	Receiver   string       `json:"receiver" bson:"receiver"`
+	Namespace  string       `json:"namespace" bson:"namespace"`
+	Parameters []*ValueUnit `json:"parameters" bson:"parameters"`
+	Returns    []*ValueUnit `json:"returns" bson:"returns"`
+
 	// this span will include header and content
-	Span core.Span `json:"span"`
+	Span core.Span `json:"span" bson:"span"`
+
 	// which includes only body
-	BodySpan core.Span `json:"bodySpan"`
+	BodySpan core.Span `json:"bodySpan" bson:"bodySpan"`
 
 	// which contains language-specific contents
-	Extras interface{} `json:"extras"`
+	Extras interface{} `json:"extras" bson:"extras"`
 
 	// ptr to origin Unit
-	Unit *core.Unit `json:"-"`
+	Unit *core.Unit `json:"-" bson:"-"`
 
 	// language
-	Lang core.LangType `json:"lang"`
+	Lang core.LangType `json:"lang" bson:"lang"`
 }
 
 func NewFunction() *Function {

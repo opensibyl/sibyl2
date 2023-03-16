@@ -6,7 +6,7 @@ import (
 
 type FunctionWithSignature struct {
 	*sibyl2.FunctionWithTag
-	Signature string `json:"signature"`
+	Signature string `json:"signature" bson:"signature"`
 }
 
 type FunctionContextSlimWithSignature struct {

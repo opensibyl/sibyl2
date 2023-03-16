@@ -8,14 +8,24 @@ import (
 )
 
 func (d *mongoDriver) DeleteWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error {
-	collection := d.client.Database(d.config.MongoDbName).Collection("clazz_files")
+	funcCollection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
+	clazzCollection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionClazz)
+	funcctxCollection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	filter := bson.M{
 		mongoKeyRepo: wc.RepoId,
 		mongoKeyRev:  wc.RevHash,
 	}
 
-	_, err := collection.DeleteMany(ctx, filter)
+	_, err := funcCollection.DeleteMany(ctx, filter)
+	if err != nil {
+		return err
+	}
+	_, err = clazzCollection.DeleteMany(ctx, filter)
+	if err != nil {
+		return err
+	}
+	_, err = funcctxCollection.DeleteMany(ctx, filter)
 	if err != nil {
 		return err
 	}

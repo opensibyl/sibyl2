@@ -8,15 +8,15 @@ import (
 
 type FunctionContext struct {
 	*FunctionWithPath
-	Calls        []*FunctionWithPath `json:"calls"`
-	ReverseCalls []*FunctionWithPath `json:"reverseCalls"`
+	Calls        []*FunctionWithPath `json:"calls" bson:"calls"`
+	ReverseCalls []*FunctionWithPath `json:"reverseCalls" bson:"reverseCalls"`
 }
 
 // FunctionContextSlim instead of whole object, slim will only keep the signature
 type FunctionContextSlim struct {
 	*FunctionWithPath
-	Calls        []string `json:"calls"`
-	ReverseCalls []string `json:"reverseCalls"`
+	Calls        []string `json:"calls" bson:"calls"`
+	ReverseCalls []string `json:"reverseCalls" bson:"reverseCalls"`
 }
 
 func (f *FunctionContext) ToGraph() *FuncGraphType {

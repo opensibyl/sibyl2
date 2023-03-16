@@ -17,7 +17,7 @@ type SymbolWithPath struct {
 // because they maybe not come from a real file
 type FunctionWithPath struct {
 	*extractor.Function
-	Path string `json:"path"`
+	Path string `json:"path" bson:"path"`
 }
 
 func (fwp *FunctionWithPath) GetDescWithPath() string {
@@ -35,7 +35,7 @@ type FuncTag = string
 
 type FunctionWithTag struct {
 	*FunctionWithPath
-	Tags []FuncTag `json:"tags"`
+	Tags []FuncTag `json:"tags" bson:"tags"`
 }
 
 func (fwt *FunctionWithTag) AddTag(tag FuncTag) {

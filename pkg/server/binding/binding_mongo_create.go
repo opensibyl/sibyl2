@@ -11,6 +11,10 @@ import (
 )
 
 func (d *mongoDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error {
+	if f.IsEmpty() {
+		return nil
+	}
+
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 
 	// create list of documents
@@ -87,6 +91,10 @@ func (d *mongoDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.Fu
 }
 
 func (d *mongoDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error {
+	if c.IsEmpty() {
+		return nil
+	}
+
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionClazz)
 
 	// create list of documents

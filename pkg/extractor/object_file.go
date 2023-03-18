@@ -13,6 +13,10 @@ type BaseFileResult[T DataType] struct {
 	Units    []T           `json:"units"`
 }
 
+func (b *BaseFileResult[T]) IsEmpty() bool {
+	return len(b.Units) == 0
+}
+
 type FileResult = BaseFileResult[DataType]
 type SymbolFileResult = BaseFileResult[*Symbol]
 type FunctionFileResult = BaseFileResult[*Function]

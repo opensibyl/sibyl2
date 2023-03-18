@@ -2,7 +2,6 @@ package binding
 
 import (
 	"context"
-	"errors"
 
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
@@ -17,12 +16,15 @@ func (d *mongoDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fu
 	// create list of documents
 	docs := make([]interface{}, 0, len(f.Units))
 	for _, eachFunc := range f.Units {
-		doc := bson.M{
-			mongoKeyRepo:          wc.RepoId,
-			mongoKeyRev:           wc.RevHash,
-			mongoKeyPath:          f.Path,
-			mongoKeyFuncSignature: eachFunc.GetSignature(),
-			mongoKeyFunc:          eachFunc,
+		doc := &MongoFactFunc{
+			MongoFactBase: &MongoFactBase{
+				RepoId:    wc.RepoId,
+				RevHash:   wc.RevHash,
+				Path:      f.Path,
+				Signature: eachFunc.GetSignature(),
+				Tag:       []string{},
+			},
+			Func: eachFunc,
 		}
 		docs = append(docs, doc)
 	}
@@ -33,7 +35,7 @@ func (d *mongoDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fu
 		models = append(models, mongo.NewInsertOneModel().SetDocument(doc))
 	}
 	_, err := collection.BulkWrite(ctx, models)
-	if err != nil {
+	if err != nil && !mongo.IsDuplicateKeyError(err) {
 		return err
 	}
 
@@ -41,28 +43,46 @@ func (d *mongoDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fu
 }
 
 func (d *mongoDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error {
-	// not yet
-	return errors.New("not implemented")
+	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
+	filter := bson.M{
+		mongoKeyRepo:      wc.RepoId,
+		mongoKeyRev:       wc.RevHash,
+		mongoKeySignature: signature,
+	}
+
+	update := bson.M{
+		"$addToSet": bson.M{
+			mongoKeyTag: tag,
+		},
+	}
+
+	_, err := collection.UpdateMany(ctx, filter, update)
+	if err != nil && !mongo.IsDuplicateKeyError(err) {
+		return err
+	}
+	return nil
 }
 
 func (d *mongoDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	// create document
-	doc := bson.M{
-		mongoKeyRepo:          wc.RepoId,
-		mongoKeyRev:           wc.RevHash,
-		mongoKeyPath:          f.Path,
-		mongoKeyFuncCtx:       f,
-		mongoKeyFuncSignature: f.GetSignature(),
+	doc := &MongoRelFuncCtx{
+		MongoFactBase: &MongoFactBase{
+			RepoId:    wc.RepoId,
+			RevHash:   wc.RevHash,
+			Path:      f.Path,
+			Signature: f.GetSignature(),
+			Tag:       []string{},
+		},
+		FuncCtx: f,
 	}
 
 	// insert document
 	_, err := collection.InsertOne(ctx, doc)
-	if err != nil {
+	if err != nil && !mongo.IsDuplicateKeyError(err) {
 		return err
 	}
-
 	return nil
 }
 
@@ -72,12 +92,15 @@ func (d *mongoDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.C
 	// create list of documents
 	docs := make([]interface{}, 0, len(c.Units))
 	for _, eachClazz := range c.Units {
-		doc := bson.M{
-			mongoKeyRepo:           wc.RepoId,
-			mongoKeyRev:            wc.RevHash,
-			mongoKeyPath:           c.Path,
-			mongoKeyClazzSignature: eachClazz.GetSignature(),
-			mongoKeyClazz:          eachClazz,
+		doc := &MongoFactClazz{
+			MongoFactBase: &MongoFactBase{
+				RepoId:    wc.RepoId,
+				RevHash:   wc.RevHash,
+				Path:      c.Path,
+				Signature: eachClazz.GetSignature(),
+				Tag:       []string{},
+			},
+			Clazz: eachClazz,
 		}
 		docs = append(docs, doc)
 	}
@@ -88,10 +111,9 @@ func (d *mongoDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.C
 		models = append(models, mongo.NewInsertOneModel().SetDocument(doc))
 	}
 	_, err := collection.BulkWrite(ctx, models)
-	if err != nil {
+	if err != nil && !mongo.IsDuplicateKeyError(err) {
 		return err
 	}
-
 	return nil
 }
 

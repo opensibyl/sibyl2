@@ -97,13 +97,13 @@ func (d *mongoDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx
 
 	var functions []*object.FunctionWithSignature
 	for cur.Next(ctx) {
-		doc := &object.FunctionWithSignature{}
+		doc := &MongoFactFunc{}
 		err := cur.Decode(doc)
 		if err != nil {
 			return nil, err
 		}
 
-		functions = append(functions, doc)
+		functions = append(functions, doc.ToFuncWithSignature())
 	}
 
 	if err := cur.Err(); err != nil {
@@ -130,14 +130,15 @@ func (d *mongoDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path st
 
 	var functions []*object.FunctionWithSignature
 	for cur.Next(ctx) {
-		doc := &object.FunctionWithSignature{}
+		doc := &MongoFactFunc{}
 		err := cur.Decode(doc)
 		if err != nil {
 			return nil, err
 		}
 
-		if doc.Span.ContainAnyLine(lines...) {
-			functions = append(functions, doc)
+		f := doc.ToFuncWithSignature()
+		if f.Span.ContainAnyLine(lines...) {
+			functions = append(functions, f)
 		}
 	}
 
@@ -171,12 +172,12 @@ func (d *mongoDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rul
 
 	var searchResult []*object.FunctionWithSignature
 	for cursor.Next(ctx) {
-		doc := &object.FunctionWithSignature{}
+		doc := &MongoFactFunc{}
 		err := cursor.Decode(doc)
 		if err != nil {
 			return nil, err
 		}
-		searchResult = append(searchResult, doc)
+		searchResult = append(searchResult, doc.ToFuncWithSignature())
 	}
 
 	if err := cursor.Err(); err != nil {
@@ -192,7 +193,7 @@ func (d *mongoDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig
 	filter := bson.M{
 		mongoKeyRepo: wc.RepoId,
 		mongoKeyRev:  wc.RevHash,
-		mongoKeyFuncSignature: bson.M{
+		mongoKeySignature: bson.M{
 			"$regex": regex,
 		},
 	}
@@ -205,7 +206,7 @@ func (d *mongoDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig
 
 	var signatures []string
 	for cur.Next(ctx) {
-		doc := &object.FunctionWithSignature{}
+		doc := &MongoFactFunc{}
 		err := cur.Decode(doc)
 		if err != nil {
 			return nil, err
@@ -225,23 +226,53 @@ func (d *mongoDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sign
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 
 	filter := bson.M{
-		mongoKeyRepo:          wc.RepoId,
-		mongoKeyRev:           wc.RevHash,
-		mongoKeyFuncSignature: signature,
+		mongoKeyRepo:      wc.RepoId,
+		mongoKeyRev:       wc.RevHash,
+		mongoKeySignature: signature,
 	}
 
-	doc := &object.FunctionWithSignature{}
-	err := collection.FindOne(ctx, filter).Decode(&doc)
+	doc := &MongoFactFunc{}
+	err := collection.FindOne(ctx, filter).Decode(doc)
 	if err != nil {
 		return nil, err
 	}
 
-	return doc, nil
+	return doc.ToFuncWithSignature(), nil
 }
 
 func (d *mongoDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error) {
-	// TODO implement me
-	panic("implement me")
+	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
+	filter := bson.M{
+		mongoKeyRepo: wc.RepoId,
+		mongoKeyRev:  wc.RevHash,
+		mongoKeyTag:  tag,
+	}
+	cursor, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+
+	var functions []string
+	for cursor.Next(ctx) {
+		var function bson.M
+		err = cursor.Decode(&function)
+		if err != nil {
+			return nil, err
+		}
+
+		functionSignature, ok := function[mongoKeySignature].(string)
+		if !ok {
+			return nil, errors.New("function Signature not found")
+		}
+
+		functions = append(functions, functionSignature)
+	}
+
+	if err := cursor.Err(); err != nil {
+		return nil, err
+	}
+
+	return functions, nil
 }
 
 func (d *mongoDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
@@ -261,13 +292,13 @@ func (d *mongoDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx c
 
 	var classes []*sibyl2.ClazzWithPath
 	for cur.Next(ctx) {
-		doc := &sibyl2.ClazzWithPath{}
-		err := cur.Decode(&doc)
+		doc := &MongoFactClazz{}
+		err := cur.Decode(doc)
 		if err != nil {
 			return nil, err
 		}
 
-		classes = append(classes, doc)
+		classes = append(classes, doc.ToClazzWithPath())
 	}
 
 	if err := cur.Err(); err != nil {
@@ -294,14 +325,15 @@ func (d *mongoDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path stri
 
 	var classes []*sibyl2.ClazzWithPath
 	for cur.Next(ctx) {
-		doc := &sibyl2.ClazzWithPath{}
+		doc := &MongoFactClazz{}
 		err := cur.Decode(doc)
 		if err != nil {
 			return nil, err
 		}
 
-		if doc.Span.ContainAnyLine(lines...) {
-			classes = append(classes, doc)
+		c := doc.ToClazzWithPath()
+		if c.Span.ContainAnyLine(lines...) {
+			classes = append(classes, c)
 		}
 	}
 
@@ -333,14 +365,15 @@ func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, 
 
 	var functionContexts []*sibyl2.FunctionContextSlim
 	for cur.Next(ctx) {
-		doc := &sibyl2.FunctionContextSlim{}
+		doc := &MongoRelFuncCtx{}
 		err := cur.Decode(doc)
 		if err != nil {
 			return nil, err
 		}
 
-		if doc.Span.ContainAnyLine(lines...) {
-			functionContexts = append(functionContexts, doc)
+		f := doc.FuncCtx
+		if f.Span.ContainAnyLine(lines...) {
+			functionContexts = append(functionContexts, f)
 		}
 	}
 
@@ -359,15 +392,12 @@ func (d *mongoDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfi
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	filter := bson.M{
-		mongoKeyRepo:          wc.RepoId,
-		mongoKeyRev:           wc.RevHash,
-		mongoKeyFuncSignature: signature,
+		mongoKeyRepo:      wc.RepoId,
+		mongoKeyRev:       wc.RevHash,
+		mongoKeySignature: signature,
 	}
 
-	// bad design from chatgpt, haha.
-	doc := &struct {
-		Context *sibyl2.FunctionContextSlim `bson:"funcctx"`
-	}{}
+	doc := &MongoRelFuncCtx{}
 	err := collection.FindOne(ctx, filter).Decode(doc)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -376,5 +406,5 @@ func (d *mongoDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfi
 		return nil, err
 	}
 
-	return doc.Context, nil
+	return doc.FuncCtx, nil
 }

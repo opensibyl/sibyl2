@@ -94,6 +94,12 @@ func (d *mongoDriver) InitDriver(ctx context.Context) error {
 	}
 	d.client = clientInst
 
+	// ensure connection
+	err = d.client.Ping(ctx, nil)
+	if err != nil {
+		return err
+	}
+
 	// ensure indexes
 	// create unique index on RepoId, RevHash, Path, Signature, and span
 	funcCollection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)

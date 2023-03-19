@@ -17,7 +17,7 @@ type Clazz struct {
 	Span core.Span `json:"span" bson:"span"`
 
 	// which contains language-specific contents
-	Extras interface{} `json:"extras" bson:"extras"`
+	Extras interface{} `json:"extras" bson:"extras,omitempty"`
 
 	// ptr to origin Unit
 	Unit *core.Unit `json:"-" bson:"-"`

@@ -14,9 +14,9 @@ type FunctionContext struct {
 
 // FunctionContextSlim instead of whole object, slim will only keep the signature
 type FunctionContextSlim struct {
-	*FunctionWithPath
-	Calls        []string `json:"calls" bson:"calls"`
-	ReverseCalls []string `json:"reverseCalls" bson:"reverseCalls"`
+	*FunctionWithPath `bson:",inline"`
+	Calls             []string `json:"calls" bson:"calls"`
+	ReverseCalls      []string `json:"reverseCalls" bson:"reverseCalls"`
 }
 
 func (f *FunctionContext) ToGraph() *FuncGraphType {

@@ -82,7 +82,7 @@ func startWorker(ctx context.Context, driver binding.Driver) {
 					// deadlock easily happen in neo4j when creating complex edges
 					// append to the queue
 					// should replace with dead message queue
-					core.Log.Warnf("err when create ctx for: %v", each.GetSignature())
+					core.Log.Warnf("err when create ctx for: %v, %v", each.GetSignature(), err)
 					funcCtxUnitQueue <- result
 				}
 			}

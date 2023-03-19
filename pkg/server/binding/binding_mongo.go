@@ -16,7 +16,7 @@ type MongoFactBase struct {
 	RevHash   string   `bson:"rev_hash"`
 	Path      string   `bson:"path"`
 	Signature string   `bson:"signature"`
-	Tag       []string `bson:"tag"`
+	Tags      []string `bson:"tags"`
 }
 
 type MongoFactFunc struct {
@@ -25,13 +25,18 @@ type MongoFactFunc struct {
 }
 
 func (f *MongoFactFunc) ToFuncWithSignature() *object.FunctionWithSignature {
+	if f.Func.Extras == nil {
+		f.Func.Extras = make(map[string]interface{})
+	} else {
+		f.Func.Extras = f.Func.Extras.(bson.D).Map()
+	}
 	return &object.FunctionWithSignature{
 		FunctionWithTag: &sibyl2.FunctionWithTag{
 			FunctionWithPath: &sibyl2.FunctionWithPath{
 				Function: f.Func,
 				Path:     f.Path,
 			},
-			Tags: f.Tag,
+			Tags: f.Tags,
 		},
 		Signature: f.Signature,
 	}
@@ -43,6 +48,12 @@ type MongoFactClazz struct {
 }
 
 func (c *MongoFactClazz) ToClazzWithPath() *sibyl2.ClazzWithPath {
+	if c.Clazz.Extras == nil {
+		c.Clazz.Extras = make(map[string]interface{})
+	} else {
+		c.Clazz.Extras = c.Clazz.Extras.(bson.D).Map()
+	}
+
 	return &sibyl2.ClazzWithPath{
 		Clazz: c.Clazz,
 		Path:  c.Path,
@@ -52,6 +63,16 @@ func (c *MongoFactClazz) ToClazzWithPath() *sibyl2.ClazzWithPath {
 type MongoRelFuncCtx struct {
 	*MongoFactBase `bson:",inline"`
 	FuncCtx        *sibyl2.FunctionContextSlim `bson:"funcctx"`
+}
+
+func (f *MongoRelFuncCtx) ToFuncCtx() *sibyl2.FunctionContextSlim {
+	// https://stackoverflow.com/a/62241257
+	if f.FuncCtx.Extras == nil {
+		f.FuncCtx.Extras = make(map[string]interface{})
+	} else {
+		f.FuncCtx.Extras = f.FuncCtx.Extras.(bson.D).Map()
+	}
+	return f.FuncCtx
 }
 
 const (

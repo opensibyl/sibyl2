@@ -30,7 +30,7 @@ type Function struct {
 	BodySpan core.Span `json:"bodySpan" bson:"bodySpan"`
 
 	// which contains language-specific contents
-	Extras interface{} `json:"extras" bson:"extras"`
+	Extras interface{} `json:"extras" bson:"extras,omitempty"`
 
 	// ptr to origin Unit
 	Unit *core.Unit `json:"-" bson:"-"`

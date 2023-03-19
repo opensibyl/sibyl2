@@ -3,9 +3,7 @@ package binding
 import (
 	"context"
 	"errors"
-	"fmt"
 	"reflect"
-	"runtime"
 
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
@@ -16,7 +14,7 @@ import (
 func (d *mongoDriver) ReadRepos(ctx context.Context) ([]string, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 
-	cur, err := collection.Distinct(ctx, mongoKeyRepo, nil)
+	cur, err := collection.Distinct(ctx, mongoKeyRepo, bson.D{})
 	if err != nil {
 		return nil, err
 	}
@@ -160,31 +158,38 @@ func (d *mongoDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rul
 		mongoKeyRepo: wc.RepoId,
 		mongoKeyRev:  wc.RevHash,
 	}
-	for k, verify := range rule {
-		verifyStr := runtime.FuncForPC(reflect.ValueOf(verify).Pointer()).Name()
-		filter["metadata."+k] = bson.M{"$where": fmt.Sprintf("function() { return (%s)(this.metadata.%s); }", verifyStr, k)}
-	}
 
-	cursor, err := collection.Find(ctx, filter)
+	cur, err := collection.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
+	defer cur.Close(ctx)
 
-	var searchResult []*object.FunctionWithSignature
-	for cursor.Next(ctx) {
-		doc := &MongoFactFunc{}
-		err := cursor.Decode(doc)
-		if err != nil {
+	final := make([]*object.FunctionWithSignature, 0)
+	for cur.Next(ctx) {
+		val := &object.FunctionWithSignature{}
+		if err := cur.Decode(val); err != nil {
 			return nil, err
 		}
-		searchResult = append(searchResult, doc.ToFuncWithSignature())
-	}
 
-	if err := cursor.Err(); err != nil {
+		passed := true
+		relV := reflect.ValueOf(val)
+		for rk, verify := range rule {
+			nameValue := reflect.Indirect(relV).FieldByName(rk).String()
+			if !verify(nameValue) {
+				passed = false
+				break
+			}
+		}
+		if passed {
+			final = append(final, val)
+		}
+	}
+	if err := cur.Err(); err != nil {
 		return nil, err
 	}
 
-	return searchResult, nil
+	return final, nil
 }
 
 func (d *mongoDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error) {
@@ -371,7 +376,7 @@ func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, 
 			return nil, err
 		}
 
-		f := doc.FuncCtx
+		f := doc.ToFuncCtx()
 		if f.Span.ContainAnyLine(lines...) {
 			functionContexts = append(functionContexts, f)
 		}
@@ -385,7 +390,44 @@ func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, 
 }
 
 func (d *mongoDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
-	return nil, errors.New("implement me")
+	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
+
+	filter := bson.M{
+		mongoKeyRepo: wc.RepoId,
+		mongoKeyRev:  wc.RevHash,
+	}
+
+	cur, err := collection.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cur.Close(ctx)
+
+	final := make([]*sibyl2.FunctionContextSlim, 0)
+	for cur.Next(ctx) {
+		val := &sibyl2.FunctionContextSlim{}
+		if err := cur.Decode(val); err != nil {
+			return nil, err
+		}
+
+		passed := true
+		relV := reflect.ValueOf(val)
+		for rk, verify := range rule {
+			nameValue := reflect.Indirect(relV).FieldByName(rk).String()
+			if !verify(nameValue) {
+				passed = false
+				break
+			}
+		}
+		if passed {
+			final = append(final, val)
+		}
+	}
+	if err := cur.Err(); err != nil {
+		return nil, err
+	}
+
+	return final, nil
 }
 
 func (d *mongoDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContextSlim, error) {
@@ -406,5 +448,5 @@ func (d *mongoDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfi
 		return nil, err
 	}
 
-	return doc.FuncCtx, nil
+	return doc.ToFuncCtx(), nil
 }

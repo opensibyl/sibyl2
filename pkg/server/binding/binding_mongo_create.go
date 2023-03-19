@@ -26,7 +26,7 @@ func (d *mongoDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fu
 				RevHash:   wc.RevHash,
 				Path:      f.Path,
 				Signature: eachFunc.GetSignature(),
-				Tag:       []string{},
+				Tags:      []string{},
 			},
 			Func: eachFunc,
 		}
@@ -77,7 +77,7 @@ func (d *mongoDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.Fu
 			RevHash:   wc.RevHash,
 			Path:      f.Path,
 			Signature: f.GetSignature(),
-			Tag:       []string{},
+			Tags:      []string{},
 		},
 		FuncCtx: f,
 	}
@@ -106,7 +106,7 @@ func (d *mongoDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.C
 				RevHash:   wc.RevHash,
 				Path:      c.Path,
 				Signature: eachClazz.GetSignature(),
-				Tag:       []string{},
+				Tags:      []string{},
 			},
 			Clazz: eachClazz,
 		}

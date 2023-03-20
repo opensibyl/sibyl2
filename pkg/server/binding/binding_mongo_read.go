@@ -2,11 +2,12 @@ package binding
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
-	"reflect"
 
 	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
+	"github.com/tidwall/gjson"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -167,22 +168,29 @@ func (d *mongoDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rul
 
 	final := make([]*object.FunctionWithSignature, 0)
 	for cur.Next(ctx) {
-		val := &object.FunctionWithSignature{}
+		val := &MongoFactFunc{}
 		if err := cur.Decode(val); err != nil {
+			return nil, err
+		}
+		fws := val.ToFuncWithSignature()
+
+		d, err := json.Marshal(fws)
+		if err != nil {
 			return nil, err
 		}
 
 		passed := true
-		relV := reflect.ValueOf(val)
 		for rk, verify := range rule {
-			nameValue := reflect.Indirect(relV).FieldByName(rk).String()
-			if !verify(nameValue) {
+			v := gjson.GetBytes(d, rk)
+			if !verify(v.String()) {
+				// failed and ignore this item
 				passed = false
 				break
 			}
 		}
+		// all the rules passed
 		if passed {
-			final = append(final, val)
+			final = append(final, fws)
 		}
 	}
 	if err := cur.Err(); err != nil {
@@ -405,22 +413,29 @@ func (d *mongoDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, r
 
 	final := make([]*sibyl2.FunctionContextSlim, 0)
 	for cur.Next(ctx) {
-		val := &sibyl2.FunctionContextSlim{}
+		val := &MongoRelFuncCtx{}
 		if err := cur.Decode(val); err != nil {
 			return nil, err
 		}
 
+		funcctx := val.ToFuncCtx()
+		d, err := json.Marshal(funcctx)
+		if err != nil {
+			return nil, err
+		}
+
 		passed := true
-		relV := reflect.ValueOf(val)
 		for rk, verify := range rule {
-			nameValue := reflect.Indirect(relV).FieldByName(rk).String()
-			if !verify(nameValue) {
+			v := gjson.GetBytes(d, rk)
+			if !verify(v.String()) {
+				// failed and ignore this item
 				passed = false
 				break
 			}
 		}
+		// all the rules passed
 		if passed {
-			final = append(final, val)
+			final = append(final, funcctx)
 		}
 	}
 	if err := cur.Err(); err != nil {

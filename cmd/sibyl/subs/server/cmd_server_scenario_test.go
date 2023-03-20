@@ -1,7 +1,6 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -17,18 +16,22 @@ import (
 	"github.com/opensibyl/sibyl2/cmd/sibyl/subs/upload"
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/ext"
+	"github.com/opensibyl/sibyl2/pkg/server"
+	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/stretchr/testify/assert"
 	"golang.org/x/exp/slices"
 )
 
 func TestMainScenario(t *testing.T) {
-	cmd := NewServerCmd()
-	b := bytes.NewBufferString("")
-	cmd.SetOut(b)
-
-	// run server
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
-	go cmd.ExecuteContext(ctx)
+	go func() {
+		config := object.DefaultExecuteConfig()
+		// for performance
+		config.BindingConfigPart.DbType = object.DriverTypeMongoDB
+		config.EnableLog = true
+		_ = server.Execute(config, ctx)
+	}()
+	defer stop()
 
 	// git prepare
 	url := "127.0.0.1:9876"

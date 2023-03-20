@@ -2,9 +2,7 @@ name: Go
 
 on:
   push:
-    branches: '*'
   pull_request:
-    branches: '*'
 
 jobs:
 
@@ -51,7 +49,10 @@ jobs:
           make
 
       - name: Test
-        run: go test -v ./... -coverprofile=coverage.txt -coverpkg=./...
+        run: |
+          wget https://github.com/opensibyl/squ/releases/download/v0.1.10/squ-linux-amd64
+          chmod +x ./squ-linux-amd64
+          ./squ-linux-amd64 | xargs go test -v ./... -coverprofile=coverage.txt -coverpkg=./...
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3

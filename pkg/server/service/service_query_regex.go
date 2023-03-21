@@ -60,7 +60,7 @@ func HandleRegexFunc(c *gin.Context) {
 // @Param   field query string true "field"
 // @Param   regex query string true "regex"
 // @Produce json
-// @Success 200 {array} extractor.ClazzWithPath
+// @Success 200 {array} object.ClazzServiceDTO
 // @Router  /api/v1/regex/clazz [get]
 // @Tags    RegexQuery
 func HandleRegexClazz(c *gin.Context) {

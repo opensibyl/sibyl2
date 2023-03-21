@@ -47,16 +47,19 @@ type MongoFactClazz struct {
 	Clazz          *object2.Clazz `bson:"clazz"`
 }
 
-func (c *MongoFactClazz) ToClazzWithPath() *extractor.ClazzWithPath {
+func (c *MongoFactClazz) ToClazzDTO() *object.ClazzServiceDTO {
 	if c.Clazz.Extras == nil {
 		c.Clazz.Extras = make(map[string]interface{})
 	} else {
 		c.Clazz.Extras = c.Clazz.Extras.(bson.D).Map()
 	}
 
-	return &extractor.ClazzWithPath{
-		Clazz: c.Clazz,
-		Path:  c.Path,
+	return &object.ClazzServiceDTO{
+		ClazzWithPath: &extractor.ClazzWithPath{
+			Clazz: c.Clazz,
+			Path:  c.Path,
+		},
+		Signature: c.Signature,
 	}
 }
 

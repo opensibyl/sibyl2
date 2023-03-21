@@ -8,7 +8,6 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/opensibyl/sibyl2/pkg/server/queue"
@@ -119,7 +118,7 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 // @Param   rev  query string true "rev"
 // @Param   file query string true "file"
 // @Produce json
-// @Success 200 {array} extractor.ClazzWithPath
+// @Success 200 {array} object.ClazzServiceDTO
 // @Router  /api/v1/clazz [get]
 // @Tags    BasicQuery
 func HandleClazzesQuery(c *gin.Context) {
@@ -135,7 +134,7 @@ func HandleClazzesQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleClazzQuery(repo string, rev string, file string) ([]*extractor.ClazzWithPath, error) {
+func handleClazzQuery(repo string, rev string, file string) ([]*object.ClazzServiceDTO, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
@@ -143,11 +142,11 @@ func handleClazzQuery(repo string, rev string, file string) ([]*extractor.ClazzW
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	var functions []*extractor.ClazzWithPath
+	var classes []*object.ClazzServiceDTO
 	var err error
-	functions, err = sharedDriver.ReadClasses(wc, file, sharedContext)
+	classes, err = sharedDriver.ReadClasses(wc, file, sharedContext)
 	if err != nil {
 		return nil, err
 	}
-	return functions, nil
+	return classes, nil
 }

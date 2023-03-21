@@ -8,19 +8,18 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
 )
 
-func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*extractor.ClazzWithPath, error) {
+func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.ClazzServiceDTO, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	curFileKey := toFileKey(key, path)
 
-	searchResult := make([]*extractor.ClazzWithPath, 0)
+	searchResult := make([]*object.ClazzServiceDTO, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -29,7 +28,7 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ co
 		prefix := []byte(prefixStr)
 
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			c := &extractor.ClazzWithPath{}
+			c := &object.ClazzServiceDTO{}
 			err = it.Item().Value(func(val []byte) error {
 				err = json.Unmarshal(val, c)
 				if err != nil {
@@ -52,12 +51,12 @@ func (d *badgerDriver) ReadClasses(wc *object.WorkspaceConfig, path string, _ co
 	return searchResult, nil
 }
 
-func (d *badgerDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*extractor.ClazzWithPath, error) {
+func (d *badgerDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.ClazzServiceDTO, error) {
 	classes, err := d.ReadClasses(wc, path, ctx)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*extractor.ClazzWithPath, 0)
+	ret := make([]*object.ClazzServiceDTO, 0)
 	for _, each := range classes {
 		if each.GetSpan().ContainAnyLine(lines...) {
 			ret = append(ret, each)
@@ -66,7 +65,7 @@ func (d *badgerDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path str
 	return ret, nil
 }
 
-func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*extractor.ClazzWithPath, error) {
+func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.ClazzServiceDTO, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -77,7 +76,7 @@ func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule
 	}
 	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
-	searchResult := make([]*extractor.ClazzWithPath, 0)
+	searchResult := make([]*object.ClazzServiceDTO, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -96,7 +95,7 @@ func (d *badgerDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule
 					}
 				}
 				// all the rules passed
-				c := &extractor.ClazzWithPath{}
+				c := &object.ClazzServiceDTO{}
 				err = json.Unmarshal(val, c)
 				if err != nil {
 					return err

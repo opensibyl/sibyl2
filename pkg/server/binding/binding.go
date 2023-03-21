@@ -62,9 +62,9 @@ type driverRead interface {
 	ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionServiceDTO, error)
 	ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag object.FuncTag, ctx context.Context) ([]string, error)
 
-	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*extractor.ClazzWithPath, error)
-	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*extractor.ClazzWithPath, error)
-	ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*extractor.ClazzWithPath, error)
+	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.ClazzServiceDTO, error)
+	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.ClazzServiceDTO, error)
+	ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.ClazzServiceDTO, error)
 
 	ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionContextSlim, error)
 	ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionContextSlim, error)

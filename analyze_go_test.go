@@ -51,7 +51,7 @@ func TestAnalyzeGolang(t *testing.T) {
 		panic(err)
 	}
 
-	ctx := g.FindRelated(WrapFuncWithPath(functions[1], ""))
+	ctx := g.FindRelated(extractor2.WrapFuncWithPath(functions[1], ""))
 	assert.Equal(t, ctx.Name, "called")
 	assert.Empty(t, ctx.Calls)
 	assert.Len(t, ctx.ReverseCalls, 1)

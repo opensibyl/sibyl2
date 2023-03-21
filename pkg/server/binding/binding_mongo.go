@@ -3,7 +3,7 @@ package binding
 import (
 	"context"
 
-	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 	object2 "github.com/opensibyl/sibyl2/pkg/extractor/object"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"go.mongodb.org/mongo-driver/bson"
@@ -24,15 +24,15 @@ type MongoFactFunc struct {
 	Func           *object2.Function `bson:"func"`
 }
 
-func (f *MongoFactFunc) ToFuncWithSignature() *object.FunctionWithSignature {
+func (f *MongoFactFunc) ToFuncWithSignature() *object.FunctionServiceDTO {
 	if f.Func.Extras == nil {
 		f.Func.Extras = make(map[string]interface{})
 	} else {
 		f.Func.Extras = f.Func.Extras.(bson.D).Map()
 	}
-	return &object.FunctionWithSignature{
-		FunctionWithTag: &sibyl2.FunctionWithTag{
-			FunctionWithPath: &sibyl2.FunctionWithPath{
+	return &object.FunctionServiceDTO{
+		FunctionWithTag: &object.FunctionWithTag{
+			FunctionWithPath: &extractor.FunctionWithPath{
 				Function: f.Func,
 				Path:     f.Path,
 			},
@@ -47,14 +47,14 @@ type MongoFactClazz struct {
 	Clazz          *object2.Clazz `bson:"clazz"`
 }
 
-func (c *MongoFactClazz) ToClazzWithPath() *sibyl2.ClazzWithPath {
+func (c *MongoFactClazz) ToClazzWithPath() *extractor.ClazzWithPath {
 	if c.Clazz.Extras == nil {
 		c.Clazz.Extras = make(map[string]interface{})
 	} else {
 		c.Clazz.Extras = c.Clazz.Extras.(bson.D).Map()
 	}
 
-	return &sibyl2.ClazzWithPath{
+	return &extractor.ClazzWithPath{
 		Clazz: c.Clazz,
 		Path:  c.Path,
 	}
@@ -62,10 +62,10 @@ func (c *MongoFactClazz) ToClazzWithPath() *sibyl2.ClazzWithPath {
 
 type MongoRelFuncCtx struct {
 	*MongoFactBase `bson:",inline"`
-	FuncCtx        *sibyl2.FunctionContextSlim `bson:"funcctx"`
+	FuncCtx        *object.FunctionContextSlim `bson:"funcctx"`
 }
 
-func (f *MongoRelFuncCtx) ToFuncCtx() *sibyl2.FunctionContextSlim {
+func (f *MongoRelFuncCtx) ToFuncCtx() *object.FunctionContextSlim {
 	// https://stackoverflow.com/a/62241257
 	if f.FuncCtx.Extras == nil {
 		f.FuncCtx.Extras = make(map[string]interface{})

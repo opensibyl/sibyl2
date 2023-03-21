@@ -21,8 +21,8 @@ func isFuncNameInvalid(funcName string) bool {
 }
 
 func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*extractor.SymbolFileResult) (*FuncGraph, error) {
-	reverseCallGraph := graph.New((*FunctionWithPath).GetDescWithPath, graph.Directed())
-	callGraph := graph.New((*FunctionWithPath).GetDescWithPath, graph.Directed())
+	reverseCallGraph := graph.New((*extractor.FunctionWithPath).GetDescWithPath, graph.Directed())
+	callGraph := graph.New((*extractor.FunctionWithPath).GetDescWithPath, graph.Directed())
 
 	// speed up cache
 	funcFileMap := make(map[string]*extractor.FunctionFileResult, len(funcFiles))
@@ -60,7 +60,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 	}
 	core.Log.Infof("symbol clean up")
 
-	funcRefMap := make(map[string][]*SymbolWithPath, 0)
+	funcRefMap := make(map[string][]*extractor.SymbolWithPath, 0)
 	for symbolPath, symbolNameMap := range symbolMap {
 		for _, eachFuncFile := range funcFiles {
 			for _, eachFunc := range eachFuncFile.Units {
@@ -74,9 +74,9 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 				if !ok {
 					continue
 				}
-				refWithPaths := make([]*SymbolWithPath, 0, len(refs))
+				refWithPaths := make([]*extractor.SymbolWithPath, 0, len(refs))
 				for _, eachRef := range refs {
-					swp := &SymbolWithPath{
+					swp := &extractor.SymbolWithPath{
 						Symbol: eachRef,
 						Path:   symbolPath,
 					}
@@ -92,7 +92,7 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 	for _, eachFuncFile := range funcFiles {
 		for _, eachFunc := range eachFuncFile.Units {
 			// multi graphs shared
-			fwp := &FunctionWithPath{
+			fwp := &extractor.FunctionWithPath{
 				eachFunc,
 				eachFuncFile.Path,
 			}
@@ -144,8 +144,8 @@ func AnalyzeFuncGraph(funcFiles []*extractor.FunctionFileResult, symbolFiles []*
 						}
 
 						// eachFunc referenced by eachMatchFunc
-						eachFuncWithPath := WrapFuncWithPath(eachFunc, eachFuncFile.Path)
-						eachMatchFuncWithPath := WrapFuncWithPath(eachMatchFunc, targetFuncFile.Path)
+						eachFuncWithPath := extractor.WrapFuncWithPath(eachFunc, eachFuncFile.Path)
+						eachMatchFuncWithPath := extractor.WrapFuncWithPath(eachMatchFunc, targetFuncFile.Path)
 						reverseCallGraph.AddEdge(eachFuncWithPath.GetDescWithPath(), eachMatchFuncWithPath.GetDescWithPath())
 						callGraph.AddEdge(eachMatchFuncWithPath.GetDescWithPath(), eachFuncWithPath.GetDescWithPath())
 						break

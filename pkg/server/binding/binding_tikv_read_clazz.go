@@ -7,20 +7,20 @@ import (
 	"math"
 	"strings"
 
-	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
 	"github.com/tikv/client-go/v2/kv"
 )
 
-func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*extractor.ClazzWithPath, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	fk := toFileKey(key, path)
 
-	searchResult := make([]*sibyl2.ClazzWithPath, 0)
+	searchResult := make([]*extractor.ClazzWithPath, 0)
 
 	prefixStr := fk.ToClazzScanPrefix()
 	prefix := []byte(prefixStr)
@@ -33,7 +33,7 @@ func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 	defer iter.Close()
 
 	for iter.Valid() {
-		c := &sibyl2.ClazzWithPath{}
+		c := &extractor.ClazzWithPath{}
 		err = json.Unmarshal(iter.Value(), c)
 		if err != nil {
 			return nil, err
@@ -49,12 +49,12 @@ func (t *tikvDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx co
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (t *tikvDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*extractor.ClazzWithPath, error) {
 	classes, err := t.ReadClasses(wc, path, ctx)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*sibyl2.ClazzWithPath, 0)
+	ret := make([]*extractor.ClazzWithPath, 0)
 	for _, each := range classes {
 		if each.GetSpan().ContainAnyLine(lines...) {
 			ret = append(ret, each)
@@ -63,7 +63,7 @@ func (t *tikvDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path strin
 	return ret, nil
 }
 
-func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*extractor.ClazzWithPath, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -73,7 +73,7 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 		return nil, err
 	}
 
-	searchResult := make([]*sibyl2.ClazzWithPath, 0)
+	searchResult := make([]*extractor.ClazzWithPath, 0)
 
 	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
@@ -96,7 +96,7 @@ func (t *tikvDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, 
 				}
 			}
 			// all the rules passed
-			c := &sibyl2.ClazzWithPath{}
+			c := &extractor.ClazzWithPath{}
 			err = json.Unmarshal(rawClazz, c)
 			if err != nil {
 				return nil, err

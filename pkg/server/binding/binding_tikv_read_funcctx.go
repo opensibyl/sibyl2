@@ -8,13 +8,12 @@ import (
 	"math"
 	"strings"
 
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
 	"github.com/tikv/client-go/v2/kv"
 )
 
-func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
+func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionContextSlim, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -24,7 +23,7 @@ func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, ru
 		return nil, err
 	}
 
-	searchResult := make([]*sibyl2.FunctionContextSlim, 0)
+	searchResult := make([]*object.FunctionContextSlim, 0)
 
 	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
@@ -47,7 +46,7 @@ func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, ru
 				}
 			}
 			// all the rules passed
-			f := &sibyl2.FunctionContextSlim{}
+			f := &object.FunctionContextSlim{}
 			err = json.Unmarshal(rawFunc, f)
 			if err != nil {
 				return nil, err
@@ -64,12 +63,12 @@ func (t *tikvDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, ru
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error) {
+func (t *tikvDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionContextSlim, error) {
 	functions, err := t.ReadFunctionsWithLines(wc, path, lines, ctx)
 	if err != nil {
 		return nil, err
 	}
-	ret := make([]*sibyl2.FunctionContextSlim, 0)
+	ret := make([]*object.FunctionContextSlim, 0)
 	for _, eachFunc := range functions {
 		functionContext, err := t.ReadFunctionContextWithSignature(wc, eachFunc.GetSignature(), ctx)
 		if err != nil {
@@ -80,7 +79,7 @@ func (t *tikvDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, p
 	return ret, nil
 }
 
-func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContextSlim, error) {
+func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionContextSlim, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -101,7 +100,7 @@ func (t *tikvDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig
 	for iter.Valid() {
 		k := string(iter.Key())
 		if strings.Contains(k, shouldContain) {
-			f := &sibyl2.FunctionContextSlim{}
+			f := &object.FunctionContextSlim{}
 			err = json.Unmarshal(iter.Value(), f)
 			if err != nil {
 				return nil, err

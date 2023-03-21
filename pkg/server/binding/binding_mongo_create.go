@@ -3,7 +3,6 @@ package binding
 import (
 	"context"
 
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"go.mongodb.org/mongo-driver/bson"
@@ -67,7 +66,7 @@ func (d *mongoDriver) CreateFuncTag(wc *object.WorkspaceConfig, signature string
 	return nil
 }
 
-func (d *mongoDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
+func (d *mongoDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *object.FunctionContextSlim, ctx context.Context) error {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	// create document

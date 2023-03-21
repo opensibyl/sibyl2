@@ -6,7 +6,6 @@ import (
 	"regexp"
 
 	"github.com/gin-gonic/gin"
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 )
@@ -17,7 +16,7 @@ import (
 // @Param   field query string true "field"
 // @Param   regex query string true "regex"
 // @Produce json
-// @Success 200 {array} object.FunctionWithSignature
+// @Success 200 {array} object.FunctionServiceDTO
 // @Router  /api/v1/regex/func [get]
 // @Tags    RegexQuery
 func HandleRegexFunc(c *gin.Context) {
@@ -61,7 +60,7 @@ func HandleRegexFunc(c *gin.Context) {
 // @Param   field query string true "field"
 // @Param   regex query string true "regex"
 // @Produce json
-// @Success 200 {array} sibyl2.ClazzWithPath
+// @Success 200 {array} extractor.ClazzWithPath
 // @Router  /api/v1/regex/clazz [get]
 // @Tags    RegexQuery
 func HandleRegexClazz(c *gin.Context) {
@@ -105,7 +104,7 @@ func HandleRegexClazz(c *gin.Context) {
 // @Param   field query string true "field"
 // @Param   regex query string true "regex"
 // @Produce json
-// @Success 200 {array} sibyl2.FunctionContextSlim
+// @Success 200 {array} object.FunctionContextSlim
 // @Router  /api/v1/regex/funcctx [get]
 // @Tags    RegexQuery
 func HandleRegexFuncctx(c *gin.Context) {
@@ -121,7 +120,7 @@ func HandleRegexFuncctx(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*sibyl2.FunctionContextSlim, error) {
+func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*object.FunctionContextSlim, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,

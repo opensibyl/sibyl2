@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
 	"golang.org/x/exp/slices"
@@ -50,21 +49,21 @@ func (d *badgerDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfi
 	return searchResult, nil
 }
 
-func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*object.FunctionWithSignature, error) {
+func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ context.Context) ([]*object.FunctionServiceDTO, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	fk := toFileKey(key, path)
 
-	searchResult := make([]*object.FunctionWithSignature, 0)
+	searchResult := make([]*object.FunctionServiceDTO, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
 		prefixStr := fk.ToFuncScanPrefix()
 		prefix := []byte(prefixStr)
 		for it.Seek(prefix); it.ValidForPrefix(prefix); it.Next() {
-			f := &object.FunctionWithSignature{}
+			f := &object.FunctionServiceDTO{}
 			err := it.Item().Value(func(val []byte) error {
 				err := json.Unmarshal(val, f)
 				if err != nil {
@@ -88,7 +87,7 @@ func (d *badgerDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, _ 
 	return searchResult, nil
 }
 
-func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*object.FunctionWithSignature, error) {
+func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, _ context.Context) ([]*object.FunctionServiceDTO, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -98,7 +97,7 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 		return nil, err
 	}
 
-	searchResult := make([]*object.FunctionWithSignature, 0)
+	searchResult := make([]*object.FunctionServiceDTO, 0)
 	err = d.db.View(func(txn *badger.Txn) error {
 		it := txn.NewIterator(badger.DefaultIteratorOptions)
 		defer it.Close()
@@ -117,7 +116,7 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 					}
 				}
 				// all the rules passed
-				f := &object.FunctionWithSignature{}
+				f := &object.FunctionServiceDTO{}
 				err = json.Unmarshal(val, f)
 				if err != nil {
 					return err
@@ -139,13 +138,13 @@ func (d *badgerDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Ru
 	return searchResult, nil
 }
 
-func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*object.FunctionWithSignature, error) {
+func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*object.FunctionServiceDTO, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	rk := ToRevKey(key)
-	ret := &object.FunctionWithSignature{}
+	ret := &object.FunctionServiceDTO{}
 	err = d.db.View(func(txn *badger.Txn) error {
 		k := rk.ToFuncPtrPrefix() + signature
 		item, err := txn.Get([]byte(k))
@@ -186,13 +185,13 @@ func (d *badgerDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sig
 	return ret, nil
 }
 
-func (d *badgerDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (d *badgerDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	functions, err := d.ReadFunctions(wc, path, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	searchResult := make([]*object.FunctionWithSignature, 0)
+	searchResult := make([]*object.FunctionServiceDTO, 0)
 	for _, each := range functions {
 		if each.Span.ContainAnyLine(lines...) {
 			searchResult = append(searchResult, each)
@@ -201,7 +200,7 @@ func (d *badgerDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path s
 	return searchResult, nil
 }
 
-func (d *badgerDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error) {
+func (d *badgerDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag object.FuncTag, ctx context.Context) ([]string, error) {
 	rule := make(Rule)
 	requiredTags := strings.Split(tag, ";")
 	rule["tags"] = func(s string) bool {

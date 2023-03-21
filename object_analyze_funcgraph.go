@@ -5,17 +5,18 @@ import (
 
 	"github.com/dominikbraun/graph"
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 type AdjacencyMapType = map[string]map[string]graph.Edge[string]
 
 type FuncGraphType struct {
-	graph.Graph[string, *FunctionWithPath]
+	graph.Graph[string, *extractor.FunctionWithPath]
 	adjMapCache *AdjacencyMapType
 	l           *sync.Mutex
 }
 
-func WrapFuncGraph(g graph.Graph[string, *FunctionWithPath]) *FuncGraphType {
+func WrapFuncGraph(g graph.Graph[string, *extractor.FunctionWithPath]) *FuncGraphType {
 	return &FuncGraphType{
 		g,
 		nil,
@@ -40,15 +41,15 @@ type FuncGraph struct {
 	CallGraph        *FuncGraphType
 }
 
-func (fg *FuncGraph) FindReverseCalls(f *FunctionWithPath) []*FunctionWithPath {
+func (fg *FuncGraph) FindReverseCalls(f *extractor.FunctionWithPath) []*extractor.FunctionWithPath {
 	return fg.bfs(fg.ReverseCallGraph, f)
 }
 
-func (fg *FuncGraph) FindCalls(f *FunctionWithPath) []*FunctionWithPath {
+func (fg *FuncGraph) FindCalls(f *extractor.FunctionWithPath) []*extractor.FunctionWithPath {
 	return fg.bfs(fg.CallGraph, f)
 }
 
-func (fg *FuncGraph) FindRelated(f *FunctionWithPath) *FunctionContext {
+func (fg *FuncGraph) FindRelated(f *extractor.FunctionWithPath) *FunctionContext {
 	ctx := &FunctionContext{}
 	reverseCalls := fg.FindReverseCalls(f)
 	calls := fg.FindCalls(f)
@@ -58,9 +59,9 @@ func (fg *FuncGraph) FindRelated(f *FunctionWithPath) *FunctionContext {
 	return ctx
 }
 
-func (fg *FuncGraph) bfs(g *FuncGraphType, f *FunctionWithPath) []*FunctionWithPath {
+func (fg *FuncGraph) bfs(g *FuncGraphType, f *extractor.FunctionWithPath) []*extractor.FunctionWithPath {
 	selfDesc := f.GetDescWithPath()
-	ret := make([]*FunctionWithPath, 0)
+	ret := make([]*extractor.FunctionWithPath, 0)
 
 	// if there is an edge (a, b),
 	// b is an adjacency of a.

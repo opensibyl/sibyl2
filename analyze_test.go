@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 func TestAnalyzeFuncGraph(t *testing.T) {
@@ -23,8 +24,8 @@ func TestAnalyzeFuncGraph(t *testing.T) {
 		panic(errors.New("func not found"))
 	}
 
-	references := g.FindReverseCalls(WrapFuncWithPath(target[0], path))
-	calls := g.FindCalls(WrapFuncWithPath(target[0], path))
+	references := g.FindReverseCalls(extractor.WrapFuncWithPath(target[0], path))
+	calls := g.FindCalls(extractor.WrapFuncWithPath(target[0], path))
 	core.Log.Debugf("search func %s", targetFuncName)
 	for _, each := range references {
 		core.Log.Debugf("found ref %s in %s", each.GetIndexName(), each.Path)
@@ -50,7 +51,7 @@ func TestAnalyzeFuncGraph2(t *testing.T) {
 		panic(errors.New("func not found"))
 	}
 
-	ctx := g.FindRelated(WrapFuncWithPath(target[0], path))
+	ctx := g.FindRelated(extractor.WrapFuncWithPath(target[0], path))
 	for _, each := range ctx.Calls {
 		core.Log.Infof("call: %s", each.Name)
 	}

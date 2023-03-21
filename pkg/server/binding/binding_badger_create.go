@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/dgraph-io/badger/v3"
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"golang.org/x/exp/slices"
@@ -33,8 +32,8 @@ func (d *badgerDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.
 		for _, eachClazz := range c.Units {
 			// write class fact
 			eachClazzKey := toClazzKey(fk.RevHash, fk.FileHash, eachClazz.GetSignature())
-			eachClazzWithSignature := &object.ClazzWithSignature{
-				ClazzWithPath: &sibyl2.ClazzWithPath{
+			eachClazzWithSignature := &object.ClazzServiceDTO{
+				ClazzWithPath: &extractor.ClazzWithPath{
 					Clazz: eachClazz,
 					Path:  c.Path,
 				},
@@ -115,9 +114,9 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 		for _, eachFunc := range f.Units {
 			// write func fact
 			eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-			eachFuncWithSignature := &object.FunctionWithSignature{
-				FunctionWithTag: &sibyl2.FunctionWithTag{
-					FunctionWithPath: &sibyl2.FunctionWithPath{
+			eachFuncWithSignature := &object.FunctionServiceDTO{
+				FunctionWithTag: &object.FunctionWithTag{
+					FunctionWithPath: &extractor.FunctionWithPath{
 						Function: eachFunc,
 						Path:     f.Path,
 					},
@@ -182,7 +181,7 @@ func (d *badgerDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.F
 	return nil
 }
 
-func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
+func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *object.FunctionContextSlim, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err

@@ -4,7 +4,6 @@ import (
 	"context"
 	"strings"
 
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/pkg/errors"
@@ -45,7 +44,7 @@ type Rule = map[string]func(string) bool
 type driverCreate interface {
 	CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.FunctionFileResult, ctx context.Context) error
 	CreateFuncTag(wc *object.WorkspaceConfig, signature string, tag string, ctx context.Context) error
-	CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error
+	CreateFuncContext(wc *object.WorkspaceConfig, f *object.FunctionContextSlim, ctx context.Context) error
 	CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.ClazzFileResult, ctx context.Context) error
 	CreateWorkspace(wc *object.WorkspaceConfig, ctx context.Context) error
 }
@@ -56,20 +55,20 @@ type driverRead interface {
 	ReadRevInfo(wc *object.WorkspaceConfig, ctx context.Context) (*object.RevInfo, error)
 	ReadFiles(wc *object.WorkspaceConfig, ctx context.Context) ([]string, error)
 
-	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionWithSignature, error)
-	ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionWithSignature, error)
-	ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionWithSignature, error)
+	ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionServiceDTO, error)
+	ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionServiceDTO, error)
+	ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionServiceDTO, error)
 	ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig, regex string, ctx context.Context) ([]string, error)
-	ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionWithSignature, error)
-	ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error)
+	ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionServiceDTO, error)
+	ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag object.FuncTag, ctx context.Context) ([]string, error)
 
-	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
-	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
-	ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.ClazzWithPath, error)
+	ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*extractor.ClazzWithPath, error)
+	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*extractor.ClazzWithPath, error)
+	ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*extractor.ClazzWithPath, error)
 
-	ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error)
-	ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.FunctionContextSlim, error)
-	ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*sibyl2.FunctionContextSlim, error)
+	ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionContextSlim, error)
+	ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionContextSlim, error)
+	ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionContextSlim, error)
 }
 
 type driverUpdate interface {

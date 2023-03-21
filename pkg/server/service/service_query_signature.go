@@ -41,7 +41,7 @@ func HandleSignatureRegexFunc(c *gin.Context) {
 // @Param   rev       query string true "rev"
 // @Param   signature query string true "signature"
 // @Produce json
-// @Success 200 {object} object.FunctionWithSignature
+// @Success 200 {object} object.FunctionServiceDTO
 // @Router  /api/v1/signature/func [get]
 // @Tags    SignatureQuery
 func HandleSignatureFunc(c *gin.Context) {
@@ -70,7 +70,7 @@ func HandleSignatureFunc(c *gin.Context) {
 // @Param   rev       query string true "rev"
 // @Param   signature query string true "signature"
 // @Produce json
-// @Success 200 {object} sibyl2.FunctionContextSlim
+// @Success 200 {object} object.FunctionContextSlim
 // @Router  /api/v1/signature/funcctx [get]
 // @Tags    SignatureQuery
 func HandleSignatureFuncctx(c *gin.Context) {

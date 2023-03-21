@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (d *mongoDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (d *mongoDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 
 	filter := bson.M{
@@ -26,7 +25,7 @@ func (d *mongoDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx
 	}
 	defer cur.Close(ctx)
 
-	var functions []*object.FunctionWithSignature
+	var functions []*object.FunctionServiceDTO
 	for cur.Next(ctx) {
 		doc := &MongoFactFunc{}
 		err := cur.Decode(doc)
@@ -44,7 +43,7 @@ func (d *mongoDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx
 	return functions, nil
 }
 
-func (d *mongoDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (d *mongoDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 
 	filter := bson.M{
@@ -59,7 +58,7 @@ func (d *mongoDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path st
 	}
 	defer cur.Close(ctx)
 
-	var functions []*object.FunctionWithSignature
+	var functions []*object.FunctionServiceDTO
 	for cur.Next(ctx) {
 		doc := &MongoFactFunc{}
 		err := cur.Decode(doc)
@@ -80,7 +79,7 @@ func (d *mongoDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path st
 	return functions, nil
 }
 
-func (d *mongoDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (d *mongoDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -98,7 +97,7 @@ func (d *mongoDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rul
 	}
 	defer cur.Close(ctx)
 
-	final := make([]*object.FunctionWithSignature, 0)
+	final := make([]*object.FunctionServiceDTO, 0)
 	for cur.Next(ctx) {
 		val := &MongoFactFunc{}
 		if err := cur.Decode(val); err != nil {
@@ -167,7 +166,7 @@ func (d *mongoDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig
 	return signatures, nil
 }
 
-func (d *mongoDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionWithSignature, error) {
+func (d *mongoDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionServiceDTO, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 
 	filter := bson.M{
@@ -185,7 +184,7 @@ func (d *mongoDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, sign
 	return doc.ToFuncWithSignature(), nil
 }
 
-func (d *mongoDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error) {
+func (d *mongoDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag object.FuncTag, ctx context.Context) ([]string, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFunc)
 	filter := bson.M{
 		mongoKeyRepo: wc.RepoId,

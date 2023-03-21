@@ -1,9 +1,11 @@
 package extractor
 
 import (
+	"fmt"
 	"path/filepath"
 
 	"github.com/opensibyl/sibyl2/pkg/core"
+	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
 
 type BaseFileResult[T DataType] struct {
@@ -33,4 +35,33 @@ func PathStandardize(results []*FileResult, basedir string) error {
 		each.Path = filepath.ToSlash(newPath)
 	}
 	return nil
+}
+
+type SymbolWithPath struct {
+	*Symbol `bson:",inline"`
+	Path    string `json:"path"`
+}
+
+// FunctionWithPath
+// original symbol and function do not have a path
+// because they maybe not come from a real file
+type FunctionWithPath struct {
+	*Function `bson:",inline"`
+	Path      string `json:"path" bson:"path"`
+}
+
+func (fwp *FunctionWithPath) GetDescWithPath() string {
+	return fmt.Sprintf("%s%s%s", fwp.Path, object.DescSplit, fwp.Function.GetDesc())
+}
+
+func WrapFuncWithPath(f *Function, p string) *FunctionWithPath {
+	return &FunctionWithPath{
+		Function: f,
+		Path:     p,
+	}
+}
+
+type ClazzWithPath struct {
+	*Clazz `bson:",inline"`
+	Path   string `json:"path"`
 }

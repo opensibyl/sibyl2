@@ -9,7 +9,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/tidwall/gjson"
 	"github.com/tikv/client-go/v2/kv"
@@ -52,7 +51,7 @@ func (t *tikvDriver) ReadFunctionSignaturesWithRegex(wc *object.WorkspaceConfig,
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*object.FunctionWithSignature, error) {
+func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signature string, _ context.Context) (*object.FunctionServiceDTO, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
@@ -70,7 +69,7 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	}
 	defer iter.Close()
 
-	ret := &object.FunctionWithSignature{}
+	ret := &object.FunctionServiceDTO{}
 	for iter.Valid() {
 		k := string(iter.Key())
 		if strings.Contains(k, shouldContain) {
@@ -92,13 +91,13 @@ func (t *tikvDriver) ReadFunctionWithSignature(wc *object.WorkspaceConfig, signa
 	return nil, fmt.Errorf("func not found: %v, %v", wc, signature)
 }
 
-func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	functions, err := t.ReadFunctions(wc, path, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	searchResult := make([]*object.FunctionWithSignature, 0)
+	searchResult := make([]*object.FunctionServiceDTO, 0)
 	for _, each := range functions {
 		if each.Span.ContainAnyLine(lines...) {
 			searchResult = append(searchResult, each)
@@ -107,14 +106,14 @@ func (t *tikvDriver) ReadFunctionsWithLines(wc *object.WorkspaceConfig, path str
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	key, err := wc.Key()
 	if err != nil {
 		return nil, err
 	}
 	fk := toFileKey(key, path)
 
-	searchResult := make([]*object.FunctionWithSignature, 0)
+	searchResult := make([]*object.FunctionServiceDTO, 0)
 
 	prefixStr := fk.ToFuncScanPrefix()
 	prefix := []byte(prefixStr)
@@ -127,7 +126,7 @@ func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx 
 	defer iter.Close()
 
 	for iter.Valid() {
-		f := &object.FunctionWithSignature{}
+		f := &object.FunctionServiceDTO{}
 		err := json.Unmarshal(iter.Value(), f)
 		if err != nil {
 			return nil, err
@@ -144,7 +143,7 @@ func (t *tikvDriver) ReadFunctions(wc *object.WorkspaceConfig, path string, ctx 
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionWithSignature, error) {
+func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionServiceDTO, error) {
 	if len(rule) == 0 {
 		return nil, errors.New("rule is empty")
 	}
@@ -154,7 +153,7 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 		return nil, err
 	}
 
-	searchResult := make([]*object.FunctionWithSignature, 0)
+	searchResult := make([]*object.FunctionServiceDTO, 0)
 
 	prefix := []byte(ToRevKey(key).ToFileScanPrefix())
 
@@ -177,7 +176,7 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 				}
 			}
 			// all the rules passed
-			f := &object.FunctionWithSignature{}
+			f := &object.FunctionServiceDTO{}
 			err = json.Unmarshal(rawFunc, f)
 			if err != nil {
 				return nil, err
@@ -195,7 +194,7 @@ func (t *tikvDriver) ReadFunctionsWithRule(wc *object.WorkspaceConfig, rule Rule
 	return searchResult, nil
 }
 
-func (t *tikvDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag sibyl2.FuncTag, ctx context.Context) ([]string, error) {
+func (t *tikvDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag object.FuncTag, ctx context.Context) ([]string, error) {
 	rule := make(Rule)
 	requiredTags := strings.Split(tag, ";")
 	rule["tags"] = func(s string) bool {

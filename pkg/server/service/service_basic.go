@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/binding"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"github.com/opensibyl/sibyl2/pkg/server/queue"
@@ -24,7 +24,7 @@ var sharedQueue queue.Queue
 // @Param   file  query string true  "file"
 // @Param   lines query string false "specific lines"
 // @Produce json
-// @Success 200 {array} object.FunctionWithSignature
+// @Success 200 {array} object.FunctionServiceDTO
 // @Router  /api/v1/func [get]
 // @Tags    BasicQuery
 func HandleFunctionsQuery(c *gin.Context) {
@@ -42,7 +42,7 @@ func HandleFunctionsQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*object.FunctionWithSignature, error) {
+func handleFunctionQuery(repo string, rev string, file string, lines string) ([]*object.FunctionServiceDTO, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
@@ -50,7 +50,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	var functions []*object.FunctionWithSignature
+	var functions []*object.FunctionServiceDTO
 	var err error
 	if lines == "" {
 		functions, err = sharedDriver.ReadFunctions(wc, file, sharedContext)
@@ -78,7 +78,7 @@ func handleFunctionQuery(repo string, rev string, file string, lines string) ([]
 // @Param   file  query string true  "file"
 // @Param   lines query string false "specific lines"
 // @Produce json
-// @Success 200 {array} object.FunctionContextSlimWithSignature
+// @Success 200 {array} object.FuncCtxServiceDTO
 // @Router  /api/v1/funcctx [get]
 // @Tags    BasicQuery
 func HandleFunctionContextsQuery(c *gin.Context) {
@@ -98,14 +98,14 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 		return
 	}
 
-	ctxs := make([]*object.FunctionContextSlimWithSignature, 0)
+	ctxs := make([]*object.FuncCtxServiceDTO, 0)
 	for _, each := range ret {
 		funcCtx, err := sharedDriver.ReadFunctionContextWithSignature(wc, each.Signature, sharedContext)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, fmt.Errorf("err when read with sign: %w", err))
 			return
 		}
-		wrapper := &object.FunctionContextSlimWithSignature{
+		wrapper := &object.FuncCtxServiceDTO{
 			FunctionContextSlim: funcCtx,
 			Signature:           funcCtx.GetSignature(),
 		}
@@ -119,7 +119,7 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 // @Param   rev  query string true "rev"
 // @Param   file query string true "file"
 // @Produce json
-// @Success 200 {array} sibyl2.ClazzWithPath
+// @Success 200 {array} extractor.ClazzWithPath
 // @Router  /api/v1/clazz [get]
 // @Tags    BasicQuery
 func HandleClazzesQuery(c *gin.Context) {
@@ -135,7 +135,7 @@ func HandleClazzesQuery(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWithPath, error) {
+func handleClazzQuery(repo string, rev string, file string) ([]*extractor.ClazzWithPath, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,
@@ -143,7 +143,7 @@ func handleClazzQuery(repo string, rev string, file string) ([]*sibyl2.ClazzWith
 	if err := wc.Verify(); err != nil {
 		return nil, err
 	}
-	var functions []*sibyl2.ClazzWithPath
+	var functions []*extractor.ClazzWithPath
 	var err error
 	functions, err = sharedDriver.ReadClasses(wc, file, sharedContext)
 	if err != nil {

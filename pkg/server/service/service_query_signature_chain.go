@@ -6,13 +6,12 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"golang.org/x/exp/slices"
 )
 
 type FunctionContextChain struct {
-	*sibyl2.FunctionContextSlim
+	*object.FunctionContextSlim
 	CallChains        *ContextTree `json:"callChains"`
 	ReverseCallChains *ContextTree `json:"reverseCallChains"`
 }

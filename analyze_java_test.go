@@ -48,7 +48,7 @@ func TestAnalyzeJava(t *testing.T) {
 		panic(err)
 	}
 
-	ctx := g.FindRelated(WrapFuncWithPath(functions[1], ""))
+	ctx := g.FindRelated(extractor2.WrapFuncWithPath(functions[1], ""))
 	// we ignore too short method in java
 	assert.Equal(t, ctx.Name, "bbbbbbbb")
 	assert.Empty(t, ctx.Calls)

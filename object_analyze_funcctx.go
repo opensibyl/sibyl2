@@ -4,19 +4,13 @@ import (
 	"encoding/json"
 
 	"github.com/dominikbraun/graph"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 )
 
 type FunctionContext struct {
-	*FunctionWithPath
-	Calls        []*FunctionWithPath `json:"calls" bson:"calls"`
-	ReverseCalls []*FunctionWithPath `json:"reverseCalls" bson:"reverseCalls"`
-}
-
-// FunctionContextSlim instead of whole object, slim will only keep the signature
-type FunctionContextSlim struct {
-	*FunctionWithPath `bson:",inline"`
-	Calls             []string `json:"calls" bson:"calls"`
-	ReverseCalls      []string `json:"reverseCalls" bson:"reverseCalls"`
+	*extractor.FunctionWithPath
+	Calls        []*extractor.FunctionWithPath `json:"calls" bson:"calls"`
+	ReverseCalls []*extractor.FunctionWithPath `json:"reverseCalls" bson:"reverseCalls"`
 }
 
 func (f *FunctionContext) ToGraph() *FuncGraphType {
@@ -24,7 +18,7 @@ func (f *FunctionContext) ToGraph() *FuncGraphType {
 	markDirect := graph.VertexAttribute("fillcolor", "yellow")
 	markFill := graph.VertexAttribute("style", "filled")
 
-	ctxGraph := graph.New((*FunctionWithPath).GetIndexName, graph.Directed())
+	ctxGraph := graph.New((*extractor.FunctionWithPath).GetIndexName, graph.Directed())
 	_ = ctxGraph.AddVertex(f.FunctionWithPath, markFill, markSelf)
 	for _, each := range f.Calls {
 		// bind itself
@@ -63,19 +57,4 @@ func (f *FunctionContext) ToJson() ([]byte, error) {
 		return nil, err
 	}
 	return raw, nil
-}
-
-func (f *FunctionContext) ToSlim() *FunctionContextSlim {
-	slim := &FunctionContextSlim{
-		FunctionWithPath: f.FunctionWithPath,
-		Calls:            make([]string, 0, len(f.Calls)),
-		ReverseCalls:     make([]string, 0, len(f.ReverseCalls)),
-	}
-	for _, each := range f.Calls {
-		slim.Calls = append(slim.Calls, each.GetSignature())
-	}
-	for _, each := range f.ReverseCalls {
-		slim.ReverseCalls = append(slim.ReverseCalls, each.GetSignature())
-	}
-	return slim
 }

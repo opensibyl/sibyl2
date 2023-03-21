@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 
-	"github.com/opensibyl/sibyl2"
+	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-func (d *mongoDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (d *mongoDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx context.Context) ([]*extractor.ClazzWithPath, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionClazz)
 
 	filter := bson.M{
@@ -24,7 +24,7 @@ func (d *mongoDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx c
 	}
 	defer cur.Close(ctx)
 
-	var classes []*sibyl2.ClazzWithPath
+	var classes []*extractor.ClazzWithPath
 	for cur.Next(ctx) {
 		doc := &MongoFactClazz{}
 		err := cur.Decode(doc)
@@ -42,7 +42,7 @@ func (d *mongoDriver) ReadClasses(wc *object.WorkspaceConfig, path string, ctx c
 	return classes, nil
 }
 
-func (d *mongoDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (d *mongoDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*extractor.ClazzWithPath, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionClazz)
 
 	filter := bson.M{
@@ -57,7 +57,7 @@ func (d *mongoDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path stri
 	}
 	defer cur.Close(ctx)
 
-	var classes []*sibyl2.ClazzWithPath
+	var classes []*extractor.ClazzWithPath
 	for cur.Next(ctx) {
 		doc := &MongoFactClazz{}
 		err := cur.Decode(doc)
@@ -78,6 +78,6 @@ func (d *mongoDriver) ReadClassesWithLines(wc *object.WorkspaceConfig, path stri
 	return classes, nil
 }
 
-func (d *mongoDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*sibyl2.ClazzWithPath, error) {
+func (d *mongoDriver) ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*extractor.ClazzWithPath, error) {
 	return nil, errors.New("implement me")
 }

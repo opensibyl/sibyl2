@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/opensibyl/sibyl2"
 	"github.com/opensibyl/sibyl2/pkg/extractor"
 	"github.com/opensibyl/sibyl2/pkg/server/object"
 	"golang.org/x/exp/slices"
@@ -34,7 +33,7 @@ func (t *tikvDriver) CreateClazzFile(wc *object.WorkspaceConfig, c *extractor.Cl
 
 	for _, eachClazz := range c.Units {
 		eachClazzKey := toClazzKey(fk.RevHash, fk.FileHash, eachClazz.GetSignature())
-		eachClazzWithPath := &sibyl2.ClazzWithPath{
+		eachClazzWithPath := &extractor.ClazzWithPath{
 			Clazz: eachClazz,
 			Path:  c.Path,
 		}
@@ -79,7 +78,7 @@ func (t *tikvDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fun
 
 	for _, eachFunc := range f.Units {
 		eachFuncKey := toFuncKey(fk.RevHash, fk.FileHash, eachFunc.GetSignature())
-		eachFuncWithPath := &sibyl2.FunctionWithPath{
+		eachFuncWithPath := &extractor.FunctionWithPath{
 			Function: eachFunc,
 			Path:     f.Path,
 		}
@@ -101,7 +100,7 @@ func (t *tikvDriver) CreateFuncFile(wc *object.WorkspaceConfig, f *extractor.Fun
 	return nil
 }
 
-func (t *tikvDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *sibyl2.FunctionContextSlim, ctx context.Context) error {
+func (t *tikvDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *object.FunctionContextSlim, ctx context.Context) error {
 	key, err := wc.Key()
 	if err != nil {
 		return err

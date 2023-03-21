@@ -233,19 +233,19 @@ func TestTikvFuncCtx(t *testing.T) {
 	}
 
 	funcCtx := sibyl2.FunctionContext{
-		FunctionWithPath: &sibyl2.FunctionWithPath{
+		FunctionWithPath: &extractor.FunctionWithPath{
 			Function: father,
 			Path:     p,
 		},
-		Calls: []*sibyl2.FunctionWithPath{
+		Calls: []*extractor.FunctionWithPath{
 			{
 				Function: calledFunc,
 				Path:     p,
 			},
 		},
-		ReverseCalls: []*sibyl2.FunctionWithPath{},
+		ReverseCalls: []*extractor.FunctionWithPath{},
 	}
-	slimCtx := funcCtx.ToSlim()
+	slimCtx := object.CompressFunctionContext(&funcCtx)
 
 	err = tikvTestDriver.CreateFuncFile(wc, called, ctx)
 	assert.Nil(t, err)

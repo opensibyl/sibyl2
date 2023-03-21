@@ -91,7 +91,7 @@ func HandleSignatureFuncctxReverseChain(c *gin.Context) {
 	}
 
 	fc := &FunctionContextChain{
-		FunctionContextSlim: f,
+		FunctionContextSlim: f.FunctionContextSlim,
 		ReverseCallChains:   reverseCallChains,
 	}
 
@@ -176,7 +176,7 @@ func HandleSignatureFuncctxChain(c *gin.Context) {
 	}
 
 	fc := &FunctionContextChain{
-		FunctionContextSlim: f,
+		FunctionContextSlim: f.FunctionContextSlim,
 		CallChains:          reverseCallChains,
 	}
 

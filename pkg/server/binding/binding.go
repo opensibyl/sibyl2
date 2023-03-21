@@ -66,9 +66,9 @@ type driverRead interface {
 	ReadClassesWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.ClazzServiceDTO, error)
 	ReadClassesWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.ClazzServiceDTO, error)
 
-	ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionContextSlim, error)
-	ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionContextSlim, error)
-	ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionContextSlim, error)
+	ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FuncCtxServiceDTO, error)
+	ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FuncCtxServiceDTO, error)
+	ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FuncCtxServiceDTO, error)
 }
 
 type driverUpdate interface {

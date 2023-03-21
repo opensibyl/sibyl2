@@ -15,7 +15,7 @@ import (
 // @Param   moreThan query int    true "moreThan"
 // @Param   lessThan query int    true "lessThan"
 // @Produce json
-// @Success 200 {array} object.FunctionContextSlim
+// @Success 200 {array} object.FuncCtxServiceDTO
 // @Router  /api/v1/reference/count/funcctx [get]
 // @Tags    ReferenceQuery
 func HandleReferenceCountFuncctx(c *gin.Context) {
@@ -73,7 +73,7 @@ func HandleReferenceCountFuncctx(c *gin.Context) {
 // @Param   moreThan query int    true "moreThan"
 // @Param   lessThan query int    true "lessThan"
 // @Produce json
-// @Success 200 {array} object.FunctionContextSlim
+// @Success 200 {array} object.FuncCtxServiceDTO
 // @Router  /api/v1/reference/count/funcctx/reverse [get]
 // @Tags    ReferenceQuery
 func HandleReferenceCountFuncctxReverse(c *gin.Context) {

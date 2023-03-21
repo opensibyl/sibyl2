@@ -68,14 +68,17 @@ type MongoRelFuncCtx struct {
 	FuncCtx        *object.FunctionContextSlim `bson:"funcctx"`
 }
 
-func (f *MongoRelFuncCtx) ToFuncCtx() *object.FunctionContextSlim {
+func (f *MongoRelFuncCtx) ToFuncCtx() *object.FuncCtxServiceDTO {
 	// https://stackoverflow.com/a/62241257
 	if f.FuncCtx.Extras == nil {
 		f.FuncCtx.Extras = make(map[string]interface{})
 	} else {
 		f.FuncCtx.Extras = f.FuncCtx.Extras.(bson.D).Map()
 	}
-	return f.FuncCtx
+	return &object.FuncCtxServiceDTO{
+		FunctionContextSlim: f.FuncCtx,
+		Signature:           f.Signature,
+	}
 }
 
 const (

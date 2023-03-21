@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FunctionContextSlim, error) {
+func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, path string, lines []int, ctx context.Context) ([]*object.FuncCtxServiceDTO, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	filter := bson.M{
@@ -25,7 +25,7 @@ func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, 
 	}
 	defer cur.Close(ctx)
 
-	var functionContexts []*object.FunctionContextSlim
+	var functionContexts []*object.FuncCtxServiceDTO
 	for cur.Next(ctx) {
 		doc := &MongoRelFuncCtx{}
 		err := cur.Decode(doc)
@@ -46,7 +46,7 @@ func (d *mongoDriver) ReadFunctionContextsWithLines(wc *object.WorkspaceConfig, 
 	return functionContexts, nil
 }
 
-func (d *mongoDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FunctionContextSlim, error) {
+func (d *mongoDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, rule Rule, ctx context.Context) ([]*object.FuncCtxServiceDTO, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	filter := bson.M{
@@ -60,7 +60,7 @@ func (d *mongoDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, r
 	}
 	defer cur.Close(ctx)
 
-	final := make([]*object.FunctionContextSlim, 0)
+	final := make([]*object.FuncCtxServiceDTO, 0)
 	for cur.Next(ctx) {
 		val := &MongoRelFuncCtx{}
 		if err := cur.Decode(val); err != nil {
@@ -94,7 +94,7 @@ func (d *mongoDriver) ReadFunctionContextsWithRule(wc *object.WorkspaceConfig, r
 	return final, nil
 }
 
-func (d *mongoDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FunctionContextSlim, error) {
+func (d *mongoDriver) ReadFunctionContextWithSignature(wc *object.WorkspaceConfig, signature string, ctx context.Context) (*object.FuncCtxServiceDTO, error) {
 	collection := d.client.Database(d.config.MongoDbName).Collection(mongoCollectionFuncCtx)
 
 	filter := bson.M{

@@ -104,11 +104,7 @@ func HandleFunctionContextsQuery(c *gin.Context) {
 			c.JSON(http.StatusBadRequest, fmt.Errorf("err when read with sign: %w", err))
 			return
 		}
-		wrapper := &object.FuncCtxServiceDTO{
-			FunctionContextSlim: funcCtx,
-			Signature:           funcCtx.GetSignature(),
-		}
-		ctxs = append(ctxs, wrapper)
+		ctxs = append(ctxs, funcCtx)
 	}
 	c.JSON(http.StatusOK, ctxs)
 }

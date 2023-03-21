@@ -104,7 +104,7 @@ func HandleRegexClazz(c *gin.Context) {
 // @Param   field query string true "field"
 // @Param   regex query string true "regex"
 // @Produce json
-// @Success 200 {array} object.FunctionContextSlim
+// @Success 200 {array} object.FuncCtxServiceDTO
 // @Router  /api/v1/regex/funcctx [get]
 // @Tags    RegexQuery
 func HandleRegexFuncctx(c *gin.Context) {
@@ -120,7 +120,7 @@ func HandleRegexFuncctx(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*object.FunctionContextSlim, error) {
+func handleFuncCtxQueryWithRule(repo string, rev string, field string, regex string) ([]*object.FuncCtxServiceDTO, error) {
 	wc := &object.WorkspaceConfig{
 		RepoId:  repo,
 		RevHash: rev,

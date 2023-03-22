@@ -91,26 +91,6 @@ sibyl2 manages metadata of code. We call it `logical layer`.
 }
 ```
 
-## Purpose & Principles
-
-We hope to provide a unified logical layer for different tools in the entire DevOps process, 
-sharing a single data source, 
-rather than each tool performing its own set of duplicate parsing logic.
-
-See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
-
-## Languages support
-
-| Languages  | Function | Function Context | Class |
-|------------|----------|------------------|-------|
-| Golang     | Yes      | Yes              | Yes   |
-| Java       | Yes      | Yes              | Yes   |
-| Python     | Yes      | Yes              | Yes   |
-| Kotlin     | Yes      | Yes              | Yes   |
-| JavaScript | Yes      | Yes              | Yes   |
-
-Based on tree-sitter, it's very easy to add an extra language support.
-
 ## Try it in 3 minutes
 
 sibyl2 supports multiple database backends. 
@@ -210,6 +190,26 @@ for fileName, lineList := range affectedFileMap {
 | JavaScript | https://github.com/opensibyl/sibyl-javascript-client |
 
 See more [examples](./_examples) about how to use for details.
+
+## Purpose & Principles
+
+We hope to provide a unified logical layer for different tools in the entire DevOps process,
+sharing a single data source,
+rather than each tool performing its own set of duplicate parsing logic.
+
+See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
+
+## Languages support
+
+| Languages  | Function | Function Context | Class |
+|------------|----------|------------------|-------|
+| Golang     | Yes      | Yes              | Yes   |
+| Java       | Yes      | Yes              | Yes   |
+| Python     | Yes      | Yes              | Yes   |
+| Kotlin     | Yes      | Yes              | Yes   |
+| JavaScript | Yes      | Yes              | Yes   |
+
+Based on tree-sitter, it's very easy to add an extra language support.
 
 ## In Production
 

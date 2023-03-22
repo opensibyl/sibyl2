@@ -198,7 +198,11 @@ func (d *badgerDriver) CreateFuncContext(wc *object.WorkspaceConfig, f *object.F
 
 		// write the fact
 		eachFuncKey := toFuncCtxKey(fk.RevHash, fk.FileHash, f.GetSignature())
-		eachFuncV, err := json.Marshal(f)
+		fdto := &object.FuncCtxServiceDTO{
+			FunctionContextSlim: f,
+			Signature:           f.GetSignature(),
+		}
+		eachFuncV, err := json.Marshal(fdto)
 		if err != nil {
 			return err
 		}

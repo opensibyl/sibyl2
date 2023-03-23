@@ -1,6 +1,7 @@
 package server
 
 import (
+	"os"
 	"os/signal"
 	"syscall"
 
@@ -43,6 +44,19 @@ func NewServerCmd() *cobra.Command {
 					core.Log.Errorf("failed to parse config")
 					panic(err)
 				}
+			}
+
+			// really sicks about reading config from env with viper
+			// https://github.com/spf13/viper/issues/584
+			// create some shortcuts for mongo ...
+			if dbType, ok := os.LookupEnv("SIBYL2_BINDING_DBTYPE"); ok {
+				config.DbType = dbType
+			}
+			if mongoDbName, ok := os.LookupEnv("SIBYL2_BINDING_MONGO_DB_NAME"); ok {
+				config.MongoDbName = mongoDbName
+			}
+			if mongoUri, ok := os.LookupEnv("SIBYL2_BINDING_MONGO_URI"); ok {
+				config.MongoURI = mongoUri
 			}
 
 			if writeConfigFile {

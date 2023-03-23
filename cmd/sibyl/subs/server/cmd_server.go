@@ -18,6 +18,7 @@ const (
 )
 
 func NewServerCmd() *cobra.Command {
+	var writeConfigFile bool
 	var serverCmd = &cobra.Command{
 		Use:   "server",
 		Short: "sibyl server cmd",
@@ -44,22 +45,27 @@ func NewServerCmd() *cobra.Command {
 				}
 			}
 
-			// save it back
-			// viper has a bug here .. unmarshal is case-insensitively
-			// https://github.com/spf13/viper/issues/1014
-			// so does json:
-			// https://stackoverflow.com/questions/49006073/json-unmarshal-struct-case-sensitively
-			usedConfigMap, err := config.ToMap()
-			if err != nil {
-				panic(err)
-			}
-			err = viper.MergeConfigMap(usedConfigMap)
-			if err != nil {
-				panic(err)
-			}
-			err = viper.WriteConfigAs(viper.ConfigFileUsed())
-			if err != nil {
-				core.Log.Warnf("failed to write config back")
+			if writeConfigFile {
+				// save it back
+				// viper has a bug here ... unmarshal is case-insensitively
+				// https://github.com/spf13/viper/issues/1014
+				// so does json:
+				// https://stackoverflow.com/questions/49006073/json-unmarshal-struct-case-sensitively
+				usedConfigMap, err := config.ToMap()
+				if err != nil {
+					panic(err)
+				}
+				err = viper.MergeConfigMap(usedConfigMap)
+				if err != nil {
+					panic(err)
+				}
+				err = viper.WriteConfigAs(viper.ConfigFileUsed())
+				if err != nil {
+					core.Log.Warnf("failed to write config back")
+				}
+
+				// will not run
+				return
 			}
 
 			ctx, stop := signal.NotifyContext(cmd.Context(), syscall.SIGINT, syscall.SIGTERM)
@@ -71,6 +77,7 @@ func NewServerCmd() *cobra.Command {
 			}
 		},
 	}
+	serverCmd.PersistentFlags().BoolVar(&writeConfigFile, "config", false, "write config file back if enabled")
 
 	return serverCmd
 }

@@ -12,16 +12,6 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: example
 
-  mongo-express:
-    image: mongo-express
-    restart: always
-    ports:
-      - "8081:8081"
-    environment:
-      ME_CONFIG_MONGODB_ADMINUSERNAME: root
-      ME_CONFIG_MONGODB_ADMINPASSWORD: example
-      ME_CONFIG_MONGODB_URL: mongodb://root:example@mongo:27017/
-
   sibyl2:
     image: williamfzc/sibyl2:v0.16.1
     restart: always
@@ -31,3 +21,9 @@ services:
       SIBYL2_BINDING_DBTYPE: MONGO
       SIBYL2_BINDING_MONGO_DB_NAME: sibyl2
       SIBYL2_BINDING_MONGO_URI: mongodb://root:example@mongo:27017/
+
+  metabase:
+    image: metabase/metabase:v0.45.3
+    restart: always
+    ports:
+      - "3000:3000"

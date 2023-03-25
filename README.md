@@ -1,6 +1,6 @@
 # sibyl 2
 
-> An easy-to-use logical layer on codebase.
+> The missing logical layer in codebases.
 
 [中文文档](https://opensibyl.github.io/doc/docs/intro)
 
@@ -17,17 +17,13 @@
 
 ## Overview
 
-sibyl2 is a static code analyze service, for extracting, managing and offering metadata of your code in codebase. Inspired
-by [semantic](https://github.com/github/semantic) of GitHub.
+sibyl2 is a service for extracting, managing and offering metadata of your code in codebase.
 
-- Easy to use
-- Fast enough
-- Extensible
-- Multiple languages in one (Go/Java/Python ...)
+<img width="1217" alt="image" src="https://user-images.githubusercontent.com/13421694/227231024-3fff016d-4866-4061-8704-b8c9e4f880f3.png">
 
-## What's `logical layer`?
+Although Git is a widely used platform for version control and collaboration, it does not have the capability to analyze and interpret the logic of code.
 
-SCM (GitHub, for example) manages code as plain text. We call it `physical layer`.
+Assuming my program now wants to know what is on `line 35` of the `extract_test.go` file. If using GitLab, it is possible to find the corresponding text information, which may look like this:
 
 ```golang
 func TestExtractString(t *testing.T) {
@@ -44,13 +40,12 @@ func TestExtractString(t *testing.T) {
 }
 ```
 
-sibyl2 manages metadata of code. We call it `logical layer`.
+However, my program does not know what this text represents. This is even more difficult for programs written in other languages (such as Java or Python).
+
+With sibyl2 API, you can get:
 
 ```json
 {
-  "_id": {
-    "$oid": "641b085deae764d271e2f426"
-  },
   "repo_id": "sibyl2",
   "rev_hash": "e995ef44372a93394199ea837b1e2eed375a71a0",
   "path": "extract_test.go",
@@ -91,33 +86,81 @@ sibyl2 manages metadata of code. We call it `logical layer`.
 }
 ```
 
-## Try it in 3 minutes
+And even its relationships?
 
-sibyl2 supports multiple database backends. 
+```json
+{
+  "name": "TestExtractString",
+  
+  ...,
+  
+  "calls": [
+    "object|*Function|GetDesc||string",
+    "object|*Symbol|GetDesc||string",
+    "sibyl2||ExtractFromString|string,*ExtractConfig|*extractor.FileResult,error",
+    "object|*Call|GetDesc||string",
+    "object|*Clazz|GetDesc||string"
+  ],
+  "reverseCalls": []
+}
+```
+
+And even all the relationships?
+
+![](https://user-images.githubusercontent.com/13421694/219916928-14e8eb69-fe67-45a1-80a7-1b3c1b8163b2.png)
+
+> Also class, module and something else. See [Reference](#References) for details.
+
+In addition, sibyl2's unified logic layer can also convert different language logics into the same data structure for storage, which is friendly to OLAP and other tools.
+
+You can use various mature analysis tools (such as clickhouse, superset, metabase, etc.) to further deconstruct your code repository based on sibyl2. For example, you can view the distribution of methods with the @Test annotation throughout the repository.
+
+<img width="699" alt="image" src="https://user-images.githubusercontent.com/13421694/227699919-a6080730-ccea-42a3-b5ae-1ef3198426bb.png">
+
+Applying some global analysis:
+
+<img width="1347" alt="image" src="https://user-images.githubusercontent.com/13421694/227760234-d8c5244b-d65d-4d5d-b984-a0f154baf9ac.png">
+
+Comparing the differences in methods, classes, and modules across each version:
+
+<img width="1214" alt="image" src="https://user-images.githubusercontent.com/13421694/227701624-2a6fd71e-8733-480a-802c-ed1833652763.png">
+
+In summary, sibyl2 aims to build a layer of common logic on top of your code repository in a simple way, helping businesses better understand, analyze, and use the data in their code repository.
+
+## Deployment
+
+### With Docker (recommended for start up)
+
+We have provided an [official compose file](https://github.com/opensibyl/sibyl2/blob/master/docker-compose.yml). Just:
+
+- copy and paste to your own `docker-compose.yml` file
+- `docker-compose up`
+
+### With an existed MongoDB
+
+- download our binaries from [the release page](https://github.com/opensibyl/sibyl2/releases).
+- add a `sibyl-server-config.json` file:
+
+```json
+{
+  "binding": {
+    "dbtype": "MONGO",
+    "mongodbname": "sibyl2",
+    "mongouri": "mongodb+srv://<USERNAME>:<YOURPASSWORD>@XXXXXXXX.mongodb.net/test"
+  }
+}
+```
+
+- `./sibyl server`
+
+### With nothing
+
 It can also run with no middleware and database installed, 
 if you just want to take a try.
 
-### Deployment
+Just `./sibyl server` without config file.
 
-Users can access all the features with a simple binary file, without any extra dependencies and scripts.
-
-You can download from [the release page](https://github.com/opensibyl/sibyl2/releases).
-
-Or directly download with `wget` (linux only):
-
-```bash
-curl https://raw.githubusercontent.com/opensibyl/sibyl2/master/scripts/download_latest.sh | bash
-```
-
-Now you can start it:
-
-```bash
-./sibyl server
-```
-
-That's it.
-Server will run on port `:9876`.
-Data will be persisted in `./sibyl2Storage`.
+## Usage
 
 ### Upload
 
@@ -127,21 +170,28 @@ Data will be persisted in `./sibyl2Storage`.
 ./sibyl upload --src . --url http://127.0.0.1:9876
 ```
 
-You can upload from different machines. Usually it only takes a few seconds.
+You can upload from different machines (just correct the url). Usually it only takes a few seconds.
 
-### Access
+Now everything is ready.
 
-Now all the data is ready! We have a built-in dashboard for visualization. Start it with:
+### Access with Mongo URI
 
-```bash
-./sibyl frontend
-```
+There are many mature visualization tools that support MONGO URI, such as official compass and metabase. 
+With this, accessing all your data is easy.
 
-And open `localhost:3000` you will see:
+![](https://user-images.githubusercontent.com/13421694/226957632-c1414be5-ec35-431b-9488-d6e0b1c0ddda.png)
 
-<img width="877" alt="image" src="https://user-images.githubusercontent.com/13421694/216641341-c01bbcd1-349f-4934-bd35-2fa6b2c48cb4.png">
+Our docker-compose file includes [metabase](https://github.com/metabase/metabase), allowing you to connect to MongoDB and start analyzing your data by simply opening `127.0.0.1:3000`.
 
-Of course, at the most time, we access data programmatically. 
+Currently, our data is divided into three collections:
+
+- fact_func: Function Information
+- fact_clazz: Class Information
+- rel_funcctx: Function Context Information
+
+### Access with sibyl2 clients
+
+Of course, at the most time, developers access data programmatically. 
 You can access all the data via different kinds of languages, to build your own tools:
 
 For example, git diff with logical?
@@ -191,14 +241,6 @@ for fileName, lineList := range affectedFileMap {
 
 See more [examples](./_examples) about how to use for details.
 
-## Purpose & Principles
-
-We hope to provide a unified logical layer for different tools in the entire DevOps process,
-sharing a single data source,
-rather than each tool performing its own set of duplicate parsing logic.
-
-See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
-
 ## Languages support
 
 | Languages  | Function | Function Context | Class |
@@ -210,25 +252,6 @@ See [About This Project: Code Snapshot Layer In DevOps](https://github.com/opens
 | JavaScript | Yes      | Yes              | Yes   |
 
 Based on tree-sitter, it's very easy to add an extra language support.
-
-## In Production
-
-We use mongo db as our official backend in production.
-All you need is adding a `sibyl-server-config.json` file:
-
-```json
-{
-  "binding": {
-    "dbtype": "MONGO",
-    "mongodbname": "sibyl2",
-    "mongouri": "mongodb+srv://feng:<YOURPASSWORD>@XXXXXXXX.mongodb.net/test"
-  }
-}
-```
-
-Everything done. 
-
-<img width="706" alt="mongo_func_detail" src="https://user-images.githubusercontent.com/13421694/226957632-c1414be5-ec35-431b-9488-d6e0b1c0ddda.png">
 
 ## Performance
 
@@ -260,7 +283,18 @@ Workflow:
 
 Issues / PRs are welcome!
 
+## Further work
+
+- More effective and stable uploader
+- More languages support
+- More fact level data we can collect
+- Provide a standard data layer for AI models
+
+About its role in DevOps, see [About This Project: Code Snapshot Layer In DevOps](https://github.com/opensibyl/sibyl2/issues/2) for details.
+
 ## References
+
+Inspired by [semantic](https://github.com/github/semantic) of GitHub.
 
 - basic grammar: https://tree-sitter.github.io/tree-sitter/creating-parsers#the-grammar-dsl
 - language parser (for example, golang): https://github.com/tree-sitter/tree-sitter-go/blob/master/src/parser.c

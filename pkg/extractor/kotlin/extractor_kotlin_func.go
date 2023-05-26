@@ -1,6 +1,8 @@
 package kotlin
 
 import (
+	"errors"
+
 	"github.com/opensibyl/sibyl2/pkg/core"
 	"github.com/opensibyl/sibyl2/pkg/extractor/object"
 )
@@ -61,6 +63,13 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 		funcUnit.Receiver = pkgName + "." + clazzName
 	}
 	funcUnit.Namespace = pkgName
+
+	funcIdentifier := core.FindFirstByKindInSubsWithBfs(unit, KindKotlinSimpleIdentifier)
+	if funcIdentifier == nil {
+		return nil, errors.New("no func id found in identifier" + unit.Content)
+	}
+	funcUnit.Name = funcIdentifier.Content
+	funcUnit.DefLine = int(funcIdentifier.Span.Start.Row + 1)
 
 	return funcUnit, nil
 }

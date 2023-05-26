@@ -82,6 +82,7 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 		return nil, errors.New("no func id found in identifier" + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
+	funcUnit.DefLine = int(funcIdentifier.Span.Start.Row + 1)
 
 	// returns
 	retUnit := core.FindFirstByFieldInSubsWithDfs(unit, FieldJavaDimensions)

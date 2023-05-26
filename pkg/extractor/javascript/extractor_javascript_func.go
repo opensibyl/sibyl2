@@ -62,6 +62,7 @@ func (extractor *Extractor) extractFromFunc(unit *core.Unit, function *object.Fu
 		return fmt.Errorf("function without name: %s", unit.Content)
 	}
 	function.Name = nameNode.Content
+	function.DefLine = int(nameNode.Span.Start.Row + 1)
 
 	// params
 	parametersNode := core.FindFirstByFieldInSubs(unit, KindJavaScriptFormalParameters)

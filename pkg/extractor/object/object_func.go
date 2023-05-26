@@ -23,6 +23,10 @@ type Function struct {
 	Parameters []*ValueUnit `json:"parameters" bson:"parameters"`
 	Returns    []*ValueUnit `json:"returns" bson:"returns"`
 
+	// where the definition actually happened
+	// avoid the impacts of annotations and decorations
+	DefLine int `json:"defLine" bson:"defLine"`
+
 	// this span will include header and content
 	Span core.Span `json:"span" bson:"span"`
 

@@ -54,6 +54,7 @@ func (extractor *Extractor) ExtractFunction(unit *core.Unit) (*object.Function, 
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
 	funcUnit.Name = funcName.Content
+	funcUnit.DefLine = int(funcName.Span.Start.Row + 1)
 
 	extras := &FunctionExtras{}
 	if unit.ParentUnit.Kind == KindPythonDecoratedDefinition {

@@ -159,6 +159,7 @@ func (extractor *Extractor) funcUnit2Function(unit *core.Unit) (*object.Function
 		return nil, errors.New("no func name found in " + unit.Content)
 	}
 	funcUnit.Name = funcIdentifier.Content
+	funcUnit.DefLine = int(funcIdentifier.Span.Start.Row + 1)
 
 	// namespace: package
 	root := core.FindFirstByKindInParent(unit, KindGolangSourceFile)

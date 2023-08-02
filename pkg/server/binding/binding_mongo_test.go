@@ -2,6 +2,7 @@ package binding
 
 import (
 	"context"
+	"regexp"
 	"testing"
 
 	"github.com/opensibyl/sibyl2"
@@ -106,6 +107,26 @@ func TestMongoFunc(t *testing.T) {
 	signatures, err := curMongoDriver.ReadFunctionSignaturesWithRegex(wc, "fn1.*", ctx)
 	assert.Nil(t, err)
 	assert.Equal(t, len(signatures), 1)
+
+	// add tag and query the tag
+	tag := "thisIsATag"
+	err = curMongoDriver.CreateFuncTag(wc, signatures[0], tag, ctx)
+	assert.Nil(t, err)
+	funcs, err := curMongoDriver.ReadFunctionsWithTag(wc, tag, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, len(funcs), 1)
+
+	// regex fn
+	newRegex, err := regexp.Compile(".*sIs.*")
+	verify := func(s string) bool {
+		return newRegex.Match([]byte(s))
+	}
+	ruleMap := make(Rule)
+	ruleMap["tags"] = verify
+
+	funcsWithTag, err := curMongoDriver.ReadFunctionsWithRule(wc, ruleMap, ctx)
+	assert.Nil(t, err)
+	assert.Equal(t, len(funcsWithTag), 1)
 }
 
 func TestMongoFuncCtx(t *testing.T) {

@@ -189,7 +189,7 @@ func (d *mongoDriver) ReadFunctionsWithTag(wc *object.WorkspaceConfig, tag objec
 	filter := bson.M{
 		mongoKeyRepo: wc.RepoId,
 		mongoKeyRev:  wc.RevHash,
-		mongoKeyTag:  tag,
+		mongoKeyTag:  bson.M{"$in": []string{tag}},
 	}
 	cursor, err := collection.Find(ctx, filter)
 	if err != nil {

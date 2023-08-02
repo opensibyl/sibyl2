@@ -89,7 +89,7 @@ const (
 	mongoKeyRev       = "rev_hash"
 	mongoKeyPath      = "path"
 	mongoKeySignature = "signature"
-	mongoKeyTag       = "tag"
+	mongoKeyTag       = "tags"
 
 	mongoKeyFunc         = "func"
 	mongoKeyFuncRowStart = mongoKeyFunc + "." + idxRowStartSuffix

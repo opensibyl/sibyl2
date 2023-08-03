@@ -17,6 +17,16 @@
 
 ## Overview
 
+> 2023.08.03
+>
+> At present, the implementation of function relationships is too rough.
+> If you want an accurate function call relationship diagram, you should prioritize using [srctx](https://github.com/williamfzc/srctx). 
+> 
+> This is because it is difficult for us to obtain an accurate call relationship without relying on compilation (or something like compilation). 
+> In the future, the focus of Sibyl2 will be on extracting more factual information from the language rather than relationship information.
+
+
+
 sibyl2 is a service for extracting, managing and offering metadata of your code in codebase.
 
 <img width="1217" alt="image" src="https://user-images.githubusercontent.com/13421694/227231024-3fff016d-4866-4061-8704-b8c9e4f880f3.png">
